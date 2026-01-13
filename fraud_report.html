@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudHunter Core - Resultados</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { 
+            font-size: 2.5rem; 
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle { color: #888; margin-bottom: 40px; font-size: 1.1rem; }
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 40px;
+        }
+        .stat-card { 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 16px; 
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-value { font-size: 2.5rem; font-weight: bold; color: #00d9ff; }
+        .stat-label { color: #888; margin-top: 8px; }
+        .stat-card.danger .stat-value { color: #ff4757; }
+        .stat-card.success .stat-value { color: #2ed573; }
+        
+        .section { 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 16px; 
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .section-title { font-size: 1.4rem; margin-bottom: 20px; color: #fff; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; color: #888; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr.high-risk { background: rgba(255,71,87,0.1); }
+        tr.high-risk td:first-child { border-left: 3px solid #ff4757; }
+        .suspicious { color: #ff4757; font-weight: bold; }
+        code { background: rgba(0,217,255,0.1); padding: 4px 8px; border-radius: 4px; color: #00d9ff; }
+        
+        .score-bar { 
+            width: 100px; height: 8px; background: rgba(255,255,255,0.1); 
+            border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 10px;
+        }
+        .score-fill { height: 100%; background: linear-gradient(90deg, #2ed573, #ffa502, #ff4757); border-radius: 4px; }
+        .score-value { color: #fff; font-weight: bold; }
+        
+        .flag-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .flag-name { width: 200px; color: #fff; }
+        .flag-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 0 20px; }
+        .flag-fill { height: 100%; background: #ff4757; border-radius: 4px; }
+        .flag-count { width: 100px; text-align: right; color: #888; }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .metric { padding: 20px; background: rgba(255,255,255,0.03); border-radius: 12px; }
+        .metric-name { color: #888; margin-bottom: 8px; }
+        .metric-value { font-size: 1.8rem; font-weight: bold; }
+        .metric-value.good { color: #2ed573; }
+        .metric-value.warning { color: #ffa502; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FraudHunter Core</h1>
+        <p class="subtitle">Sistema de Deteccion de Fraude Empresarial - Resultados del Analisis</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">100</div>
+                <div class="stat-label">Empresas Analizadas</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-value">15</div>
+                <div class="stat-label">Anomalias Detectadas</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-value">73%</div>
+                <div class="stat-label">Precision del Modelo</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Recall del Modelo</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Top 15 Empresas Mas Sospechosas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>NIF</th>
+                        <th>Sector</th>
+                        <th>Ventas</th>
+                        <th>Score de Fraude</th>
+                        <th>Ground Truth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr class="high-risk">
+            <td><code>B0000077A</code></td>
+            <td>Venta vehiculos</td>
+            <td>EUR 3,687,700</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 100%'></div></div> <span class='score-value'>1.000</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000032A</code></td>
+            <td>Programacion</td>
+            <td>EUR 5,081,049</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 95%'></div></div> <span class='score-value'>0.955</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000026A</code></td>
+            <td>Programacion</td>
+            <td>EUR 4,709,420</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 92%'></div></div> <span class='score-value'>0.916</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000098A</code></td>
+            <td>Agencia inmobiliaria</td>
+            <td>EUR 7,402,065</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 85%'></div></div> <span class='score-value'>0.853</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000046A</code></td>
+            <td>Venta vehiculos</td>
+            <td>EUR 3,164,323</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 85%'></div></div> <span class='score-value'>0.852</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000062A</code></td>
+            <td>Venta vehiculos</td>
+            <td>EUR 894,314</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 80%'></div></div> <span class='score-value'>0.801</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000087A</code></td>
+            <td>Transporte mercancias</td>
+            <td>EUR 2,710,470</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 78%'></div></div> <span class='score-value'>0.783</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000067A</code></td>
+            <td>Transporte mercancias</td>
+            <td>EUR 1,483,747</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 77%'></div></div> <span class='score-value'>0.774</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000045A</code></td>
+            <td>Agencia inmobiliaria</td>
+            <td>EUR 1,156,885</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 77%'></div></div> <span class='score-value'>0.773</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000001A</code></td>
+            <td>Agencia inmobiliaria</td>
+            <td>EUR 9,391,672</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 75%'></div></div> <span class='score-value'>0.752</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000030A</code></td>
+            <td>Programacion</td>
+            <td>EUR 2,552,537</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 74%'></div></div> <span class='score-value'>0.736</span></td>
+            <td class="">Normal</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000018A</code></td>
+            <td>Venta vehiculos</td>
+            <td>EUR 6,456,113</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 69%'></div></div> <span class='score-value'>0.690</span></td>
+            <td class="">Normal</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000042A</code></td>
+            <td>Agencia inmobiliaria</td>
+            <td>EUR 5,757,583</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 69%'></div></div> <span class='score-value'>0.686</span></td>
+            <td class="suspicious">SOSPECHOSA (Ground Truth)</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000034A</code></td>
+            <td>Transporte mercancias</td>
+            <td>EUR 1,034,985</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 67%'></div></div> <span class='score-value'>0.668</span></td>
+            <td class="">Normal</td>
+        </tr>
+        <tr class="high-risk">
+            <td><code>B0000021A</code></td>
+            <td>Venta vehiculos</td>
+            <td>EUR 5,811,348</td>
+            <td><div class='score-bar'><div class='score-fill' style='width: 41%'></div></div> <span class='score-value'>0.411</span></td>
+            <td class="">Normal</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Resumen de Flags de Riesgo</h2>
+            
+        <div class="flag-item">
+            <div class="flag-name">Incoherencia Logistica</div>
+            <div class="flag-bar"><div class="flag-fill" style="width: 11.0%"></div></div>
+            <div class="flag-count">11 (11.0%)</div>
+        </div>
+        <div class="flag-item">
+            <div class="flag-name">Hidden Debt</div>
+            <div class="flag-bar"><div class="flag-fill" style="width: 66.0%"></div></div>
+            <div class="flag-count">66 (66.0%)</div>
+        </div>
+        <div class="flag-item">
+            <div class="flag-name">Empresa Pantalla</div>
+            <div class="flag-bar"><div class="flag-fill" style="width: 6.0%"></div></div>
+            <div class="flag-count">6 (6.0%)</div>
+        </div>
+        <div class="flag-item">
+            <div class="flag-name">Numeros Redondos</div>
+            <div class="flag-bar"><div class="flag-fill" style="width: 11.0%"></div></div>
+            <div class="flag-count">11 (11.0%)</div>
+        </div>
+        <div class="flag-item">
+            <div class="flag-name">Sectoral Outlier</div>
+            <div class="flag-bar"><div class="flag-fill" style="width: 7.0%"></div></div>
+            <div class="flag-count">7 (7.0%)</div>
+        </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Metricas de Validacion</h2>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-name">Verdaderos Positivos</div>
+                    <div class="metric-value good">11</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">Verdaderos Negativos</div>
+                    <div class="metric-value good">85</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">Falsos Positivos</div>
+                    <div class="metric-value warning">4</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">Falsos Negativos</div>
+                    <div class="metric-value warning">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

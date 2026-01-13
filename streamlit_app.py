@@ -638,6 +638,27 @@ st.markdown("---")
 # Sidebar
 st.sidebar.header("⚙️ Configuración del Análisis")
 
+# Enlace a documentación
+st.sidebar.markdown("---")
+with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
+    st.markdown("""
+    ### FraudHunter - Inteligencia Forense
+    
+    **Tecnologías utilizadas:**
+    - 🔬 **Isolation Forest** - ML no supervisado
+    - 📊 **Distancia Mahalanobis** - Contexto sectorial
+    - 🔢 **Ley de Benford** - Detección estadística
+    - 🌐 **Graph Analysis** - Redes de transacciones
+    
+    **Modelos fiscales analizados:**
+    - Modelo 200 (Impuesto Sociedades)
+    - Modelo 347 (Operaciones +3.005€)
+    - Modelo 349 (Operaciones Intracomunitarias)
+    
+    [📑 Ver Presentación Técnica Completa](https://github.com/tonhogonzalez/Antifraude_Modelos_Empresas/blob/main/Presentaci%C3%B3n_solucion.html)
+    """)
+st.sidebar.markdown("---")
+
 # Selector de fuente de datos
 data_source = st.sidebar.radio(
     "📁 Fuente de Datos",

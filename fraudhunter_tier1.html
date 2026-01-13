@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudHunter AI | Tier 1 Risk Engine</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 950: '#020617', 900: '#0f172a', 800: '#1e293b', 500: '#6366f1', accent: '#8b5cf6', alert: '#f43f5e' },
+                        code: { bg: '#0d1117', text: '#e6edf3', kw: '#ff7b72', func: '#d2a8ff', str: '#a5d6ff', num: '#79c0ff' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .hero-mesh {
+            background-color: #020617;
+            background-image: 
+                linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .nav-active {
+            border-left-color: #6366f1 !important;
+            background-color: #1e1b4b !important;
+            color: #e0e7ff !important;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Terminal Styling */
+        .terminal-window {
+            background: #0d1117;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            font-size: 0.80rem;
+            margin-top: 1.5rem;
+        }
+        .terminal-header {
+            background: #161b22;
+            padding: 8px 12px;
+            display: flex;
+            gap: 6px;
+            border-bottom: 1px solid #30363d;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+    </style>
+</head>
+<body class="bg-brand-950 text-slate-300 font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+    <nav class="fixed w-full z-50 glass-panel border-b-0 border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-brand-500 rounded flex items-center justify-center text-white shadow-[0_0_15px_rgba(99,102,241,0.5)]">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-white">FraudHunter <span class="text-[10px] text-brand-accent border border-brand-500/30 px-2 py-0.5 rounded ml-2 font-mono">v3.0 SOTA</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-400">
+                    <a href="#intro" class="hover:text-white transition">Visión</a>
+                    <a href="#deep-learning" class="hover:text-white transition text-brand-500">Neural Core</a>
+                    <a href="#demo" class="hover:text-white transition">Live Monitor</a>
+                </div>
+                <button class="bg-brand-500 hover:bg-brand-400 text-white px-5 py-2 rounded-lg text-sm font-semibold transition shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+                    Deploy to Databricks
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header id="intro" class="hero-mesh pt-32 pb-24 relative overflow-hidden">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]"></div>
+
+        <div class="max-w-7xl mx-auto px-4 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-700 px-3 py-1 rounded-full text-brand-400 text-xs font-mono mb-8 backdrop-blur-sm">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                System Status: MONITORING 1.2M ENTITIES
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight text-white">
+                Next-Gen <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-purple-400">Financial Forensics</span>
+            </h1>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                Superando las reglas tradicionales. Implementamos <strong>Graph Neural Networks</strong>, <strong>Transformers</strong> y <strong>NLP Semántico</strong> para detectar patrones de fraude no lineales que escapan a la auditoría humana.
+            </p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-12 text-sm border-t border-slate-800 pt-8">
+                <div class="p-4 rounded-lg bg-slate-900/50 border border-slate-800">
+                    <div class="text-brand-500 mb-1 font-mono">01. GRAPH SAGE</div>
+                    <div class="text-slate-300 font-bold">Relaciones Tóxicas</div>
+                </div>
+                <div class="p-4 rounded-lg bg-slate-900/50 border border-slate-800">
+                    <div class="text-brand-500 mb-1 font-mono">02. AUTOENCODERS</div>
+                    <div class="text-slate-300 font-bold">Maquillaje Contable</div>
+                </div>
+                <div class="p-4 rounded-lg bg-slate-900/50 border border-slate-800">
+                    <div class="text-brand-500 mb-1 font-mono">03. TRANSFORMERS</div>
+                    <div class="text-slate-300 font-bold">Fraude Durmiente</div>
+                </div>
+                <div class="p-4 rounded-lg bg-slate-900/50 border border-slate-800">
+                    <div class="text-brand-500 mb-1 font-mono">04. BERT NLP</div>
+                    <div class="text-slate-300 font-bold">Auditoría Semántica</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="deep-learning" class="py-24 bg-brand-950 relative">
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+            
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-white mb-2">El Motor Neuronal</h2>
+                <p class="text-slate-400">Cómo la Inteligencia Artificial protege al Banco (Explicado para Negocio).</p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-12 relative">
+                
+                <div class="hidden lg:block w-1/4">
+                    <div class="sticky top-28 space-y-2">
+                        <a href="#card-graphsage" class="nav-item block p-4 rounded border-l-2 border-transparent hover:bg-slate-900 transition text-sm text-slate-400 font-mono nav-active">
+                            01. El Detective de Relaciones
+                            <span class="block text-xs text-brand-500 mt-1">GraphSAGE (GNN)</span>
+                        </a>
+                        <a href="#card-vae" class="nav-item block p-4 rounded border-l-2 border-transparent hover:bg-slate-900 transition text-sm text-slate-400 font-mono">
+                            02. El Detector de Maquillaje
+                            <span class="block text-xs text-brand-500 mt-1">Autoencoders (VAE)</span>
+                        </a>
+                        <a href="#card-tft" class="nav-item block p-4 rounded border-l-2 border-transparent hover:bg-slate-900 transition text-sm text-slate-400 font-mono">
+                            03. El Historiador
+                            <span class="block text-xs text-brand-500 mt-1">Transformers (TFT)</span>
+                        </a>
+                        <a href="#card-bert" class="nav-item block p-4 rounded border-l-2 border-transparent hover:bg-slate-900 transition text-sm text-slate-400 font-mono">
+                            04. El Auditor Semántico
+                            <span class="block text-xs text-brand-500 mt-1">NLP (BERT)</span>
+                        </a>
+                        <a href="#card-siamese" class="nav-item block p-4 rounded border-l-2 border-transparent hover:bg-slate-900 transition text-sm text-slate-400 font-mono">
+                            05. Identidad Biométrica
+                            <span class="block text-xs text-brand-500 mt-1">Siamese Networks</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="lg:w-3/4 space-y-20">
+                    
+                    <div id="card-graphsage" class="scroll-mt-32 border-l border-slate-800 pl-8 relative">
+                        <div class="absolute -left-[5px] top-0 w-2 h-2 bg-brand-500 rounded-full shadow-[0_0_10px_#6366f1]"></div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="p-3 bg-brand-500/10 rounded border border-brand-500/20 text-brand-500">
+                                <i class="fa-solid fa-people-arrows text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">"Dime con quién andas..."</h3>
+                                <p class="text-brand-500 text-sm font-mono">Tecnología: Inductive Graph Neural Networks</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed text-lg">
+                            El fraude es contagioso. Los sistemas antiguos miran a la empresa aislada. Este algoritmo <strong>mira con quién se junta</strong>. Si una empresa nueva entra al banco y parece perfecta, pero sus proveedores son los mismos que usó una trama criminal hace 3 años, el sistema la marca antes de que pueda operar.
+                        </p>
+                        
+                        <div class="terminal-window font-mono">
+                            <div class="terminal-header">
+                                <div class="dot bg-red-500"></div><div class="dot bg-yellow-500"></div><div class="dot bg-green-500"></div>
+                                <span class="text-xs text-slate-500 ml-2">gnn_model.py</span>
+                            </div>
+                            <div class="p-5 text-code-text overflow-x-auto">
+                                <div class="mb-2 text-slate-500"># PyTorch Geometric Implementation</div>
+                                <span class="text-code-kw">import</span> torch<br>
+                                <span class="text-code-kw">from</span> torch_geometric.nn <span class="text-code-kw">import</span> SAGEConv<br><br>
+                                <span class="text-code-kw">class</span> <span class="text-code-func">FraudGNN</span>(torch.nn.Module):<br>
+                                &nbsp;&nbsp;<span class="text-code-kw">def</span> <span class="text-code-func">__init__</span>(self, in_channels, hidden_channels):<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;super().<span class="text-code-func">__init__</span>()<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-slate-500"># Agregamos vecinos a 2 saltos (Hop-2) para ver "amigos de amigos"</span><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;self.conv1 = <span class="text-code-func">SAGEConv</span>(in_channels, hidden_channels)<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;self.conv2 = <span class="text-code-func">SAGEConv</span>(hidden_channels, 64) <span class="text-slate-500"># Embedding latente</span><br>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-vae" class="scroll-mt-32 border-l border-slate-800 pl-8 relative">
+                         <div class="absolute -left-[5px] top-0 w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_10px_#a855f7]"></div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="p-3 bg-purple-500/10 rounded border border-purple-500/20 text-purple-400">
+                                <i class="fa-solid fa-mask text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Detector de "Maquillaje Contable"</h3>
+                                <p class="text-purple-400 text-sm font-mono">Tecnología: Variational Autoencoders</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed text-lg">
+                            Funciona como un experto en arte que detecta una falsificación perfecta. Los defraudadores saben cuadrar el Excel, pero no pueden replicar la complejidad matemática natural de un negocio real. Este modelo detecta la <strong>artificialidad estadística</strong> en balances que, a simple vista, parecen impecables.
+                        </p>
+                        
+                        <div class="terminal-window font-mono">
+                            <div class="terminal-header">
+                                <div class="dot bg-red-500"></div><div class="dot bg-yellow-500"></div><div class="dot bg-green-500"></div>
+                                <span class="text-xs text-slate-500 ml-2">anomaly_detector.py</span>
+                            </div>
+                            <div class="p-5 text-code-text overflow-x-auto">
+                                <span class="text-code-kw">def</span> <span class="text-code-func">get_reconstruction_error</span>(model, balance_sheet):<br>
+                                &nbsp;&nbsp;<span class="text-code-kw">with</span> torch.no_grad():<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-slate-500"># Intentamos comprimir y descomprimir el balance</span><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;encoded, mu, logvar = model.encoder(balance_sheet)<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;reconstructed = model.decoder(encoded)<br><br>
+                                &nbsp;&nbsp;<span class="text-slate-500"># Si el error es alto, el balance es "artificial"</span><br>
+                                &nbsp;&nbsp;loss = torch.nn.functional.<span class="text-code-func">mse_loss</span>(reconstructed, balance_sheet)<br>
+                                &nbsp;&nbsp;<span class="text-code-kw">if</span> loss > THRESHOLD: <span class="text-code-kw">return</span> <span class="text-code-str">"FRAUDE_MAQUILLAJE"</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-tft" class="scroll-mt-32 border-l border-slate-800 pl-8 relative">
+                        <div class="absolute -left-[5px] top-0 w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="p-3 bg-blue-500/10 rounded border border-blue-500/20 text-blue-400">
+                                <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">El Historiador (Fraude Durmiente)</h3>
+                                <p class="text-blue-400 text-sm font-mono">Tecnología: Temporal Fusion Transformers</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed text-lg">
+                            El fraude no es una foto fija, es una película. Muchos defraudadores se comportan bien durante años para ganar confianza y dar un "golpe final" (Bust-out). Este modelo analiza la <strong>historia completa de 5 años</strong> y detecta cambios sutiles de comportamiento hoy que predicen una fuga mañana.
+                        </p>
+                        <div class="terminal-window font-mono">
+                            <div class="terminal-header">
+                                <div class="dot bg-red-500"></div><div class="dot bg-yellow-500"></div><div class="dot bg-green-500"></div>
+                                <span class="text-xs text-slate-500 ml-2">time_series_forensics.py</span>
+                            </div>
+                            <div class="p-5 text-code-text overflow-x-auto">
+                                <span class="text-code-kw">from</span> pytorch_forecasting <span class="text-code-kw">import</span> TemporalFusionTransformer<br><br>
+                                <span class="text-slate-500"># Mecanismo de Atención Temporal</span><br>
+                                tft = <span class="text-code-func">TemporalFusionTransformer</span>.from_dataset(<br>
+                                &nbsp;&nbsp;training_dataset,<br>
+                                &nbsp;&nbsp;hidden_size=<span class="text-code-num">128</span>,<br>
+                                &nbsp;&nbsp;attention_head_size=<span class="text-code-num">4</span> <span class="text-slate-500"># Foco en eventos pasados clave</span><br>
+                                )
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-bert" class="scroll-mt-32 border-l border-slate-800 pl-8 relative">
+                        <div class="absolute -left-[5px] top-0 w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="p-3 bg-yellow-500/10 rounded border border-yellow-500/20 text-yellow-400">
+                                <i class="fa-solid fa-file-contract text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">El Auditor Semántico</h3>
+                                <p class="text-yellow-400 text-sm font-mono">Tecnología: NLP (BERT)</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 leading-relaxed text-lg">
+                            Hasta ahora, el sistema solo veía números. Ahora <strong>lee contratos</strong>. Lee la Memoria y el Objeto Social. Si una empresa dice ser "Consultora IT" para justificar facturas millonarias, pero sus textos legales antiguos hablan de "Venta de Frutas", el sistema detecta la incoherencia semántica.
+                        </p>
+                        <div class="terminal-window font-mono">
+                            <div class="terminal-header">
+                                <div class="dot bg-red-500"></div><div class="dot bg-yellow-500"></div><div class="dot bg-green-500"></div>
+                                <span class="text-xs text-slate-500 ml-2">nlp_auditor.py</span>
+                            </div>
+                            <div class="p-5 text-code-text overflow-x-auto">
+                                <span class="text-code-kw">from</span> transformers <span class="text-code-kw">import</span> BertModel, BertTokenizer<br><br>
+                                <span class="text-slate-500"># Comparamos el "significado" del texto vs CNAE</span><br>
+                                text_emb = model(**tokenizer(objeto_social))<br>
+                                cnae_emb = model(**tokenizer(actividad_declarada))<br><br>
+                                coherence = <span class="text-code-func">cosine_similarity</span>(text_emb, cnae_emb)<br>
+                                <span class="text-code-kw">if</span> coherence < <span class="text-code-num">0.2</span>: <span class="text-code-func">flag_inconsistency</span>()
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="card-siamese" class="scroll-mt-32 border-l border-slate-800 pl-8 relative">
+                        <div class="absolute -left-[5px] top-0 w-2 h-2 bg-green-500 rounded-full"></div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="p-3 bg-green-500/10 rounded border border-green-500/20 text-green-400">
+                                <i class="fa-solid fa-fingerprint text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Identidad Biométrica</h3>
+                                <p class="text-green-400 text-sm font-mono">Tecnología: Siamese Networks</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 mb-4 leading-relaxed text-lg">
+                            Actúa como un escáner de huellas dactilares para nombres. Evita que un defraudador se esconda simplemente cambiando "Hnos. García" por "Transportes García". El sistema sabe que son la misma entidad y unifica el riesgo.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="py-24 bg-black relative border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Live Threat Monitor</h2>
+                    <p class="text-slate-400 mt-2">Vista en tiempo real del analista forense.</p>
+                </div>
+                <div class="flex gap-2">
+                    <span class="px-3 py-1 bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-mono rounded animate-pulse">● LIVE ALERTS: 3</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 glass-panel rounded-xl p-6 border border-slate-700">
+                    <h4 class="text-xs font-mono text-slate-500 uppercase mb-4">AI Ensemble Score</h4>
+                    <div class="relative w-48 h-48 mx-auto">
+                        <canvas id="riskGauge"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span class="text-5xl font-bold text-white tracking-tighter">99.2</span>
+                            <span class="text-[10px] text-brand-500 font-mono mt-1">CONFIDENCE</span>
+                        </div>
+                    </div>
+                    <div class="mt-6 space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Graph Risk:</span>
+                            <span class="text-red-400 font-mono font-bold">HIGH (0.95)</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">VAE Anomaly:</span>
+                            <span class="text-orange-400 font-mono font-bold">MED (0.68)</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">BERT Coherence:</span>
+                            <span class="text-red-400 font-mono font-bold">LOW (0.12)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 glass-panel rounded-xl p-6 border border-slate-700 relative overflow-hidden">
+                    <h4 class="text-xs font-mono text-slate-500 uppercase mb-4">GraphSAGE Embedding Projection</h4>
+                    <div class="w-full h-64 relative flex items-center justify-center">
+                        <div class="absolute inset-0 grid grid-cols-6 grid-rows-4 opacity-10">
+                            </div>
+                        
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none">
+                            <line x1="50%" y1="50%" x2="30%" y2="30%" stroke="#475569" stroke-width="1" />
+                            <line x1="50%" y1="50%" x2="70%" y2="30%" stroke="#475569" stroke-width="1" />
+                            <line x1="50%" y1="50%" x2="50%" y2="80%" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4" class="animate-pulse" />
+                        </svg>
+
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-red-500/20 rounded-full border border-red-500 flex items-center justify-center shadow-[0_0_30px_rgba(244,63,94,0.4)] z-10">
+                            <i class="fa-solid fa-building-circle-exclamation text-red-500 text-xl"></i>
+                        </div>
+                        <div class="absolute top-[30%] left-[30%] w-10 h-10 bg-slate-800 rounded-full border border-slate-600 flex items-center justify-center text-slate-500 text-xs">A</div>
+                        <div class="absolute top-[30%] left-[70%] w-10 h-10 bg-slate-800 rounded-full border border-slate-600 flex items-center justify-center text-slate-500 text-xs">B</div>
+                        <div class="absolute top-[80%] left-[50%] -translate-x-1/2 w-12 h-12 bg-orange-500/20 rounded-full border border-orange-500 flex items-center justify-center text-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                            <i class="fa-solid fa-user-secret"></i>
+                        </div>
+                        
+                        <div class="absolute top-[20%] right-[10%] bg-slate-900 border border-slate-700 p-3 rounded text-xs">
+                            <div class="text-slate-400">Embedding Distance</div>
+                            <div class="text-red-400 font-mono">0.02 (Too Close)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-black py-12 border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex justify-center gap-8 mb-8 text-slate-600">
+                <i class="fa-brands fa-python text-2xl hover:text-white transition"></i>
+                <i class="fa-solid fa-server text-2xl hover:text-white transition"></i>
+                <i class="fa-solid fa-shield-cat text-2xl hover:text-white transition"></i>
+            </div>
+            <p class="text-sm text-slate-600">
+                FraudHunter v3.0 | Powered by <span class="text-slate-400">PyTorch</span>, <span class="text-slate-400">Databricks</span> & <span class="text-slate-400">GraphFrames</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll Spy Logic
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll('div[id^="card-"]');
+            const navLinks = document.querySelectorAll('.nav-item');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (scrollY >= (sectionTop - 300)) {
+                        current = '#' + section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-active');
+                    if (link.getAttribute('href') === current) {
+                        link.classList.add('nav-active');
+                    }
+                });
+            });
+
+            // Chart Logic (Risk Gauge)
+            const ctx = document.getElementById('riskGauge').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [99.2, 0.8],
+                        backgroundColor: ['#f43f5e', '#1e293b'],
+                        borderWidth: 0,
+                        circumference: 360,
+                        cutout: '85%'
+                    }]
+                },
+                options: {
+                    rotation: -90,
+                    circumference: 180,
+                    plugins: { tooltip: { enabled: false } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

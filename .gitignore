@@ -33,7 +33,7 @@ env/
 # ======================
 # Archivos de salida/reportes generados
 # ======================
-*.html
+# Permitir HTML para la presentación
 output.txt
 test_results.txt
 
