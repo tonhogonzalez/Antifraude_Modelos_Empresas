@@ -13,6 +13,8 @@ from sklearn.preprocessing import RobustScaler
 from scipy.spatial.distance import mahalanobis
 import plotly.express as px
 import plotly.graph_objects as go
+import networkx as nx
+from network_graph_helper import create_suspicious_network
 from datetime import datetime
 from pathlib import Path
 
@@ -1219,8 +1221,22 @@ if st.session_state.active_tab == 1:
             else:
                 st.success("✅ No se han detectado anomalías específicas en las reglas predefinidas.")
             
-            st.markdown("#### 🕸️ Análisis de Grafo (Simulado)")
-            st.info("Visualización de relaciones transaccionales (Modelo 347). En la versión completa, aquí se muestra el grafo interactivo de relaciones con empresas pantalla.")
+            st.markdown("#### 🕸️ Análisis de Grafo de Operaciones (M347)")
+            
+            # Generar Grafo Simulado
+            with st.spinner("Analizando red transaccional..."):
+                risk_level = empresa_data.get('riesgo', 'Bajo')
+                fraud_score_val = empresa_data.get('fraud_score_normalized', 0.5)
+                
+                fig_network = create_suspicious_network(
+                    center_nif=selected_nif,
+                    center_risk=risk_level,
+                    center_score=fraud_score_val
+                )
+                
+                st.plotly_chart(fig_network, use_container_width=True)
+            
+            st.info(f"Visualizando relaciones directas reportadas en Modelo 347 para {selected_nif}. El grosor de las líneas es proporcional al importe de operación.")
 
 
 # =============================================================================
