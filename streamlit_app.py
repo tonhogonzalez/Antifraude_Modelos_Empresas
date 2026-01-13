@@ -110,6 +110,24 @@ st.markdown("""
     .capability-desc {
         font-size: 0.75rem;
         color: #9e9e9e;
+        margin-bottom: 0.5rem;
+    }
+
+    .capability-hover-details {
+        font-size: 0.7rem;
+        color: #c0c0c0;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: all 0.4s ease;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 0;
+    }
+
+    .capability-card:hover .capability-hover-details {
+        max-height: 100px;
+        opacity: 1;
+        padding-top: 0.5rem;
     }
     
     /* Métricas KPI */
@@ -803,24 +821,33 @@ if st.session_state.active_tab == 0:
     st.markdown("### 🧠 Capacidades de Detección")
     
     capabilities = [
-        ("🔬", "Isolation Forest", "ML no supervisado"),
-        ("📊", "Análisis Sectorial", "Mahalanobis distance"),
-        ("🏭", "Empresas Pantalla", "Ratio ventas/personal"),
-        ("📦", "Incoherencia Logística", "Cruce M349/transporte"),
-        ("💳", "Deuda Oculta", "Tasa interés implícita"),
-        ("🔢", "Números Redondos", "Detección Benford"),
-        ("📋", "Cobertura M347", "Cruce ventas/operaciones"),
-        ("📈", "Manipulación Contable", "Accruals anómalos")
+        ("🔬", "Isolation Forest", "ML no supervisado", 
+         "Algoritmo de aprendizaje no supervisado que aísla anomalías basándose en que son pocas y diferentes."),
+        ("📊", "Análisis Sectorial", "Mahalanobis distance", 
+         "Calcula la distancia de Mahalanobis para identificar empresas con comportamiento financiero atípico respecto a su sector."),
+        ("🏭", "Empresas Pantalla", "Ratio ventas/personal", 
+         "Detecta sociedades con facturación significativa pero sin estructura operativa (personal o activos) acorde."),
+        ("📦", "Incoherencia Logística", "Cruce M349/transporte", 
+         "Cruza operaciones intracomunitarias (M349) con gastos de transporte para detectar flujos físicos inexistentes."),
+        ("💳", "Deuda Oculta", "Tasa interés implícita", 
+         "Identifica financiación no bancaria a través de tasas de interés implícitas anormalmente altas en otras partidas."),
+        ("🔢", "Números Redondos", "Detección Benford", 
+         "Aplica la Ley de Benford y detección de patrones de redondeo excesivo en importes de facturas."),
+        ("📋", "Cobertura M347", "Cruce ventas/operaciones", 
+         "Verifica que el volumen de ventas declarado esté soportado por operaciones con terceros informadas en el M347."),
+        ("📈", "Manipulación Contable", "Accruals anómalos", 
+         "Analiza los 'accruals' para detectar divergencias sospechosas entre el beneficio contable y el flujo de caja real.")
     ]
     
     cols = st.columns(8)
-    for i, (icon, title, desc) in enumerate(capabilities):
+    for i, (icon, title, desc, long_desc) in enumerate(capabilities):
         with cols[i]:
             st.markdown(f"""
                 <div class="capability-card">
                     <div class="capability-icon">{icon}</div>
                     <div class="capability-title">{title}</div>
                     <div class="capability-desc">{desc}</div>
+                    <div class="capability-hover-details">{long_desc}</div>
                 </div>
             """, unsafe_allow_html=True)
     
