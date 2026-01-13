@@ -128,8 +128,10 @@ def create_suspicious_network(center_nif, center_risk, center_score):
 
     fig = go.Figure(data=[edge_trace, node_trace],
                  layout=go.Layout(
-                    title=f'Grafo de Relaciones M347 - {center_nif}',
-                    titlefont_size=16,
+                    title=dict(
+                        text=f'Grafo de Relaciones M347 - {center_nif}',
+                        font=dict(size=16)
+                    ),
                     showlegend=False,
                     hovermode='closest',
                     margin=dict(b=20,l=5,r=5,t=40),
