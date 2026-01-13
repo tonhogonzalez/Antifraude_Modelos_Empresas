@@ -657,6 +657,17 @@ with st.sidebar:
         st.image(logo_path, use_container_width=True)
     except:
         pass
+    
+    # DEBUG: Comentar en producción
+    with st.expander("🔍 Debug Info (Temporal)"):
+        import os
+        st.write(f"CWD: {os.getcwd()}")
+        st.write(f"Logo Path: {logo_path}")
+        st.write(f"Files in CWD: {os.listdir('.')}")
+        if os.path.exists(logo_path):
+            st.success("Logo file found!")
+        else:
+            st.error("Logo file NOT found!")
 st.sidebar.header("⚙️ Configuración del Análisis")
 
 # Enlace a documentación
