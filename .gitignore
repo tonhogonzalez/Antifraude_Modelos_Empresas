@@ -1,0 +1,57 @@
+# ======================
+# Archivos de datos grandes (exceden límite de GitHub 100MB)
+# ======================
+*.csv
+data_*.csv
+*_500k.csv
+
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# ======================
+# IDE y Editor
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ======================
+# Archivos de salida/reportes generados
+# ======================
+*.html
+output.txt
+test_results.txt
+
+# ======================
+# Sistema operativo
+# ======================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ======================
+# Jupyter Notebooks
+# ======================
+.ipynb_checkpoints/
+*.ipynb
+
+# ======================
+# Logs
+# ======================
+*.log
+logs/
+data_m347_500k.csv
+*.csv
