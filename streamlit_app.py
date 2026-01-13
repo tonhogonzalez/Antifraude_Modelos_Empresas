@@ -620,10 +620,19 @@ def get_flag_details():
 # Header
 col_logo, col_title, col_status = st.columns([1, 5, 2])
 
+# Resolver path para el logo
+from pathlib import Path
+try:
+    base_path = Path(__file__).parent
+except NameError:
+    base_path = Path('.')
+logo_path = str(base_path / "logo.png")
+
 with col_logo:
     try:
-        st.image("logo.png", width=100)
-    except:
+        st.image(logo_path, width=100)
+    except Exception as e:
+        st.error(f"Logo no encontrado: {e}")
         st.write("🔍")
 
 with col_title:
@@ -645,7 +654,7 @@ st.markdown("---")
 # Sidebar
 with st.sidebar:
     try:
-        st.image("logo.png", use_container_width=True)
+        st.image(logo_path, use_container_width=True)
     except:
         pass
 st.sidebar.header("⚙️ Configuración del Análisis")
