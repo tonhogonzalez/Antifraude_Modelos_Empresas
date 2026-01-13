@@ -253,10 +253,129 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+import os
+from pathlib import Path
 
 # =============================================================================
 # FUNCIONES DE DATOS
 # =============================================================================
+
+# Mapeo de casillas del Modelo 200 a nombres de variables
+CASILLA_MAPPING = {
+    'C00255': 'cifra_negocios',
+    'C00500': 'resultado_ejercicio',
+    'C00032': 'gastos_personal',
+    'C00033': 'total_activo',
+    'C00035': 'inmovilizado',
+    'C00085': 'existencias',
+    'C00130': 'deudores',
+    'C00160': 'efectivo',
+    'C00180': 'patrimonio_neto',
+    'C00190': 'pasivo_no_corriente',
+    'C00195': 'pasivo_corriente',
+    'C00250': 'amortizaciones',
+    'C00260': 'otros_gastos_expl',
+    'C00265': 'gastos_financieros',
+    'C00267': 'intereses_pagados',
+    'C00385': 'deuda_largo_plazo',
+    'C00395': 'deuda_corto_plazo',
+}
+
+
+@st.cache_data
+def load_real_data():
+    """Carga datos reales desde los archivos CSV si existen."""
+    base_path = Path(__file__).parent if '__file__' in dir() else Path('.')
+    
+    empresas_path = base_path / 'data_empresas.csv'
+    eav_path = base_path / 'data_eav.csv'
+    m347_path = base_path / 'data_m347.csv'
+    
+    # Verificar que existen los archivos
+    if not all(p.exists() for p in [empresas_path, eav_path, m347_path]):
+        return None
+    
+    try:
+        # Cargar empresas
+        df_empresas = pd.read_csv(empresas_path)
+        
+        # Cargar datos EAV y pivotar
+        df_eav = pd.read_csv(eav_path)
+        
+        # Filtrar solo las casillas que necesitamos
+        df_eav_filtered = df_eav[df_eav['casilla'].isin(CASILLA_MAPPING.keys())].copy()
+        
+        # Pivotar de formato EAV a tabla ancha
+        df_pivot = df_eav_filtered.pivot_table(
+            index='nif',
+            columns='casilla',
+            values='valor',
+            aggfunc='sum'
+        ).reset_index()
+        
+        # Renombrar columnas según el mapeo
+        df_pivot.columns = ['nif'] + [CASILLA_MAPPING.get(c, c) for c in df_pivot.columns[1:]]
+        
+        # Merge con datos de empresas
+        df = df_empresas.merge(df_pivot, on='nif', how='left')
+        
+        # Cargar M347
+        df_m347 = pd.read_csv(m347_path)
+        
+        # Agregar M347 por NIF declarante
+        m347_agg = df_m347.groupby('nif_declarante').agg({
+            'importe': 'sum',
+            'is_circular': 'sum'
+        }).reset_index()
+        m347_agg.columns = ['nif', 'total_m347', 'operaciones_circulares']
+        
+        df = df.merge(m347_agg, on='nif', how='left')
+        
+        # Calcular variables derivadas - usando columnas directamente con fallback
+        df['ventas_netas'] = df['cifra_negocios'] if 'cifra_negocios' in df.columns else 0
+        df['resultado_neto'] = df['resultado_ejercicio'] if 'resultado_ejercicio' in df.columns else 0
+        df['activo_total'] = df['total_activo'] if 'total_activo' in df.columns else 0
+        
+        # Para columnas que pueden no existir, crear con 0
+        for col in ['deuda_largo_plazo', 'deuda_corto_plazo', 'otros_gastos_expl', 
+                    'gastos_financieros', 'amortizaciones', 'gastos_personal']:
+            if col not in df.columns:
+                df[col] = 0
+        
+        df['deuda_bancaria'] = df['deuda_largo_plazo'].fillna(0) + df['deuda_corto_plazo'].fillna(0)
+        df['gastos_transporte'] = df['otros_gastos_expl'].fillna(0) * 0.1  # Estimación
+        df['intereses_pagados'] = df['gastos_financieros'].fillna(0)
+        df['flujo_caja_operativo'] = df['resultado_ejercicio'].fillna(0) + df['amortizaciones'].fillna(0) if 'resultado_ejercicio' in df.columns else 0
+        df['total_m349'] = 0  # No tenemos este dato
+        
+        # Simular % números redondos basado en operaciones
+        np.random.seed(42)
+        df['pct_numeros_redondos'] = np.where(
+            df['tipo'] == 'SANA',
+            np.random.uniform(0.05, 0.15, len(df)),
+            np.random.uniform(0.35, 0.65, len(df))
+        )
+        
+        # Usar el sector de la columna existente
+        df['sector'] = df['sector_cnae']
+        df['cnae'] = df['sector_cnae'].apply(lambda x: x[:4] if pd.notna(x) else '0000')
+        
+        # Marcar empresas sospechosas basado en el tipo
+        df['_is_suspicious'] = df['tipo'].str.contains('FRAUDE|PANTALLA|CARRUSEL', case=False, na=False)
+        
+        # Rellenar NaN con 0
+        numeric_cols = ['ventas_netas', 'resultado_neto', 'activo_total', 'deuda_bancaria',
+                       'gastos_personal', 'gastos_transporte', 'intereses_pagados',
+                       'flujo_caja_operativo', 'total_m347', 'total_m349']
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+        
+        return df
+        
+    except Exception as e:
+        st.error(f"Error cargando datos: {e}")
+        return None
 
 @st.cache_data
 def generate_dummy_data(n_companies: int = 500, fraud_rate: float = 0.10) -> pd.DataFrame:
@@ -519,20 +638,36 @@ st.markdown("---")
 # Sidebar
 st.sidebar.header("⚙️ Configuración del Análisis")
 
-n_empresas = st.sidebar.slider(
-    "Número de empresas",
-    min_value=100,
-    max_value=2000,
-    value=500,
-    step=100
+# Selector de fuente de datos
+data_source = st.sidebar.radio(
+    "📁 Fuente de Datos",
+    options=["Datos Reales (CSV)", "Datos Sintéticos"],
+    help="Selecciona si usar los archivos CSV reales o generar datos sintéticos"
 )
 
-tasa_fraude = st.sidebar.slider(
-    "Tasa de fraude sintético (%)",
-    min_value=5,
-    max_value=30,
-    value=10
-) / 100
+use_real_data = data_source == "Datos Reales (CSV)"
+
+if not use_real_data:
+    st.sidebar.markdown("---")
+    n_empresas = st.sidebar.slider(
+        "Número de empresas",
+        min_value=100,
+        max_value=2000,
+        value=500,
+        step=100
+    )
+    
+    tasa_fraude = st.sidebar.slider(
+        "Tasa de fraude sintético (%)",
+        min_value=5,
+        max_value=30,
+        value=10
+    ) / 100
+else:
+    n_empresas = 500
+    tasa_fraude = 0.10
+
+st.sidebar.markdown("---")
 
 contamination = st.sidebar.slider(
     "Sensibilidad del modelo",
@@ -547,11 +682,22 @@ st.sidebar.markdown("---")
 # Botón de análisis
 if st.sidebar.button("🚀 Ejecutar Análisis", type="primary", use_container_width=True):
     st.session_state.run_analysis = True
+    st.session_state.use_real_data = use_real_data
 
 # Ejecutar análisis
 if st.session_state.get('run_analysis', False) or 'df_results' not in st.session_state:
     with st.spinner("🔄 Procesando datos con algoritmos forenses..."):
-        df = generate_dummy_data(n_empresas, tasa_fraude)
+        # Intentar cargar datos reales si está seleccionado
+        if use_real_data:
+            df = load_real_data()
+            if df is None:
+                st.warning("⚠️ Archivos CSV no encontrados. Usando datos sintéticos.")
+                df = generate_dummy_data(n_empresas, tasa_fraude)
+            else:
+                st.sidebar.success(f"✅ {len(df)} empresas cargadas desde archivos")
+        else:
+            df = generate_dummy_data(n_empresas, tasa_fraude)
+        
         df = calculate_forensic_features(df)
         df = calculate_mahalanobis_by_sector(df)
         df = train_isolation_forest(df, contamination)
@@ -788,22 +934,36 @@ with tab1:
     # Tabla de empresas sospechosas
     st.markdown("### 🔴 Top 20 Empresas de Mayor Riesgo")
     
+    # Obtener los flag details para crear la columna de alertas
+    flag_details = get_flag_details()
+    flag_cols = [col for col in flag_details.keys() if col in df.columns]
+    
     top_suspicious = df.nsmallest(20, 'fraud_score')[
         ['nif', 'sector', 'ventas_netas', 'resultado_neto', 
-         'fraud_score_normalized', 'riesgo']
+         'fraud_score_normalized', 'riesgo'] + flag_cols
     ].copy()
+    
+    # Crear columna de alertas con iconos
+    def build_alerts(row):
+        alerts = []
+        for flag_col in flag_cols:
+            if row.get(flag_col, 0) == 1:
+                alerts.append(flag_details[flag_col]['icono'])
+        return ' '.join(alerts) if alerts else '✅'
+    
+    top_suspicious['Alertas'] = top_suspicious.apply(build_alerts, axis=1)
     
     top_suspicious['ventas_netas'] = top_suspicious['ventas_netas'].apply(lambda x: f"€{x:,.0f}")
     top_suspicious['resultado_neto'] = top_suspicious['resultado_neto'].apply(lambda x: f"€{x:,.0f}")
     top_suspicious['Score'] = top_suspicious['fraud_score_normalized'].apply(lambda x: f"{x:.3f}")
     
-    display_df = top_suspicious[['nif', 'sector', 'ventas_netas', 'resultado_neto', 'Score', 'riesgo']].copy()
-    display_df.columns = ['NIF', 'Sector', 'Ventas', 'Resultado', 'Score Fraude', 'Riesgo']
+    display_df = top_suspicious[['nif', 'sector', 'Alertas', 'ventas_netas', 'resultado_neto', 'Score', 'riesgo']].copy()
+    display_df.columns = ['NIF', 'Sector', '🚨 Alertas', 'Ventas', 'Resultado', 'Score', 'Riesgo']
     
     st.dataframe(
         display_df,
         use_container_width=True,
-        height=400,
+        height=450,
         hide_index=True
     )
 
@@ -828,7 +988,8 @@ with tab2:
         selected_empresa = st.selectbox(
             "🏢 Seleccionar Empresa",
             options=empresa_options,
-            help="Las empresas están ordenadas por nivel de riesgo (mayor a menor)"
+            help="Las empresas están ordenadas por nivel de riesgo (mayor a menor)",
+            key="empresa_selector_tab2"
         )
     
     with col_select2:

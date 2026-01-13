@@ -1,9 +1,11 @@
 # ======================
 # Archivos de datos grandes (exceden límite de GitHub 100MB)
 # ======================
-*.csv
-data_*.csv
+# Solo excluir los archivos _500k que son muy grandes
 *_500k.csv
+data_eav_500k.csv
+data_empresas_500k.csv
+data_m347_500k.csv
 
 # ======================
 # Python
@@ -53,5 +55,3 @@ desktop.ini
 # ======================
 *.log
 logs/
-data_m347_500k.csv
-*.csv
