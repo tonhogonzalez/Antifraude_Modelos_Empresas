@@ -646,7 +646,7 @@ with col_title:
 with col_status:
     st.markdown(f"""
         <div style="text-align: right; padding-top: 1rem;">
-            <span class="status-badge status-demo">⚡ MODO DEMO</span>
+            <span class="status-badge status-demo">⚡ MODO DEMO v2.1</span>
             <p style="color: #6c757d; font-size: 0.8rem; margin-top: 0.5rem;">
                 {datetime.now().strftime("%d/%m/%Y %H:%M")}
             </p>
