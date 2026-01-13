@@ -1223,20 +1223,21 @@ if st.session_state.active_tab == 1:
             
             st.markdown("#### 🕸️ Análisis de Grafo de Operaciones (M347)")
             
-            # Generar Grafo Simulado
-            with st.spinner("Analizando red transaccional..."):
+            # Generar Grafo Interactivo (PyVis)
+            with st.spinner("Generando grafo interactivo..."):
                 risk_level = empresa_data.get('riesgo', 'Bajo')
                 fraud_score_val = empresa_data.get('fraud_score_normalized', 0.5)
                 
-                fig_network = create_suspicious_network(
+                html_graph = create_suspicious_network(
                     center_nif=selected_nif,
                     center_risk=risk_level,
                     center_score=fraud_score_val
                 )
                 
-                st.plotly_chart(fig_network, use_container_width=True)
+                # Renderizar HTML del grafo
+                components.html(html_graph, height=600, scrolling=False)
             
-            st.info(f"Visualizando relaciones directas reportadas en Modelo 347 para {selected_nif}. El grosor de las líneas es proporcional al importe de operación.")
+            st.success("🖱️ **Interacción:** Arrastra los nodos para reorganizarlos | Scroll para zoom | Click + arrastrar fondo para mover vista")
 
 
 # =============================================================================

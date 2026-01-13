@@ -1,138 +1,222 @@
 
 import networkx as nx
-import plotly.graph_objects as go
+from pyvis.network import Network
 import numpy as np
-import math
+import tempfile
+import os
 
-def create_suspicious_network(center_nif, center_risk, center_score):
+def create_interactive_network_html(center_nif, center_risk, center_score):
     """
-    Genera un grafo de red transaccional profesional y usable.
-    Optimizado para claridad visual y facilidad de uso.
+    Genera un grafo interactivo con nodos arrastrables usando PyVis.
+    Retorna el HTML como string para incrustar en Streamlit.
     """
     
     # ═══════════════════════════════════════════════════════════════════
-    # CONFIGURACIÓN
+    # CONFIGURACIÓN DE COLORES
     # ═══════════════════════════════════════════════════════════════════
     
     COLORS = {
-        'bg': '#0e1117',
-        'target': '#e91e63',      # Rosa/Magenta brillante
+        'target': '#e91e63',      # Rosa brillante
         'shell': '#f44336',       # Rojo
         'suspicious': '#ff9800',  # Naranja
         'normal': '#4caf50',      # Verde
-        'neutral': '#607d8b',     # Gris azulado
+        'neutral': '#78909c',     # Gris
     }
     
     np.random.seed(hash(center_nif) % 2**32)
     
     # ═══════════════════════════════════════════════════════════════════
-    # CONSTRUIR DATOS DEL GRAFO
+    # CREAR RED PYVIS
     # ═══════════════════════════════════════════════════════════════════
     
-    nodes = []
-    edges = []
+    net = Network(
+        height="550px",
+        width="100%",
+        bgcolor="#0e1117",
+        font_color="white",
+        directed=True,
+        notebook=False,
+        cdn_resources='remote'
+    )
     
-    # Nodo central
-    nodes.append({
-        'id': center_nif,
-        'label': f"🎯 {center_nif}",
-        'size': 70,
-        'color': COLORS['target'],
-        'type': 'target',
-        'hover': f"<b>EMPRESA OBJETIVO</b><br>NIF: {center_nif}<br>Riesgo: {center_risk}<br>Score: {center_score:.3f}"
-    })
+    # Configuración de física para mejor interacción
+    net.set_options("""
+    {
+        "nodes": {
+            "borderWidth": 3,
+            "borderWidthSelected": 5,
+            "font": {
+                "size": 14,
+                "face": "Arial",
+                "color": "white"
+            },
+            "shadow": {
+                "enabled": true,
+                "color": "rgba(0,0,0,0.5)",
+                "size": 10
+            }
+        },
+        "edges": {
+            "arrows": {
+                "to": {
+                    "enabled": true,
+                    "scaleFactor": 1.2
+                }
+            },
+            "color": {
+                "inherit": false
+            },
+            "smooth": {
+                "enabled": true,
+                "type": "curvedCW",
+                "roundness": 0.2
+            },
+            "font": {
+                "size": 12,
+                "color": "#ffeb3b",
+                "strokeWidth": 3,
+                "strokeColor": "#000000"
+            }
+        },
+        "physics": {
+            "enabled": true,
+            "barnesHut": {
+                "gravitationalConstant": -3000,
+                "centralGravity": 0.3,
+                "springLength": 150,
+                "springConstant": 0.04,
+                "damping": 0.09
+            },
+            "stabilization": {
+                "enabled": true,
+                "iterations": 100
+            }
+        },
+        "interaction": {
+            "dragNodes": true,
+            "dragView": true,
+            "zoomView": true,
+            "hover": true,
+            "tooltipDelay": 100,
+            "navigationButtons": true,
+            "keyboard": {
+                "enabled": true
+            }
+        }
+    }
+    """)
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # AGREGAR NODO CENTRAL
+    # ═══════════════════════════════════════════════════════════════════
+    
+    net.add_node(
+        center_nif,
+        label=f"🎯 {center_nif}",
+        title=f"<b>EMPRESA OBJETIVO</b><br>NIF: {center_nif}<br>Riesgo: {center_risk}<br>Score: {center_score:.3f}",
+        color=COLORS['target'],
+        size=50,
+        shape='diamond',
+        font={'size': 16, 'color': 'white'}
+    )
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # GENERAR RED SEGÚN RIESGO
+    # ═══════════════════════════════════════════════════════════════════
     
     if center_risk == 'Alto':
         # ─────────────────────────────────────────────────────────────
-        # PATRÓN CARRUSEL: Empresas pantalla formando ciclo
+        # PATRÓN CARRUSEL
         # ─────────────────────────────────────────────────────────────
         shell_names = ["SHELL A", "SHELL B", "SHELL C"]
         shell_nifs = [f"X{np.random.randint(10000000, 99999999)}" for _ in range(3)]
         amount = np.random.choice([500, 750, 1000, 1250]) * 1000
         
-        for i, (name, nif) in enumerate(zip(shell_names, shell_nifs)):
-            nodes.append({
-                'id': nif,
-                'label': f"🏭 {name}",
-                'size': 50,
-                'color': COLORS['shell'],
-                'type': 'shell',
-                'hover': f"<b>⛔ EMPRESA PANTALLA</b><br>NIF: {nif}<br>Tipo: {name}<br>⚠️ Sin actividad real"
-            })
+        for name, nif in zip(shell_names, shell_nifs):
+            net.add_node(
+                nif,
+                label=f"🏭 {name}",
+                title=f"<b>⛔ EMPRESA PANTALLA</b><br>NIF: {nif}<br>Tipo: {name}<br>⚠️ Sin actividad real",
+                color=COLORS['shell'],
+                size=40,
+                shape='box'
+            )
         
-        # Crear ciclo: Target → A → B → C → Target
+        # Crear ciclo
         cycle = [center_nif] + shell_nifs + [center_nif]
         for i in range(len(cycle) - 1):
-            edges.append({
-                'source': cycle[i],
-                'target': cycle[i + 1],
-                'amount': amount,
-                'color': COLORS['shell'],
-                'type': 'fraud'
-            })
+            is_closing = (i == len(cycle) - 1)
+            net.add_edge(
+                cycle[i], 
+                cycle[i + 1],
+                title=f"€{amount:,.0f}",
+                label=f"€{amount/1000:.0f}k",
+                color=COLORS['shell'] if not is_closing else '#ff1744',
+                width=4 if not is_closing else 6
+            )
         
         # Clientes normales
         for i in range(5):
             cli_nif = f"B{np.random.randint(10000000, 99999999)}"
             cli_amount = np.random.randint(5, 20) * 1000
-            nodes.append({
-                'id': cli_nif,
-                'label': f"Cliente {i+1}",
-                'size': 25,
-                'color': COLORS['neutral'],
-                'type': 'normal',
-                'hover': f"<b>Cliente</b><br>NIF: {cli_nif}<br>Importe: €{cli_amount:,.0f}"
-            })
-            edges.append({
-                'source': center_nif,
-                'target': cli_nif,
-                'amount': cli_amount,
-                'color': COLORS['neutral'],
-                'type': 'normal'
-            })
+            net.add_node(
+                cli_nif,
+                label=f"Cliente {i+1}",
+                title=f"<b>Cliente Normal</b><br>NIF: {cli_nif}<br>Importe: €{cli_amount:,.0f}",
+                color=COLORS['neutral'],
+                size=25,
+                shape='dot'
+            )
+            net.add_edge(
+                center_nif,
+                cli_nif,
+                title=f"€{cli_amount:,.0f}",
+                color=COLORS['neutral'],
+                width=1
+            )
             
     elif center_risk == 'Medio':
         # ─────────────────────────────────────────────────────────────
-        # PATRÓN HUB: Proveedores sospechosos
+        # PATRÓN HUB
         # ─────────────────────────────────────────────────────────────
         for i in range(3):
             prov_nif = f"Y{np.random.randint(10000000, 99999999)}"
             prov_amount = np.random.randint(50, 150) * 1000
-            nodes.append({
-                'id': prov_nif,
-                'label': f"⚠️ Prov. {i+1}",
-                'size': 40,
-                'color': COLORS['suspicious'],
-                'type': 'suspicious',
-                'hover': f"<b>⚠️ PROVEEDOR SOSPECHOSO</b><br>NIF: {prov_nif}<br>Importe: €{prov_amount:,.0f}"
-            })
-            edges.append({
-                'source': prov_nif,
-                'target': center_nif,
-                'amount': prov_amount,
-                'color': COLORS['suspicious'],
-                'type': 'warning'
-            })
+            net.add_node(
+                prov_nif,
+                label=f"⚠️ Prov. {i+1}",
+                title=f"<b>⚠️ PROVEEDOR SOSPECHOSO</b><br>NIF: {prov_nif}<br>Importe: €{prov_amount:,.0f}",
+                color=COLORS['suspicious'],
+                size=35,
+                shape='triangle'
+            )
+            net.add_edge(
+                prov_nif,
+                center_nif,
+                title=f"€{prov_amount:,.0f}",
+                label=f"€{prov_amount/1000:.0f}k",
+                color=COLORS['suspicious'],
+                width=3
+            )
         
-        # Clientes normales
         for i in range(6):
             cli_nif = f"B{np.random.randint(10000000, 99999999)}"
             cli_amount = np.random.randint(8, 40) * 1000
-            nodes.append({
-                'id': cli_nif,
-                'label': f"Cliente {i+1}",
-                'size': 28,
-                'color': COLORS['normal'],
-                'type': 'normal',
-                'hover': f"<b>Cliente</b><br>NIF: {cli_nif}<br>Importe: €{cli_amount:,.0f}"
-            })
-            edges.append({
-                'source': center_nif,
-                'target': cli_nif,
-                'amount': cli_amount,
-                'color': COLORS['normal'],
-                'type': 'normal'
-            })
+            net.add_node(
+                cli_nif,
+                label=f"Cliente {i+1}",
+                title=f"<b>Cliente</b><br>NIF: {cli_nif}<br>Importe: €{cli_amount:,.0f}",
+                color=COLORS['normal'],
+                size=28,
+                shape='dot'
+            )
+            net.add_edge(
+                center_nif,
+                cli_nif,
+                title=f"€{cli_amount:,.0f}",
+                color=COLORS['normal'],
+                width=1
+            )
     else:
         # ─────────────────────────────────────────────────────────────
         # PATRÓN NORMAL
@@ -140,256 +224,96 @@ def create_suspicious_network(center_nif, center_risk, center_score):
         for i in range(4):
             prov_nif = f"A{np.random.randint(10000000, 99999999)}"
             prov_amount = np.random.randint(10, 60) * 1000
-            nodes.append({
-                'id': prov_nif,
-                'label': f"Proveedor {i+1}",
-                'size': 32,
-                'color': COLORS['normal'],
-                'type': 'normal',
-                'hover': f"<b>Proveedor</b><br>NIF: {prov_nif}<br>Importe: €{prov_amount:,.0f}"
-            })
-            edges.append({
-                'source': prov_nif,
-                'target': center_nif,
-                'amount': prov_amount,
-                'color': COLORS['normal'],
-                'type': 'normal'
-            })
+            net.add_node(
+                prov_nif,
+                label=f"Proveedor {i+1}",
+                title=f"<b>Proveedor</b><br>NIF: {prov_nif}<br>Importe: €{prov_amount:,.0f}",
+                color=COLORS['normal'],
+                size=30,
+                shape='triangle'
+            )
+            net.add_edge(
+                prov_nif,
+                center_nif,
+                title=f"€{prov_amount:,.0f}",
+                color=COLORS['normal'],
+                width=2
+            )
         
         for i in range(6):
             cli_nif = f"B{np.random.randint(10000000, 99999999)}"
             cli_amount = np.random.randint(3, 20) * 1000
-            nodes.append({
-                'id': cli_nif,
-                'label': f"Cliente {i+1}",
-                'size': 28,
-                'color': COLORS['normal'],
-                'type': 'normal',
-                'hover': f"<b>Cliente</b><br>NIF: {cli_nif}<br>Importe: €{cli_amount:,.0f}"
-            })
-            edges.append({
-                'source': center_nif,
-                'target': cli_nif,
-                'amount': cli_amount,
-                'color': COLORS['normal'],
-                'type': 'normal'
-            })
-
-    # ═══════════════════════════════════════════════════════════════════
-    # CALCULAR POSICIONES (Layout circular mejorado)
-    # ═══════════════════════════════════════════════════════════════════
-    
-    positions = {}
-    
-    # Centro
-    positions[center_nif] = (0, 0)
-    
-    # Separar nodos por tipo
-    shells = [n for n in nodes if n['type'] == 'shell']
-    suspicious = [n for n in nodes if n['type'] == 'suspicious']
-    normals = [n for n in nodes if n['type'] == 'normal']
-    
-    # Posicionar shells en círculo interior
-    if shells:
-        radius = 1.5
-        for i, node in enumerate(shells):
-            angle = 2 * math.pi * i / len(shells) - math.pi/2
-            positions[node['id']] = (radius * math.cos(angle), radius * math.sin(angle))
-    
-    # Posicionar sospechosos
-    if suspicious:
-        radius = 2.0
-        for i, node in enumerate(suspicious):
-            angle = 2 * math.pi * i / len(suspicious) + math.pi/4
-            positions[node['id']] = (radius * math.cos(angle), radius * math.sin(angle))
-    
-    # Posicionar normales en círculo exterior
-    if normals:
-        radius = 3.0
-        for i, node in enumerate(normals):
-            angle = 2 * math.pi * i / len(normals)
-            positions[node['id']] = (radius * math.cos(angle), radius * math.sin(angle))
-
-    # ═══════════════════════════════════════════════════════════════════
-    # CREAR TRAZAS PLOTLY
-    # ═══════════════════════════════════════════════════════════════════
-    
-    traces = []
-    annotations = []
-    
-    # ─────────────────────────────────────────────────────────────────
-    # ARISTAS (con curvas Bezier para mejor visualización)
-    # ─────────────────────────────────────────────────────────────────
-    
-    for edge in edges:
-        x0, y0 = positions[edge['source']]
-        x1, y1 = positions[edge['target']]
-        
-        # Grosor basado en importe
-        width = max(2, min(8, edge['amount'] / 100000))
-        
-        # Crear línea
-        edge_trace = go.Scatter(
-            x=[x0, x1],
-            y=[y0, y1],
-            mode='lines',
-            line=dict(
-                width=width,
-                color=edge['color'],
-            ),
-            hoverinfo='text',
-            hovertext=f"€{edge['amount']:,.0f}",
-            opacity=0.7
-        )
-        traces.append(edge_trace)
-        
-        # Añadir flecha (triángulo al final)
-        dx = x1 - x0
-        dy = y1 - y0
-        length = math.sqrt(dx*dx + dy*dy)
-        
-        if length > 0:
-            # Punto cerca del destino
-            arrow_x = x0 + dx * 0.7
-            arrow_y = y0 + dy * 0.7
-            angle = math.degrees(math.atan2(dy, dx))
-            
-            arrow_trace = go.Scatter(
-                x=[arrow_x],
-                y=[arrow_y],
-                mode='markers',
-                marker=dict(
-                    symbol='triangle-right',
-                    size=width * 2 + 4,
-                    color=edge['color'],
-                    angle=angle
-                ),
-                hoverinfo='skip'
+            net.add_node(
+                cli_nif,
+                label=f"Cliente {i+1}",
+                title=f"<b>Cliente</b><br>NIF: {cli_nif}<br>Importe: €{cli_amount:,.0f}",
+                color=COLORS['normal'],
+                size=25,
+                shape='dot'
             )
-            traces.append(arrow_trace)
-        
-        # Etiqueta de importe para transacciones importantes
-        if edge['type'] in ['fraud', 'warning']:
-            mid_x = (x0 + x1) / 2
-            mid_y = (y0 + y1) / 2
-            annotations.append(dict(
-                x=mid_x,
-                y=mid_y + 0.25,
-                text=f"<b>€{edge['amount']/1000:.0f}k</b>",
-                showarrow=False,
-                font=dict(size=12, color='#ffeb3b'),
-                bgcolor='rgba(0,0,0,0.7)',
-                bordercolor=edge['color'],
-                borderwidth=2,
-                borderpad=4
-            ))
-
-    # ─────────────────────────────────────────────────────────────────
-    # NODOS
-    # ─────────────────────────────────────────────────────────────────
-    
-    for node in nodes:
-        x, y = positions[node['id']]
-        
-        node_trace = go.Scatter(
-            x=[x],
-            y=[y],
-            mode='markers+text',
-            marker=dict(
-                size=node['size'],
-                color=node['color'],
-                line=dict(width=3, color='white'),
-                opacity=1
-            ),
-            text=node['label'],
-            textposition='bottom center',
-            textfont=dict(
-                size=12 if node['type'] == 'target' else 10,
-                color='white',
-                family='Arial'
-            ),
-            hoverinfo='text',
-            hovertext=node['hover'],
-            hoverlabel=dict(
-                bgcolor='rgba(20,20,30,0.95)',
-                bordercolor='white',
-                font=dict(size=13, color='white')
+            net.add_edge(
+                center_nif,
+                cli_nif,
+                title=f"€{cli_amount:,.0f}",
+                color=COLORS['normal'],
+                width=1
             )
-        )
-        traces.append(node_trace)
 
     # ═══════════════════════════════════════════════════════════════════
-    # FIGURA FINAL
+    # GENERAR HTML
     # ═══════════════════════════════════════════════════════════════════
     
-    fig = go.Figure(data=traces)
+    # Crear archivo temporal
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.html', mode='w', encoding='utf-8') as f:
+        net.save_graph(f.name)
+        temp_path = f.name
     
-    # Leyenda como shapes/annotations
-    legend_items = [
-        ("🎯 Empresa Objetivo", COLORS['target']),
-        ("🏭 Empresa Pantalla", COLORS['shell']),
-        ("⚠️ Sospechoso", COLORS['suspicious']),
-        ("✅ Normal", COLORS['normal']),
-    ]
+    # Leer el HTML generado
+    with open(temp_path, 'r', encoding='utf-8') as f:
+        html_content = f.read()
     
-    for i, (text, color) in enumerate(legend_items):
-        # Círculo de color
-        fig.add_shape(
-            type="circle",
-            x0=-4.8, y0=3.5 - i*0.6 - 0.15,
-            x1=-4.5, y1=3.5 - i*0.6 + 0.15,
-            fillcolor=color,
-            line=dict(color='white', width=1)
-        )
-        # Texto
-        annotations.append(dict(
-            x=-4.3,
-            y=3.5 - i*0.6,
-            text=text,
-            showarrow=False,
-            font=dict(size=11, color='white'),
-            xanchor='left'
-        ))
+    # Limpiar archivo temporal
+    try:
+        os.unlink(temp_path)
+    except:
+        pass
     
-    # Título y configuración
-    fig.update_layout(
-        title=dict(
-            text=f"<b>Red de Operaciones M347</b> | {center_nif} | <span style='color:{COLORS['target']}'>Riesgo {center_risk}</span>",
-            font=dict(size=16, color='white'),
-            x=0.5,
-            y=0.98
-        ),
-        showlegend=False,
-        hovermode='closest',
-        plot_bgcolor=COLORS['bg'],
-        paper_bgcolor=COLORS['bg'],
-        margin=dict(l=20, r=20, t=50, b=20),
-        xaxis=dict(
-            showgrid=False,
-            zeroline=False,
-            showticklabels=False,
-            range=[-5.5, 5.5],
-            scaleanchor='y'
-        ),
-        yaxis=dict(
-            showgrid=False,
-            zeroline=False,
-            showticklabels=False,
-            range=[-4.5, 4.5]
-        ),
-        height=600,
-        annotations=annotations,
-        dragmode='pan'
-    )
+    # Añadir estilos adicionales y leyenda
+    legend_html = """
+    <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; z-index: 1000;">
+        <div style="font-weight: bold; color: white; margin-bottom: 10px; font-size: 14px;">LEYENDA</div>
+        <div style="display: flex; align-items: center; margin: 5px 0;">
+            <div style="width: 15px; height: 15px; background: #e91e63; border-radius: 3px; margin-right: 8px;"></div>
+            <span style="color: white; font-size: 12px;">🎯 Empresa Objetivo</span>
+        </div>
+        <div style="display: flex; align-items: center; margin: 5px 0;">
+            <div style="width: 15px; height: 15px; background: #f44336; border-radius: 3px; margin-right: 8px;"></div>
+            <span style="color: white; font-size: 12px;">🏭 Empresa Pantalla</span>
+        </div>
+        <div style="display: flex; align-items: center; margin: 5px 0;">
+            <div style="width: 15px; height: 15px; background: #ff9800; border-radius: 3px; margin-right: 8px;"></div>
+            <span style="color: white; font-size: 12px;">⚠️ Sospechoso</span>
+        </div>
+        <div style="display: flex; align-items: center; margin: 5px 0;">
+            <div style="width: 15px; height: 15px; background: #4caf50; border-radius: 3px; margin-right: 8px;"></div>
+            <span style="color: white; font-size: 12px;">✅ Normal</span>
+        </div>
+        <hr style="border-color: #444; margin: 10px 0;">
+        <div style="color: #aaa; font-size: 11px;">
+            🖱️ Arrastra nodos para moverlos<br>
+            🔍 Scroll para zoom<br>
+            ✋ Click + arrastrar fondo para mover
+        </div>
+    </div>
+    """
     
-    # Configuración de interactividad
-    fig.update_layout(
-        modebar=dict(
-            bgcolor='rgba(30,30,40,0.8)',
-            color='white',
-            activecolor='#00bcd4',
-            orientation='h'
-        )
-    )
+    # Insertar leyenda después del body
+    html_content = html_content.replace('<body>', f'<body>{legend_html}')
     
-    return fig
+    return html_content
+
+
+# Mantener compatibilidad con el nombre anterior
+def create_suspicious_network(center_nif, center_risk, center_score):
+    """Wrapper para compatibilidad."""
+    return create_interactive_network_html(center_nif, center_risk, center_score)
