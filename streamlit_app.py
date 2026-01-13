@@ -727,21 +727,71 @@ if st.session_state.get('run_analysis', False) or 'df_results' not in st.session
 
 df = st.session_state.df_results
 
+import streamlit.components.v1 as components
+
 # =============================================================================
-# TABS PRINCIPALES
+# NAVEGACIÓN CON PERSISTENCIA DE TAB
 # =============================================================================
 
-tab1, tab2, tab3 = st.tabs([
-    "📊 Dashboard Ejecutivo",
-    "🔎 Análisis por Empresa",
-    "📥 Exportar Resultados"
-])
+# Inicializar tab activo en session_state
+if 'active_tab' not in st.session_state:
+    st.session_state.active_tab = 0
+
+# Crear navegación con botones - AHORA 4 BOTONES
+col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
+
+with col_nav1:
+    if st.button("📊 Dashboard Ejecutivo", use_container_width=True, 
+                 type="primary" if st.session_state.active_tab == 0 else "secondary"):
+        st.session_state.active_tab = 0
+        st.rerun()
+
+with col_nav2:
+    if st.button("🔎 Análisis por Empresa", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 1 else "secondary"):
+        st.session_state.active_tab = 1
+        st.rerun()
+
+with col_nav3:
+    if st.button("📥 Exportar Resultados", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 2 else "secondary"):
+        st.session_state.active_tab = 2
+        st.rerun()
+
+with col_nav4:
+    if st.button("📑 Presentación", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 3 else "secondary"):
+        st.session_state.active_tab = 3
+        st.rerun()
+
+st.markdown("---")
+
+# =============================================================================
+# TAB 4: PRESENTACIÓN (Renderizado de HTML)
+# =============================================================================
+if st.session_state.active_tab == 3:
+    try:
+        # Cargar el archivo HTML
+        base_path = Path(__file__).parent if '__file__' in dir() else Path('.')
+        html_path = base_path / 'Presentación_solucion.html'
+        
+        if html_path.exists():
+            with open(html_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            
+            # Renderizar HTML
+            st.markdown("### 📑 Presentación del Proyecto")
+            components.html(html_content, height=800, scrolling=True)
+        else:
+            st.error("Archivo de presentación no encontrado.")
+    except Exception as e:
+        st.error(f"Error al cargar la presentación: {e}")
 
 # =============================================================================
 # TAB 1: DASHBOARD EJECUTIVO
 # =============================================================================
 
-with tab1:
+if st.session_state.active_tab == 0:
     # Sección de Capacidades del Sistema
     st.markdown("### 🧠 Capacidades de Detección")
     
