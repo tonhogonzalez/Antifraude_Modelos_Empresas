@@ -14,6 +14,7 @@ from scipy.spatial.distance import mahalanobis
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
+from pathlib import Path
 
 # =============================================================================
 # CONFIGURACIÓN DE PÁGINA
@@ -617,24 +618,28 @@ def get_flag_details():
 # =============================================================================
 
 # Header
-# Header
 col_logo, col_title, col_status = st.columns([1, 5, 2])
 
 # Resolver path para el logo
-from pathlib import Path
 try:
-    base_path = Path(__file__).parent
-except NameError:
-    base_path = Path('.')
-logo_path = str(base_path / "logo.png")
+    # Intenta ruta relativa directa primero (funciona en la mayoría de deploys)
+    if Path("logo.png").exists():
+        logo_path = "logo.png"
+    else:
+        # Fallback a path absoluto basado en el script
+        logo_path = str(Path(__file__).parent / "logo.png")
+except:
+    logo_path = "logo.png"
 
 with col_logo:
     try:
-        st.image(logo_path, width=100)
-    except Exception as e:
-        st.error(f"Logo no encontrado: {e}")
+        if Path(logo_path).exists():
+            st.image(logo_path, width=100)
+        else:
+            st.error("Logo not found")
+            st.write("🔍")
+    except Exception:
         st.write("🔍")
-
 with col_title:
     st.markdown('<h1 class="main-header" style="margin-top: 0;">FraudHunter Pro</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Sistema Avanzado de Detección de Fraude Empresarial con Machine Learning</p>', unsafe_allow_html=True)
@@ -658,16 +663,8 @@ with st.sidebar:
     except:
         pass
     
-    # DEBUG: Comentar en producción
-    with st.expander("🔍 Debug Info (Temporal)"):
-        import os
-        st.write(f"CWD: {os.getcwd()}")
-        st.write(f"Logo Path: {logo_path}")
-        st.write(f"Files in CWD: {os.listdir('.')}")
-        if os.path.exists(logo_path):
-            st.success("Logo file found!")
-        else:
-            st.error("Logo file NOT found!")
+    # DEBUG: Eliminado para producción
+    pass
 st.sidebar.header("⚙️ Configuración del Análisis")
 
 # Enlace a documentación
