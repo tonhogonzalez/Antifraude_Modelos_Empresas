@@ -1039,38 +1039,54 @@ if st.session_state.active_tab == 0:
     # Tabla de empresas sospechosas
     st.markdown("### 🔴 Top 20 Empresas de Mayor Riesgo")
     
-    # Obtener los flag details para crear la columna de alertas
     flag_details = get_flag_details()
     flag_cols = [col for col in flag_details.keys() if col in df.columns]
     
-    top_suspicious = df.nsmallest(20, 'fraud_score')[
-        ['nif', 'sector', 'ventas_netas', 'resultado_neto', 
-         'fraud_score_normalized', 'riesgo'] + flag_cols
-    ].copy()
+    # Obtener las 20 empresas más sospechosas (menor score = más anómalo)
+    top_indices = df.nsmallest(20, 'fraud_score').index
     
-    # Crear columna de alertas con iconos
-    def build_alerts(row):
-        alerts = []
-        for flag_col in flag_cols:
-            if row.get(flag_col, 0) == 1:
-                alerts.append(flag_details[flag_col]['icono'])
-        return ' '.join(alerts) if alerts else '✅'
-    
-    top_suspicious['Alertas'] = top_suspicious.apply(build_alerts, axis=1)
-    
-    top_suspicious['ventas_netas'] = top_suspicious['ventas_netas'].apply(lambda x: f"€{x:,.0f}")
-    top_suspicious['resultado_neto'] = top_suspicious['resultado_neto'].apply(lambda x: f"€{x:,.0f}")
-    top_suspicious['Score'] = top_suspicious['fraud_score_normalized'].apply(lambda x: f"{x:.3f}")
-    
-    display_df = top_suspicious[['nif', 'sector', 'Alertas', 'ventas_netas', 'resultado_neto', 'Score', 'riesgo']].copy()
-    display_df.columns = ['NIF', 'Sector', '🚨 Alertas', 'Ventas', 'Resultado', 'Score', 'Riesgo']
-    
-    st.dataframe(
-        display_df,
-        use_container_width=True,
-        height=450,
-        hide_index=True
-    )
+    for idx in top_indices:
+        row = df.loc[idx]
+        
+        # Identificar flags activos
+        active_flags_list = []
+        for col in flag_cols:
+            if row.get(col, 0) == 1:
+                active_flags_list.append(flag_details[col])
+        
+        icons = " ".join([f['icono'] for f in active_flags_list])
+        
+        # Diseño de tarjeta expandible
+        with st.expander(f"🚨 {row['nif']} - {row['sector']} | Score: {row['fraud_score_normalized']:.3f} | {icons}"):
+            # 1. Dashboard mini de métricas
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Ventas Netas", f"€{row['ventas_netas']:,.0f}")
+            m2.metric("Resultado Neto", f"€{row.get('resultado_neto', 0):,.0f}")
+            m3.metric("Deuda Bancaria", f"€{row.get('deuda_bancaria', 0):,.0f}")
+            
+            risk_color = "red" if row['riesgo'] == 'Alto' else "orange"
+            m4.markdown(f"**Nivel de Riesgo:** :{risk_color}[{row['riesgo']}]")
+            
+            st.divider()
+            
+            # 2. Detalle de ALertas
+            st.markdown("#### 🕵️‍♂️ Análisis Forense de Alertas")
+            
+            if active_flags_list:
+                for flag in active_flags_list:
+                    # Contenedor visual para cada alerta
+                    st.markdown(f"""
+                        <div style="background-color: rgba(255, 75, 75, 0.1); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #ff4b4b;">
+                            <div style="font-weight: bold; font-size: 1.1em;">{flag['icono']} {flag['nombre']}</div>
+                            <div style="margin-top: 5px;">{flag['descripcion']}</div>
+                            <div style="font-family: monospace; font-size: 0.9em; color: #ff8c8c; margin-top: 5px;">
+                                📐 Lógica de Cálculo: {flag['umbral']}
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("⚠️ Esta empresa ha sido marcada por el modelo de IA (Isolation Forest) por patrón anómalo general, aunque no ha disparado reglas heurísticas específicas.")
+                st.markdown(f"**Motivo IA:** Distancia espacial anómala en las variables transformadas (Score: {row['fraud_score']:.4f})")
 
 
 # =============================================================================
