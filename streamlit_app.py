@@ -1120,8 +1120,8 @@ if st.session_state.active_tab == 1:
         show_only_high_risk = st.checkbox("Mostrar solo alto riesgo", value=False)
     
     if selected_empresa:
-        nif_selected = selected_empresa.split(" - ")[0]
-        empresa_data = df[df['nif'] == nif_selected].iloc[0]
+        selected_nif = selected_empresa.split(" - ")[0]
+        empresa_data = df[df['nif'] == selected_nif].iloc[0]
         
         # Tarjeta principal de la empresa
         risk_class = {
