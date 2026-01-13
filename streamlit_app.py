@@ -622,12 +622,11 @@ col_logo, col_title, col_status = st.columns([1, 5, 2])
 
 # Resolver path para el logo
 try:
-    # Intenta ruta relativa directa primero (funciona en la mayoría de deploys)
     if Path("logo.png").exists():
         logo_path = "logo.png"
     else:
-        # Fallback a path absoluto basado en el script
-        logo_path = str(Path(__file__).parent / "logo.png")
+        # Fallback seguro
+        logo_path = "logo.png"
 except:
     logo_path = "logo.png"
 
