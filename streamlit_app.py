@@ -617,53 +617,32 @@ def get_flag_details():
 # INTERFAZ PRINCIPAL
 # =============================================================================
 
-# Header
-col_logo, col_title, col_status = st.columns([1, 5, 2])
+# Resolve logo path
+logo_path = "logo.png"
 
-# Resolver path para el logo
-try:
-    if Path("logo.png").exists():
-        logo_path = "logo.png"
-    else:
-        # Fallback seguro
-        logo_path = "logo.png"
-except:
-    logo_path = "logo.png"
-
-with col_logo:
-    try:
-        if Path(logo_path).exists():
-            st.image(logo_path, width=100)
-        else:
-            st.error("Logo not found")
-            st.write("🔍")
-    except Exception:
-        st.write("🔍")
-with col_title:
-    st.markdown('<h1 class="main-header" style="margin-top: 0;">FraudHunter Pro</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Sistema Avanzado de Detección de Fraude Empresarial con Machine Learning</p>', unsafe_allow_html=True)
-
-with col_status:
-    st.markdown(f"""
-        <div style="text-align: right; padding-top: 1rem;">
-            <span class="status-badge status-demo">⚡ MODO DEMO v2.1</span>
-            <p style="color: #6c757d; font-size: 0.8rem; margin-top: 0.5rem;">
-                {datetime.now().strftime("%d/%m/%Y %H:%M")}
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-# Sidebar
+# Sidebar Branding
 with st.sidebar:
     try:
         st.image(logo_path, use_container_width=True)
     except:
         pass
     
-    # DEBUG: Eliminado para producción
-    pass
+    st.markdown("""
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #fff; margin:0;">FraudHunter Pro</h2>
+            <p style="color: #6c757d; font-size: 0.8rem;">Intelligence & Forensics</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+# Main Content Area
+# Status bar minimalista en top right
+st.markdown(f"""
+    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1rem;">
+        <span class="status-badge status-demo" style="margin-right: 10px;">⚡ MODO DEMO v2.2</span>
+        <span style="color: #6c757d; font-size: 0.8rem;">{datetime.now().strftime("%d/%m/%Y %H:%M")}</span>
+    </div>
+""", unsafe_allow_html=True)
+
 st.sidebar.header("⚙️ Configuración del Análisis")
 
 # Enlace a documentación
