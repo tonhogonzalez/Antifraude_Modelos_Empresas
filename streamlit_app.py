@@ -1143,60 +1143,42 @@ if st.session_state.active_tab == 1:
                 polar=dict(
                     radialaxis=dict(
                         visible=True,
-                        range=[0, 100],
-                        gridcolor='rgba(255,255,255,0.1)'
-                    ),
-                    bgcolor='rgba(0,0,0,0)'
-                ),
+                        range=[0, 1]
+                    )),
+                showlegend=True,
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                showlegend=True,
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=-0.2,
-                    xanchor="center",
-                    x=0.5
-                )
+                height=400
             )
             
             st.plotly_chart(fig_radar, use_container_width=True)
-        
-        # Valores detallados
-        st.markdown("---")
-        st.markdown("#### 📋 Valores Detallados")
-        
-        col_det1, col_det2, col_det3 = st.columns(3)
-        
-        with col_det1:
-            st.markdown("**Métricas Financieras**")
-            st.write(f"• Margen Neto: {empresa_data['margen_neto']:.2%}")
-            st.write(f"• Rotación Activos: {empresa_data['rotacion_activos']:.2f}")
-            st.write(f"• Ratio Endeudamiento: {empresa_data['ratio_endeudamiento']:.2%}")
-        
-        with col_det2:
-            st.markdown("**Indicadores Forenses**")
-            st.write(f"• Cobertura M347: {empresa_data['cobertura_ventas']:.2%}")
-            st.write(f"• Tasa Interés Implícita: {empresa_data['tasa_interes_implicita']:.2%}")
-            st.write(f"• Accruals Ratio: {empresa_data['accruals_ratio']:.2%}")
-        
-        with col_det3:
-            st.markdown("**Operaciones Declaradas**")
-            st.write(f"• Total M347: €{empresa_data['total_m347']:,.0f}")
-            st.write(f"• Total M349: €{empresa_data['total_m349']:,.0f}")
-            st.write(f"• % Números Redondos: {empresa_data['pct_numeros_redondos']:.1%}")
+
+        with tab_det2:
+            st.markdown("#### 🚩 Flags Activados")
+            
+            flag_details = get_flag_details()
+            active_flags = []
+            
+            for col, details in flag_details.items():
+                if col in empresa_data and empresa_data[col] == 1:
+                    active_flags.append(details)
+            
+            if active_flags:
+                for flag in active_flags:
+                    st.warning(f"**{flag['nombre']}** ({flag['icono']}): {flag['desc']}")
+            else:
+                st.success("✅ No se han detectado anomalías específicas en las reglas predefinidas.")
+            
+            st.markdown("#### 🕸️ Análisis de Grafo (Simulado)")
+            st.info("Visualización de relaciones transaccionales (Modelo 347). En la versión completa, aquí se muestra el grafo interactivo de relaciones con empresas pantalla.")
 
 
 # =============================================================================
 # TAB 3: EXPORTAR RESULTADOS
 # =============================================================================
 
-with tab3:
+if st.session_state.active_tab == 2:
     st.markdown("### 📥 Exportar Resultados del Análisis")
-    
-    st.markdown("""
-    Descargue los resultados del análisis en formato CSV para uso interno o integración con otros sistemas.
-    """)
     
     col_dl1, col_dl2, col_dl3 = st.columns(3)
     
