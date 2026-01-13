@@ -617,13 +617,20 @@ def get_flag_details():
 # =============================================================================
 
 # Header
-col_header1, col_header2 = st.columns([3, 1])
+# Header
+col_logo, col_title, col_status = st.columns([1, 5, 2])
 
-with col_header1:
-    st.markdown('<h1 class="main-header">🔍 FraudHunter Pro</h1>', unsafe_allow_html=True)
+with col_logo:
+    try:
+        st.image("logo.png", width=100)
+    except:
+        st.write("🔍")
+
+with col_title:
+    st.markdown('<h1 class="main-header" style="margin-top: 0;">FraudHunter Pro</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Sistema Avanzado de Detección de Fraude Empresarial con Machine Learning</p>', unsafe_allow_html=True)
 
-with col_header2:
+with col_status:
     st.markdown(f"""
         <div style="text-align: right; padding-top: 1rem;">
             <span class="status-badge status-demo">⚡ MODO DEMO</span>
@@ -636,6 +643,11 @@ with col_header2:
 st.markdown("---")
 
 # Sidebar
+with st.sidebar:
+    try:
+        st.image("logo.png", use_container_width=True)
+    except:
+        pass
 st.sidebar.header("⚙️ Configuración del Análisis")
 
 # Enlace a documentación
@@ -1165,7 +1177,7 @@ if st.session_state.active_tab == 1:
             
             if active_flags:
                 for flag in active_flags:
-                    st.warning(f"**{flag['nombre']}** ({flag['icono']}): {flag['desc']}")
+                    st.warning(f"**{flag['nombre']}** ({flag['icono']}): {flag['descripcion']}")
             else:
                 st.success("✅ No se han detectado anomalías específicas en las reglas predefinidas.")
             
