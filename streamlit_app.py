@@ -1689,64 +1689,506 @@ if st.session_state.active_tab == 3:
         </p>
     """, unsafe_allow_html=True)
     
-    # Tabla M200
-    st.markdown("#### 📋 Modelo 200 - Impuesto de Sociedades")
-    m200_data = {
-        'Casilla': ['C00255', 'C00258', 'C00260', 'C00263', 'C00279', 'C00280', 'C00296', 'C00500', 'C00033', 'C00062', 'C00195', 'C00215', 'C00032'],
-        'Variable': ['cifra_negocios', 'aprovisionamientos', 'otros_ingresos', 'gastos_personal', 'otros_gastos_expl', 'amortizaciones', 'gastos_financieros', 'resultado_ejercicio', 'total_activo', 'patrimonio_neto', 'deuda_bancaria_lp', 'deuda_bancaria_cp', 'efectivo_tesoreria'],
-        'Descripción': ['Ingresos de Explotación', 'Compras y Aprovisionamientos', 'Subvenciones Recibidas', 'Sueldos y Seg. Social', 'Transportes/Servicios Ext.', 'Amortización del Inmovilizado', 'Intereses de Deuda', 'Beneficio/Pérdida Neto', 'Total Activo Balance', 'Patrimonio Neto', 'Deudas Bancarias L/P', 'Deudas Bancarias C/P', 'Caja y Equivalentes'],
-        'Uso Principal': ['Base de ventas', 'Márgenes', 'Ayudas públicas', 'Empresa pantalla', 'Carrusel IVA', 'Maquillaje', 'Deuda oculta', 'Márgenes anómalos', 'Pantalla/Inflado', 'Empresas zombie', 'Deuda oculta', 'Deuda oculta', 'Liquidez ficticia']
-    }
-    st.dataframe(pd.DataFrame(m200_data), hide_index=True, use_container_width=True)
+    # ==========================================================================
+    # ESTILOS PARA SECCIÓN MODELOS FISCALES (MEJORADA)
+    # ==========================================================================
+    st.markdown("""
+    <style>
+        .fiscal-model-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .fiscal-model-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+        }
+        .fiscal-model-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        .fiscal-model-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        .fiscal-model-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+        .fiscal-model-subtitle {
+            font-size: 0.85rem;
+            color: #667eea;
+        }
+        
+        .styled-table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .styled-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.9rem;
+        }
+        .styled-table th {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.2));
+            color: #fff;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .styled-table th:first-child { border-top-left-radius: 12px; }
+        .styled-table th:last-child { border-top-right-radius: 12px; }
+        .styled-table td {
+            padding: 0.85rem 1rem;
+            color: #d0d0d0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .styled-table tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+        .styled-table tr:last-child td:last-child { border-bottom-right-radius: 12px; }
+        .styled-table tr:hover td {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .styled-table tr:nth-child(even) td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .casilla-code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .variable-name {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #38ef7d;
+            font-size: 0.85rem;
+        }
+        .uso-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .uso-pantalla { background: rgba(246, 79, 89, 0.2); color: #f64f59; }
+        .uso-carrusel { background: rgba(242, 153, 74, 0.2); color: #f2994a; }
+        .uso-deuda { background: rgba(242, 201, 76, 0.2); color: #f2c94c; }
+        .uso-maquillaje { background: rgba(118, 75, 162, 0.2); color: #b794f6; }
+        .uso-zombie { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+        .uso-general { background: rgba(102, 126, 234, 0.2); color: #667eea; }
+        
+        .mini-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #0f0f23 100%);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            height: 100%;
+        }
+        .mini-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mini-card-icon {
+            font-size: 1.5rem;
+            background: rgba(102, 126, 234, 0.1);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        .mini-card-title {
+            font-weight: 700;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .mini-card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .mini-card-row:last-child { border-bottom: none; }
+        .mini-card-field {
+            font-family: 'Consolas', monospace;
+            color: #38ef7d;
+            font-size: 0.85rem;
+        }
+        .mini-card-value {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+        }
+        .mini-card-alert {
+            background: rgba(246, 79, 89, 0.1);
+            border: 1px solid rgba(246, 79, 89, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #f64f59;
+        }
+        .mini-card-info {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #667eea;
+        }
+        
+        .dataset-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-box {
+            background: linear-gradient(145deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: transform 0.2s ease;
+        }
+        .stat-box:hover {
+            transform: scale(1.02);
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .size-distribution {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .size-bar {
+            flex: 1;
+            text-align: center;
+            border-radius: 8px;
+            padding: 0.75rem 0.5rem;
+        }
+        .size-micro { background: linear-gradient(180deg, rgba(56, 239, 125, 0.3), rgba(56, 239, 125, 0.1)); }
+        .size-pequena { background: linear-gradient(180deg, rgba(102, 126, 234, 0.3), rgba(102, 126, 234, 0.1)); }
+        .size-mediana { background: linear-gradient(180deg, rgba(242, 201, 76, 0.3), rgba(242, 201, 76, 0.1)); }
+        .size-grande { background: linear-gradient(180deg, rgba(246, 79, 89, 0.3), rgba(246, 79, 89, 0.1)); }
+        .size-percent {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .size-label {
+            font-size: 0.7rem;
+            color: #a0a0a0;
+            margin-top: 0.25rem;
+        }
+        
+        .fraud-patterns {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .fraud-pattern-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(246, 79, 89, 0.1);
+            border: 1px solid rgba(246, 79, 89, 0.3);
+            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            color: #f2c94c;
+        }
+        .fraud-pattern-icon {
+            font-size: 1.2rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
     
+    # ==========================================================================
+    # MODELO 200 - IMPUESTO DE SOCIEDADES (TABLA MEJORADA)
+    # ==========================================================================
+    st.markdown("""
+    <div class="fiscal-model-card">
+        <div class="fiscal-model-header">
+            <div class="fiscal-model-icon">📋</div>
+            <div>
+                <div class="fiscal-model-title">Modelo 200 - Impuesto de Sociedades</div>
+                <div class="fiscal-model-subtitle">Variables financieras clave extraídas del balance y cuenta de resultados</div>
+            </div>
+        </div>
+        <div class="styled-table-container">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Casilla</th>
+                        <th>Variable Sistema</th>
+                        <th>Descripción</th>
+                        <th>Uso en Detección</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="casilla-code">C00255</span></td>
+                        <td><span class="variable-name">cifra_negocios</span></td>
+                        <td>Ingresos de Explotación</td>
+                        <td><span class="uso-badge uso-general">Base de ventas</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00263</span></td>
+                        <td><span class="variable-name">gastos_personal</span></td>
+                        <td>Sueldos y Seg. Social</td>
+                        <td><span class="uso-badge uso-pantalla">Empresa pantalla</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00279</span></td>
+                        <td><span class="variable-name">otros_gastos_expl</span></td>
+                        <td>Transportes/Servicios Ext.</td>
+                        <td><span class="uso-badge uso-carrusel">Carrusel IVA</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00280</span></td>
+                        <td><span class="variable-name">amortizaciones</span></td>
+                        <td>Amortización del Inmovilizado</td>
+                        <td><span class="uso-badge uso-maquillaje">Maquillaje</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00296</span></td>
+                        <td><span class="variable-name">gastos_financieros</span></td>
+                        <td>Intereses de Deuda</td>
+                        <td><span class="uso-badge uso-deuda">Deuda oculta</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00500</span></td>
+                        <td><span class="variable-name">resultado_ejercicio</span></td>
+                        <td>Beneficio/Pérdida Neto</td>
+                        <td><span class="uso-badge uso-maquillaje">Márgenes anómalos</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00033</span></td>
+                        <td><span class="variable-name">total_activo</span></td>
+                        <td>Total Activo Balance</td>
+                        <td><span class="uso-badge uso-pantalla">Pantalla/Inflado</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00062</span></td>
+                        <td><span class="variable-name">patrimonio_neto</span></td>
+                        <td>Patrimonio Neto</td>
+                        <td><span class="uso-badge uso-zombie">Empresas zombie</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00195</span></td>
+                        <td><span class="variable-name">deuda_bancaria_lp</span></td>
+                        <td>Deudas Bancarias L/P</td>
+                        <td><span class="uso-badge uso-deuda">Deuda oculta</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00215</span></td>
+                        <td><span class="variable-name">deuda_bancaria_cp</span></td>
+                        <td>Deudas Bancarias C/P</td>
+                        <td><span class="uso-badge uso-deuda">Deuda oculta</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="casilla-code">C00032</span></td>
+                        <td><span class="variable-name">efectivo_tesoreria</span></td>
+                        <td>Caja y Equivalentes</td>
+                        <td><span class="uso-badge uso-maquillaje">Liquidez ficticia</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ==========================================================================
+    # MODELO 347 Y 349 (SIDE BY SIDE)
+    # ==========================================================================
     col_m347, col_m349 = st.columns(2)
     
     with col_m347:
-        st.markdown("#### 📊 Modelo 347 - Operaciones con Terceros")
         st.markdown("""
-        | Campo | Uso |
-        |-------|-----|
-        | `NIF_DECLARANTE` | Nodo origen en grafo |
-        | `NIF_CONTRAPARTE` | Nodo destino en grafo |
-        | `IMPORTE_OPS` | Peso de la conexión |
-        | `is_circular` | Flag de circularidad |
-        
-        **Umbral declaración:** > 3.005,06€
-        """)
+        <div class="mini-card">
+            <div class="mini-card-header">
+                <div class="mini-card-icon">📊</div>
+                <div class="mini-card-title">Modelo 347 - Operaciones con Terceros</div>
+            </div>
+            <div class="mini-card-row">
+                <span class="mini-card-field">NIF_DECLARANTE</span>
+                <span class="mini-card-value">Nodo origen en grafo</span>
+            </div>
+            <div class="mini-card-row">
+                <span class="mini-card-field">NIF_CONTRAPARTE</span>
+                <span class="mini-card-value">Nodo destino en grafo</span>
+            </div>
+            <div class="mini-card-row">
+                <span class="mini-card-field">IMPORTE_OPS</span>
+                <span class="mini-card-value">Peso de la conexión</span>
+            </div>
+            <div class="mini-card-row">
+                <span class="mini-card-field">is_circular</span>
+                <span class="mini-card-value">Flag de circularidad</span>
+            </div>
+            <div class="mini-card-info">
+                <strong>📌 Umbral declaración:</strong> > 3.005,06€
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col_m349:
-        st.markdown("#### 🇪🇺 Modelo 349 - Operaciones UE")
         st.markdown("""
-        | Campo | Uso |
-        |-------|-----|
-        | `ENTREGAS_UE` | Ventas intracomunitarias |
-        | `ADQUISICIONES_UE` | Compras de UE |
-        
-        **Riesgo Carrusel:** Entregas UE altas + Transporte bajo = 🚨
-        
-        **Países riesgo alto:** CY, LU, MT, NL, IE, BG, RO
-        """)
+        <div class="mini-card">
+            <div class="mini-card-header">
+                <div class="mini-card-icon">🇪🇺</div>
+                <div class="mini-card-title">Modelo 349 - Operaciones UE</div>
+            </div>
+            <div class="mini-card-row">
+                <span class="mini-card-field">ENTREGAS_UE</span>
+                <span class="mini-card-value">Ventas intracomunitarias</span>
+            </div>
+            <div class="mini-card-row">
+                <span class="mini-card-field">ADQUISICIONES_UE</span>
+                <span class="mini-card-value">Compras de UE</span>
+            </div>
+            <div class="mini-card-alert">
+                <strong>🚨 Riesgo Carrusel:</strong> Entregas UE altas + Transporte bajo
+            </div>
+            <div class="mini-card-info" style="margin-top: 0.75rem;">
+                <strong>⚠️ Países riesgo alto:</strong><br>
+                CY, LU, MT, NL, IE, BG, RO
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # Dataset Info
-    st.markdown("#### 📊 Dataset Actual")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # ==========================================================================
+    # DATASET ACTUAL (ESTADÍSTICAS VISUALES)
+    # ==========================================================================
     st.markdown("""
-    | Métrica | Valor |
-    |---------|-------|
-    | **Empresas** | 100,000 |
-    | **Sectores CNAE** | 48 diferentes |
-    | **Casillas EAV** | 14 por empresa (1.4M filas) |
-    | **Transacciones M347** | 100,000 |
-    | **Tamaño total** | ~44 MB |
-    
-    **Distribución por tamaño:**
-    - Micro (<2M€): 85%
-    - Pequeña (2-10M€): 10%
-    - Mediana (10-50M€): 4%
-    - Grande (>50M€): 1%
-    
-    **Patrones de fraude inyectados (5%):**
-    🔄 Carrusel | 📊 Maquillaje | 🏭 Pantalla | 💀 Zombie
-    """)
+    <div class="fiscal-model-card">
+        <div class="fiscal-model-header">
+            <div class="fiscal-model-icon">📊</div>
+            <div>
+                <div class="fiscal-model-title">Dataset Actual</div>
+                <div class="fiscal-model-subtitle">Métricas y composición del conjunto de datos sintético de demostración</div>
+            </div>
+        </div>
+        
+        <div class="dataset-stats-grid">
+            <div class="stat-box">
+                <div class="stat-value">100K</div>
+                <div class="stat-label">Empresas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">48</div>
+                <div class="stat-label">Sectores CNAE</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">1.4M</div>
+                <div class="stat-label">Casillas EAV</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">100K</div>
+                <div class="stat-label">Transacciones M347</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">~44MB</div>
+                <div class="stat-label">Tamaño Total</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem;">
+            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-align: center;">
+                <strong>Distribución por Tamaño de Empresa</strong>
+            </div>
+            <div class="size-distribution">
+                <div class="size-bar size-micro">
+                    <div class="size-percent">85%</div>
+                    <div class="size-label">Micro<br>&lt;2M€</div>
+                </div>
+                <div class="size-bar size-pequena">
+                    <div class="size-percent">10%</div>
+                    <div class="size-label">Pequeña<br>2-10M€</div>
+                </div>
+                <div class="size-bar size-mediana">
+                    <div class="size-percent">4%</div>
+                    <div class="size-label">Mediana<br>10-50M€</div>
+                </div>
+                <div class="size-bar size-grande">
+                    <div class="size-percent">1%</div>
+                    <div class="size-label">Grande<br>&gt;50M€</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; text-align: center;">
+            <div style="font-size: 0.9rem; color: #f64f59; margin-bottom: 0.75rem;">
+                <strong>⚠️ Patrones de Fraude Inyectados (5% del dataset)</strong>
+            </div>
+            <div class="fraud-patterns">
+                <div class="fraud-pattern-badge">
+                    <span class="fraud-pattern-icon">🔄</span>
+                    <span>Carrusel IVA</span>
+                </div>
+                <div class="fraud-pattern-badge">
+                    <span class="fraud-pattern-icon">📊</span>
+                    <span>Maquillaje Contable</span>
+                </div>
+                <div class="fraud-pattern-badge">
+                    <span class="fraud-pattern-icon">🏭</span>
+                    <span>Empresa Pantalla</span>
+                </div>
+                <div class="fraud-pattern-badge">
+                    <span class="fraud-pattern-icon">💀</span>
+                    <span>Empresa Zombie</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # ==========================================================================
     # SECCIÓN 6: ARGUMENTARIO DE VENTA
