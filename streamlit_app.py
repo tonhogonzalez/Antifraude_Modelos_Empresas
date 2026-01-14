@@ -306,18 +306,23 @@ st.markdown("""
         z-index: 2;
     }
     
+    .help-logo-container {
+        background-color: #262730;
+        padding: 15px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
     .help-logo-img {
         width: 140px;
         height: auto;
-        filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.4));
-        animation: float 6s ease-in-out infinite;
+        display: block;
+        /* Eliminamos el drop-shadow y float excesivo para un look más limpio dentro de la tarjeta */
     }
 
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-    }
+    /* Eliminamos la animación float simple y la hacemos más sutil en el contenedor entero si se desea, 
+       pero por ahora estático es más profesional para la tarjeta */
     
     .help-main-title {
         font-size: 3.5rem;
