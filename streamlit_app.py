@@ -24,7 +24,7 @@ from pathlib import Path
 
 st.set_page_config(
     page_title="FraudHunter Pro 🔍",
-    page_icon="🔍",
+    page_icon="favicon.ico",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -649,8 +649,7 @@ with st.sidebar:
     
     st.markdown("""
         <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: #fff; margin:0;">FraudHunter Pro</h2>
-            <p style="color: #6c757d; font-size: 0.8rem;">Intelligence & Forensics</p>
+            <p style="color: #6c757d; font-size: 0.8rem; margin-top: 0px;">Intelligence & Forensics</p>
         </div>
     """, unsafe_allow_html=True)
 
