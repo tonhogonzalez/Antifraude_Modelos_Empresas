@@ -1397,29 +1397,44 @@ if st.session_state.active_tab == 3:
         </div>
         <table class="matrix-table">
             <tr>
-                <th>VARIABLE (Modelo 200)</th>
+                <th>VARIABLE (Casilla)</th>
                 <th>PROCESAMIENTO ALGORÍTMICO</th>
                 <th>RIESGO DETECTADO</th>
             </tr>
             <tr>
-                <td>00255 (Cifra Negocios)</td>
-                <td>Se normaliza junto con los Activos (00033). El algoritmo busca desproporciones extremas (ventas gigantes con activos minúsculos).</td>
+                <td>C00255 (Cifra Negocios)</td>
+                <td>Se normaliza junto con los Activos (C00033). El algoritmo busca desproporciones extremas (ventas gigantes con activos minúsculos).</td>
                 <td><strong>Empresas Pantalla:</strong> Facturan millones para mover dinero, pero no tienen infraestructura (activos) para generar esas ventas.</td>
             </tr>
             <tr>
-                <td>00263 (Gastos Personal)</td>
+                <td>C00263 (Gastos Personal)</td>
                 <td>Se cruza con Ventas. El algoritmo aísla empresas con Ventas > 1M€ y Personal ≈ 0.</td>
-                <td><strong>Fraude Carrusel:</strong> Mueven mercancía (papel) sin empleados reales. Solo hay un administrador firmando facturas.</td>
+                <td><strong>Fraude Pantalla:</strong> Mueven mercancía (papel) sin empleados reales. Solo hay un administrador firmando facturas.</td>
             </tr>
             <tr>
-                <td>00296 (Gastos Fcieros)</td>
-                <td>Se compara contra la Deuda Bancaria (00195 + 00215). Si los gastos son muy altos para la deuda declarada, es una anomalía.</td>
+                <td>C00279 (Otros Gastos / Transporte)</td>
+                <td>Se cruza con ENTREGAS_UE (M349). Si hay exportaciones UE altas pero gastos de transporte ≈ 0, es físicamente imposible.</td>
+                <td><strong>Fraude Carrusel IVA:</strong> La mercancía "viaja" solo en papel. No hay camiones ni logística real.</td>
+            </tr>
+            <tr>
+                <td>C00296 (Gastos Financieros)</td>
+                <td>Se compara contra la Deuda Bancaria (C00195 + C00215). Si los gastos son muy altos para la deuda declarada, es una anomalía.</td>
                 <td><strong>Pasivo Oculto:</strong> La empresa paga intereses por una deuda "B" (prestamistas, no bancaria) oculta al balance oficial.</td>
             </tr>
             <tr>
-                <td>00032 (Tesorería)</td>
-                <td>Se analiza su variación respecto al Beneficio (00500). Si Beneficio sube y Caja baja drásticamente sin inversión, dispara el score.</td>
+                <td>C00062 (Patrimonio Neto)</td>
+                <td>Se analiza si es negativo mientras la empresa sigue operando con ventas positivas.</td>
+                <td><strong>Empresa Zombie:</strong> Patrimonio neto < 0 pero sigue facturando. Incumple obligación legal de disolución.</td>
+            </tr>
+            <tr>
+                <td>C00032 (Tesorería)</td>
+                <td>Se analiza su variación respecto al Beneficio (C00500). Si Beneficio sube y Caja baja drásticamente sin inversión, dispara el score.</td>
                 <td><strong>Beneficio Ficticio (Paper Profit):</strong> Declaran ganancias para pedir crédito, pero el dinero nunca entra en el banco.</td>
+            </tr>
+            <tr>
+                <td>C00280 (Amortizaciones)</td>
+                <td>Se compara con Activo Fijo. Si las amortizaciones son anormalmente bajas respecto al activo, puede haber manipulación.</td>
+                <td><strong>Maquillaje Contable:</strong> Reducen amortizaciones para inflar el beneficio artificialmente.</td>
             </tr>
         </table>
     </div>
