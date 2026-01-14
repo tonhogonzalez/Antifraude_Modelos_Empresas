@@ -1120,11 +1120,20 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # Main Content Area
-# Status bar minimalista en top right
+# Header con tecnologías y modelos
 st.markdown(f"""
-    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1rem;">
-        <span class="status-badge status-demo" style="margin-right: 10px;">⚡ MODO DEMO v2.2</span>
-        <span style="color: #6c757d; font-size: 0.8rem;">{datetime.now().strftime("%d/%m/%Y %H:%M")}</span>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <span style="background: rgba(102, 126, 234, 0.2); color: #667eea; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; border: 1px solid rgba(102, 126, 234, 0.3);">🔬 Isolation Forest</span>
+            <span style="background: rgba(56, 239, 125, 0.2); color: #38ef7d; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; border: 1px solid rgba(56, 239, 125, 0.3);">📊 Mahalanobis</span>
+            <span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; border: 1px solid rgba(245, 158, 11, 0.3);">🔢 Benford</span>
+            <span style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; border: 1px solid rgba(139, 92, 246, 0.3);">🌐 Graph</span>
+            <span style="background: rgba(255,255,255,0.05); color: #888; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem;">M200 • M347 • M349</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="status-badge status-demo">⚡ DEMO v2.2</span>
+            <span style="color: #6c757d; font-size: 0.8rem;">{datetime.now().strftime("%d/%m/%Y %H:%M")}</span>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -1179,25 +1188,8 @@ if st.sidebar.button("🚀 Ejecutar Análisis", type="primary", use_container_wi
     st.session_state.use_real_data = use_real_data
 
 st.sidebar.markdown("---")
-# Enlace a documentación
-with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
-    st.markdown("""
-    ### FraudHunter - Inteligencia Forense
-    
-    **Tecnologías utilizadas:**
-    - 🔬 **Isolation Forest** - ML no supervisado
-    - 📊 **Distancia Mahalanobis** - Contexto sectorial
-    - 🔢 **Ley de Benford** - Detección estadística
-    - 🌐 **Graph Analysis** - Redes de transacciones
-    
-    **Modelos fiscales analizados:**
-    - Modelo 200 (Impuesto Sociedades)
-    - Modelo 347 (Operaciones +3.005€)
-    - Modelo 349 (Operaciones Intracomunitarias)
-    """)
 
 # Botón para ver presentación
-st.sidebar.markdown("---")
 
 # Continuous Learning Status
 if CONTINUOUS_LEARNING_AVAILABLE:
