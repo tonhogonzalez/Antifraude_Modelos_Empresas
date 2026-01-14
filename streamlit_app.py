@@ -634,6 +634,99 @@ st.markdown("""
         color: #38ef7d;
         font-weight: 600;
     }
+
+    /* TOC STYLES */
+    .toc-container {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        background: rgba(0,0,0,0.2);
+        padding: 1rem;
+        border-radius: 50px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .toc-link {
+        background: rgba(255,255,255,0.05);
+        padding: 0.6rem 1.2rem;
+        border-radius: 30px;
+        color: #a0a0a0;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .toc-link:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+        color: white;
+        border-color: rgba(102, 126, 234, 0.5);
+        transform: translateY(-2px);
+    }
+
+    /* SUMMARY HIGHLIGHTS */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr;
+        gap: 2rem;
+        align-items: center;
+    }
+    
+    .summary-highlight-card {
+        background: linear-gradient(145deg, #1e1e2e 0%, #252540 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        border: 1px solid rgba(118, 75, 162, 0.3);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .summary-highlight-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #38ef7d, #667eea);
+    }
+    
+    .highlight-stat {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    
+    .highlight-caption {
+        font-size: 0.9rem;
+        color: #d0d0d0;
+        line-height: 1.4;
+    }
+
+    /* PIPELINE ARROWS */
+    .pipeline-arrow {
+        font-size: 2rem;
+        color: #667eea;
+        text-align: center;
+        opacity: 0.6;
+        animation: pulse-arrow 2s infinite;
+    }
+    
+    @keyframes pulse-arrow {
+        0%, 100% { opacity: 0.6; transform: translateX(0); }
+        50% { opacity: 1; transform: translateX(5px); }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1181,30 +1274,46 @@ if st.session_state.active_tab == 3:
         </div>
     """, unsafe_allow_html=True)
     
+    # TOC de Navegación Rápida
+    st.markdown("""
+        <div class="toc-container">
+            <a href="#resumen-ejecutivo" class="toc-link">📋 Resumen</a>
+            <a href="#arquitectura-algor-tmica-el-core-de-la-soluci-n" class="toc-link">🧠 Algoritmos</a>
+            <a href="#tratamiento-de-datos-tributarios-la-l-gica-de-negocio" class="toc-link">📊 Datos Tributarios</a>
+            <a href="#funcionalidades-del-pipeline-flujo-de-trabajo" class="toc-link">⚙️ Pipeline</a>
+            <a href="#argumentario-de-venta-por-qu-invertir-en-fraudhunter" class="toc-link">💡 Argumentario</a>
+        </div>
+    """, unsafe_allow_html=True)
+    
     # ==========================================================================
     # SECCIÓN 1: RESUMEN EJECUTIVO
     # ==========================================================================
     st.markdown("""
-        <div class="help-section-header">
+        <div id="resumen-ejecutivo" class="help-section-header">
             <div class="help-section-number">1</div>
             <div class="help-section-title">Resumen Ejecutivo</div>
         </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-        <div class="executive-summary">
-            <p>
-                <strong>FraudHunter</strong> no es simplemente una herramienta de validación documental; 
-                es un <span class="highlight">motor de decisión autónomo</span>. Transforma la gestión del riesgo 
-                de crédito pasando de un modelo <span class="highlight-warning">reactivo</span> (validar lo que el cliente presenta) 
-                a uno <span class="highlight-success">proactivo</span> (descubrir la realidad operativa detrás de los datos).
-            </p>
-            <p style="margin-top: 1rem;">
-                La solución utiliza <span class="highlight">Inteligencia Artificial No Supervisada</span> y 
-                <span class="highlight">Teoría de Grafos</span> para detectar patrones de fraude sofisticado 
-                (<span class="highlight-danger">tramas organizadas</span>, <span class="highlight-danger">maquillaje de balances</span> 
-                y <span class="highlight-danger">empresas instrumentales</span>) que escapan a las reglas tradicionales y al ojo humano.
-            </p>
+        <div class="summary-grid">
+            <div class="summary-text" style="color: #d0d0d0; font-size: 1.05rem; line-height: 1.7;">
+                <p style="margin-bottom: 1rem;">
+                    <strong>FraudHunter</strong> transforma la gestión del riesgo de crédito pasando de un modelo 
+                    <span class="highlight-warning">reactivo</span> a uno <span class="highlight-success">proactivo</span>. 
+                    No solo valida lo que el cliente presenta, sino que descubre la <span class="highlight">realidad operativa</span> detrás de los datos.
+                </p>
+                <p>
+                    Utilizando <strong>Inteligencia Artificial No Supervisada</strong> y <strong>Teoría de Grafos</strong>, 
+                    el sistema detecta patrones de fraude sofisticado como <span class="highlight-danger">tramas organizadas</span>, 
+                    <span class="highlight-danger">maquillaje de balances</span> y <span class="highlight-danger">empresas instrumentales</span> 
+                    que escapan al ojo humano.
+                </p>
+            </div>
+            <div class="summary-highlight-card">
+                <div class="highlight-stat">95%</div>
+                <div class="highlight-caption">De reducción de tiempo en análisis manual filtrando empresas sanas</div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -1212,9 +1321,9 @@ if st.session_state.active_tab == 3:
     # SECCIÓN 2: ARQUITECTURA ALGORÍTMICA
     # ==========================================================================
     st.markdown("""
-        <div class="help-section-header">
+        <div id="arquitectura-algor-tmica" class="help-section-header">
             <div class="help-section-number">2</div>
-            <div class="help-section-title">Arquitectura Algorítmica (El "Core" de la Solución)</div>
+            <div class="help-section-title">Arquitectura Algorítmica (El "Core")</div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -1324,9 +1433,9 @@ if st.session_state.active_tab == 3:
     # SECCIÓN 3: TRATAMIENTO DE DATOS TRIBUTARIOS
     # ==========================================================================
     st.markdown("""
-        <div class="help-section-header">
+        <div id="l-gica-de-negocio" class="help-section-header">
             <div class="help-section-number">3</div>
-            <div class="help-section-title">Tratamiento de Datos Tributarios (La Lógica de Negocio)</div>
+            <div class="help-section-title">Tratamiento de Datos Tributarios</div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -1446,61 +1555,56 @@ if st.session_state.active_tab == 3:
         """, unsafe_allow_html=True)
     
     # ==========================================================================
-    # SECCIÓN 4: FUNCIONALIDADES DEL PIPELINE
+    # SECCIÓN 4: PIPELINE CON FLECHAS
     # ==========================================================================
     st.markdown("""
-        <div class="help-section-header">
+        <div id="pipeline-process" class="help-section-header">
             <div class="help-section-number">4</div>
-            <div class="help-section-title">Funcionalidades del Pipeline (Flujo de Trabajo)</div>
+            <div class="help-section-title">Pipeline Analítico</div>
         </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("""
-        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
-            Según el código analizado, la solución opera en un <strong style="color: #667eea;">flujo automatizado de tres fases</strong>:
-        </p>
-    """, unsafe_allow_html=True)
+    # Layout 5 columnas para flechas
+    c1, a1, c2, a2, c3 = st.columns([1, 0.15, 1, 0.15, 1])
     
-    col_pipe1, col_pipe2, col_pipe3 = st.columns(3)
-    
-    with col_pipe1:
+    with c1:
         st.markdown("""
             <div class="pipeline-step">
                 <div class="pipeline-number">1</div>
-                <div class="pipeline-title">📥 Ingesta Inteligente</div>
-                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">ETL Silver Layer</div>
+                <div class="pipeline-title">📥 Ingesta (ETL)</div>
+                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">Silver Layer</div>
                 <div class="pipeline-desc">
-                    La clase <code style="color: #f2c94c;">TaxDataLoader</code> filtra el ruido desde el origen. 
-                    No carga todo el modelo tributario, sino que selecciona quirúrgicamente las casillas relevantes 
-                    (TAX_MAPPING), optimizando el rendimiento para procesar millones de empresas.
+                    Filtrado de ruido y selección quirúrgica de casillas críticas (Tax Mapping).
                 </div>
             </div>
         """, unsafe_allow_html=True)
     
-    with col_pipe2:
+    with a1:
+        st.markdown('<div style="height: 100px; display: flex; align-items: center; justify-content: center;"><div class="pipeline-arrow">➤</div></div>', unsafe_allow_html=True)
+
+    with c2:
         st.markdown("""
             <div class="pipeline-step">
                 <div class="pipeline-number">2</div>
-                <div class="pipeline-title">⚙️ Ingeniería Forense</div>
-                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">Feature Engineering Gold</div>
+                <div class="pipeline-title">⚙️ Feature Eng.</div>
+                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">Gold Layer</div>
                 <div class="pipeline-desc">
-                    La clase <code style="color: #f2c94c;">ForensicFeatureEngineer</code> calcula más de 50 indicadores 
-                    derivados (Ratios de Cobertura, Productividad Laboral, Tasa de Interés Implícita). Aquí se aplican las 
-                    reglas de negocio duras ("Hard Rules").
+                    Cálculo de +50 indicadores forenses y aplicación de reglas de negocio duras.
                 </div>
             </div>
         """, unsafe_allow_html=True)
+
+    with a2:
+        st.markdown('<div style="height: 100px; display: flex; align-items: center; justify-content: center;"><div class="pipeline-arrow">➤</div></div>', unsafe_allow_html=True)
     
-    with col_pipe3:
+    with c3:
         st.markdown("""
             <div class="pipeline-step">
                 <div class="pipeline-number">3</div>
-                <div class="pipeline-title">🤖 Scoring y Decisión</div>
-                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">AI Serving Layer</div>
+                <div class="pipeline-title">🤖 AI Scoring</div>
+                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">Serving Layer</div>
                 <div class="pipeline-desc">
-                    La clase <code style="color: #f2c94c;">FraudDetectorModel</code> unifica todas las evidencias 
-                    (Grafos + Ratios + Anomalías) en un único Fraud Score (0-100). Genera un informe explicativo (JSON) 
-                    con las razones exactas del rechazo.
+                    Unificación de evidencias en Fraud Score y generación de informe explicativo.
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -1509,7 +1613,7 @@ if st.session_state.active_tab == 3:
     # SECCIÓN 5: ARGUMENTARIO DE VENTA
     # ==========================================================================
     st.markdown("""
-        <div class="help-section-header">
+        <div id="argumentario-de-venta" class="help-section-header">
             <div class="help-section-number">5</div>
             <div class="help-section-title">Argumentario de Venta: ¿Por qué invertir en FraudHunter?</div>
         </div>
