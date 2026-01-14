@@ -2105,90 +2105,105 @@ if st.session_state.active_tab == 3:
     st.markdown("<br>", unsafe_allow_html=True)
     
     # ==========================================================================
-    # DATASET ACTUAL (ESTADÍSTICAS VISUALES)
+    # DATASET ACTUAL (ESTADÍSTICAS VISUALES) - USANDO COMPONENTES NATIVOS
     # ==========================================================================
+    
+    # Header del Dataset
     st.markdown("""
-    <div class="fiscal-model-card">
-        <div class="fiscal-model-header">
-            <div class="fiscal-model-icon">📊</div>
-            <div>
-                <div class="fiscal-model-title">Dataset Actual</div>
-                <div class="fiscal-model-subtitle">Métricas y composición del conjunto de datos sintético de demostración</div>
-            </div>
-        </div>
-        
-        <div class="dataset-stats-grid">
-            <div class="stat-box">
-                <div class="stat-value">100K</div>
-                <div class="stat-label">Empresas</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">48</div>
-                <div class="stat-label">Sectores CNAE</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">1.4M</div>
-                <div class="stat-label">Casillas EAV</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">100K</div>
-                <div class="stat-label">Transacciones M347</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">~44MB</div>
-                <div class="stat-label">Tamaño Total</div>
-            </div>
-        </div>
-        
-        <div style="margin-top: 1.5rem;">
-            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-align: center;">
-                <strong>Distribución por Tamaño de Empresa</strong>
-            </div>
-            <div class="size-distribution">
-                <div class="size-bar size-micro">
-                    <div class="size-percent">85%</div>
-                    <div class="size-label">Micro<br>&lt;2M€</div>
-                </div>
-                <div class="size-bar size-pequena">
-                    <div class="size-percent">10%</div>
-                    <div class="size-label">Pequeña<br>2-10M€</div>
-                </div>
-                <div class="size-bar size-mediana">
-                    <div class="size-percent">4%</div>
-                    <div class="size-label">Mediana<br>10-50M€</div>
-                </div>
-                <div class="size-bar size-grande">
-                    <div class="size-percent">1%</div>
-                    <div class="size-label">Grande<br>&gt;50M€</div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="margin-top: 2rem; text-align: center;">
-            <div style="font-size: 0.9rem; color: #f64f59; margin-bottom: 0.75rem;">
-                <strong>⚠️ Patrones de Fraude Inyectados (5% del dataset)</strong>
-            </div>
-            <div class="fraud-patterns">
-                <div class="fraud-pattern-badge">
-                    <span class="fraud-pattern-icon">🔄</span>
-                    <span>Carrusel IVA</span>
-                </div>
-                <div class="fraud-pattern-badge">
-                    <span class="fraud-pattern-icon">📊</span>
-                    <span>Maquillaje Contable</span>
-                </div>
-                <div class="fraud-pattern-badge">
-                    <span class="fraud-pattern-icon">🏭</span>
-                    <span>Empresa Pantalla</span>
-                </div>
-                <div class="fraud-pattern-badge">
-                    <span class="fraud-pattern-icon">💀</span>
-                    <span>Empresa Zombie</span>
-                </div>
-            </div>
+<div class="fiscal-model-card">
+    <div class="fiscal-model-header">
+        <div class="fiscal-model-icon">📊</div>
+        <div>
+            <div class="fiscal-model-title">Dataset Actual</div>
+            <div class="fiscal-model-subtitle">Métricas y composición del conjunto de datos sintético de demostración</div>
         </div>
     </div>
+</div>
     """, unsafe_allow_html=True)
+    
+    # Grid de estadísticas con columnas nativas de Streamlit
+    stat_cols = st.columns(5)
+    
+    stats_data = [
+        ("100K", "Empresas", "🏢"),
+        ("48", "Sectores CNAE", "📂"),
+        ("1.4M", "Casillas EAV", "📋"),
+        ("100K", "Transacciones M347", "🔗"),
+        ("~44MB", "Tamaño Total", "💾")
+    ]
+    
+    for i, (value, label, icon) in enumerate(stats_data):
+        with stat_cols[i]:
+            st.markdown(f"""
+<div style="background: linear-gradient(145deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.08));
+            border-radius: 12px; padding: 1.25rem; text-align: center;
+            border: 1px solid rgba(102, 126, 234, 0.25); transition: transform 0.2s ease;">
+    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">{icon}</div>
+    <div style="font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">{value}</div>
+    <div style="font-size: 0.75rem; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px;">{label}</div>
+</div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Distribución por tamaño de empresa
+    st.markdown("""
+<div style="font-size: 0.95rem; color: #a0a0a0; margin-bottom: 1rem; text-align: center;">
+    <strong>📊 Distribución por Tamaño de Empresa</strong>
+</div>
+    """, unsafe_allow_html=True)
+    
+    size_cols = st.columns(4)
+    
+    size_data = [
+        ("85%", "Micro", "<2M€", "#38ef7d", "rgba(56, 239, 125, 0.2)"),
+        ("10%", "Pequeña", "2-10M€", "#667eea", "rgba(102, 126, 234, 0.2)"),
+        ("4%", "Mediana", "10-50M€", "#f2c94c", "rgba(242, 201, 76, 0.2)"),
+        ("1%", "Grande", ">50M€", "#f64f59", "rgba(246, 79, 89, 0.2)")
+    ]
+    
+    for i, (percent, size_name, range_text, color, bg_color) in enumerate(size_data):
+        with size_cols[i]:
+            st.markdown(f"""
+<div style="background: linear-gradient(180deg, {bg_color}, rgba(0,0,0,0.1));
+            border-radius: 10px; padding: 1rem; text-align: center;
+            border: 1px solid {color}30;">
+    <div style="font-size: 2rem; font-weight: 700; color: {color};">{percent}</div>
+    <div style="font-size: 0.85rem; color: #fff; font-weight: 600; margin-top: 0.25rem;">{size_name}</div>
+    <div style="font-size: 0.7rem; color: #888; margin-top: 0.15rem;">{range_text}</div>
+</div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Patrones de fraude inyectados
+    st.markdown("""
+<div style="text-align: center; margin-top: 1rem;">
+    <div style="font-size: 0.95rem; color: #f64f59; margin-bottom: 1rem;">
+        <strong>⚠️ Patrones de Fraude Inyectados (5% del dataset)</strong>
+    </div>
+</div>
+    """, unsafe_allow_html=True)
+    
+    fraud_cols = st.columns(4)
+    
+    fraud_patterns = [
+        ("🔄", "Carrusel IVA"),
+        ("📊", "Maquillaje Contable"),
+        ("🏭", "Empresa Pantalla"),
+        ("💀", "Empresa Zombie")
+    ]
+    
+    for i, (icon, name) in enumerate(fraud_patterns):
+        with fraud_cols[i]:
+            st.markdown(f"""
+<div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            background: rgba(246, 79, 89, 0.1); border: 1px solid rgba(246, 79, 89, 0.3);
+            border-radius: 25px; padding: 0.6rem 1rem;">
+    <span style="font-size: 1.2rem;">{icon}</span>
+    <span style="font-size: 0.85rem; color: #f2c94c; font-weight: 500;">{name}</span>
+</div>
+            """, unsafe_allow_html=True)
     
     # ==========================================================================
     # SECCIÓN 6: ARGUMENTARIO DE VENTA
