@@ -1104,7 +1104,7 @@ def get_flag_details():
 # =============================================================================
 
 # Resolve logo path
-logo_path = "logo_dark.png" if Path("logo_dark.png").exists() else "logo.png"
+logo_path = "logo_integrated.png" if Path("logo_integrated.png").exists() else ("logo_dark.png" if Path("logo_dark.png").exists() else "logo.png")
 
 # Sidebar Branding
 with st.sidebar:
@@ -1112,12 +1112,6 @@ with st.sidebar:
         st.image(logo_path, use_container_width=True)
     except:
         pass
-    
-    st.markdown("""
-        <div style="text-align: center; margin-bottom: 20px;">
-            <p style="color: #6c757d; font-size: 0.8rem; margin-top: 0px;">Intelligence & Forensics</p>
-        </div>
-    """, unsafe_allow_html=True)
 
 # Main Content Area
 # Header con tecnologías y modelos
