@@ -7,6 +7,7 @@ Diseñado para presentaciones ante comité de dirección.
 
 import streamlit as st
 import pandas as pd
+import base64
 import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import RobustScaler
@@ -276,11 +277,12 @@ st.markdown("""
     
     /* Hero Section */
     .help-hero {
-        background: linear-gradient(145deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        border-radius: 20px;
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        border-radius: 24px;
+        padding: 3rem;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         position: relative;
         overflow: hidden;
     }
@@ -295,28 +297,57 @@ st.markdown("""
         background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
         animation: pulse-bg 4s ease-in-out infinite;
     }
-    
-    @keyframes pulse-bg {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 0.8; }
+
+    .help-header-content {
+        display: flex;
+        align-items: center;
+        gap: 2.5rem;
+        position: relative;
+        z-index: 2;
     }
     
-    .help-hero-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f64f59 100%);
+    .help-logo-img {
+        width: 140px;
+        height: auto;
+        filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.4));
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .help-main-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: linear-gradient(90deg, #fff 0%, #e0e0e0 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem;
-        position: relative;
-        z-index: 1;
+        margin: 0;
+        letter-spacing: -2px;
+        line-height: 1.1;
     }
     
-    .help-hero-subtitle {
+    .help-subtitle {
+        font-size: 1.5rem;
+        color: #667eea;
+        font-weight: 500;
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .help-meta-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 50px;
         color: #a0a0a0;
-        font-size: 1rem;
-        position: relative;
-        z-index: 1;
+        font-size: 0.8rem;
+        font-family: monospace;
+        letter-spacing: 1px;
     }
     
     /* Section Headers */
@@ -965,7 +996,7 @@ def get_flag_details():
 # =============================================================================
 
 # Resolve logo path
-logo_path = "logo.png"
+logo_path = "logo_dark.png" if Path("logo_dark.png").exists() else "logo.png"
 
 # Sidebar Branding
 with st.sidebar:
@@ -1122,11 +1153,26 @@ st.markdown("---")
 # =============================================================================
 if st.session_state.active_tab == 3:
     
+    # Cargar logo para el Hero
+    logo_file = Path("logo_dark.png")
+    img_b64 = ""
+    if logo_file.exists():
+        with open(logo_file, "rb") as f:
+            img_b64 = base64.b64encode(f.read()).decode()
+            
     # Hero Section
-    st.markdown("""
+    st.markdown(f"""
         <div class="help-hero">
-            <div class="help-hero-title">🛡️ FraudHunter: Plataforma de Inteligencia Forense Financiera</div>
-            <div class="help-hero-subtitle">Informe Técnico y de Negocio para el Comité de Dirección</div>
+            <div class="help-header-content">
+                <div class="help-logo-container">
+                     <img src="data:image/png;base64,{img_b64}" class="help-logo-img">
+                </div>
+                <div class="help-text-container">
+                    <h1 class="help-main-title">FraudHunter</h1>
+                    <h2 class="help-subtitle">Plataforma de Inteligencia Forense Financiera</h2>
+                    <div class="help-meta-badge">Informe Comité Dirección v2.2</div>
+                </div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
