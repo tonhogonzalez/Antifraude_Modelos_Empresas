@@ -2097,6 +2097,14 @@ if st.session_state.active_tab == 1:
 if st.session_state.active_tab == 2:
     st.markdown("### 📥 Exportar Resultados del Análisis")
     
+    # Calcular métricas para el resumen
+    n_anomalies = (df['anomaly_label'] == -1).sum()
+    n_high_risk = (df['riesgo'] == 'Alto').sum()
+    n_medium_risk = (df['riesgo'] == 'Medio').sum()
+    true_pos = ((df['anomaly_label'] == -1) & (df['_is_suspicious'] == True)).sum()
+    pred_pos = (df['anomaly_label'] == -1).sum()
+    precision = true_pos / pred_pos if pred_pos > 0 else 0
+    
     col_dl1, col_dl2, col_dl3 = st.columns(3)
     
     with col_dl1:
