@@ -1188,23 +1188,43 @@ with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
 
 # Ejecutar análisis
 if st.session_state.get('run_analysis', False) or 'df_results' not in st.session_state:
-    with st.spinner("🔄 Procesando datos con algoritmos forenses..."):
-        # Intentar cargar datos reales si está seleccionado
-        if use_real_data:
-            df = load_real_data()
-            if df is None:
-                st.warning("⚠️ Archivos CSV no encontrados. Usando datos sintéticos.")
-                df = generate_dummy_data(n_empresas, tasa_fraude)
+    try:
+        with st.spinner("🔄 Procesando datos con algoritmos forenses..."):
+            # Intentar cargar datos reales si está seleccionado
+            if use_real_data:
+                df = load_real_data()
+                if df is None:
+                    st.warning("⚠️ Archivos CSV no encontrados. Usando datos sintéticos.")
+                    df = generate_dummy_data(n_empresas, tasa_fraude)
+                else:
+                    st.sidebar.success(f"✅ {len(df)} empresas cargadas desde archivos")
             else:
-                st.sidebar.success(f"✅ {len(df)} empresas cargadas desde archivos")
-        else:
-            df = generate_dummy_data(n_empresas, tasa_fraude)
-        
-        df = calculate_forensic_features(df)
-        df = calculate_mahalanobis_by_sector(df)
-        df = train_isolation_forest(df, contamination)
-        st.session_state.df_results = df
+                df = generate_dummy_data(n_empresas, tasa_fraude)
+            
+            # Feature Engineering
+            with st.spinner("📊 Calculando features forenses..."):
+                df = calculate_forensic_features(df)
+            
+            # Análisis Sectorial
+            with st.spinner("🔬 Aplicando análisis Mahalanobis por sector..."):
+                df = calculate_mahalanobis_by_sector(df)
+            
+            # Modelo ML
+            with st.spinner("🤖 Entrenando modelo Isolation Forest..."):
+                df = train_isolation_forest(df, contamination)
+            
+            st.session_state.df_results = df
+            st.session_state.run_analysis = False
+            
+            # Feedback de éxito
+            n_detected = (df['anomaly_label'] == -1).sum()
+            st.toast(f"✅ Análisis completado: {n_detected} anomalías detectadas en {len(df)} empresas", icon="🎯")
+            
+    except Exception as e:
+        st.error(f"❌ Error durante el análisis: {str(e)}")
+        st.info("💡 Intenta refrescar la página o cambiar la fuente de datos.")
         st.session_state.run_analysis = False
+        st.stop()
 
 df = st.session_state.df_results
 
@@ -1217,6 +1237,10 @@ import streamlit.components.v1 as components
 # Inicializar tab activo en session_state
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
+
+# Inicializar empresa seleccionada
+if 'selected_company_nif' not in st.session_state:
+    st.session_state.selected_company_nif = None
 
 # Crear navegación con botones - AHORA 4 BOTONES
 col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
@@ -1859,8 +1883,22 @@ if st.session_state.active_tab == 0:
             },
             hide_index=True,
             use_container_width=True,
-            height=400
+            height=350
         )
+        
+        # Quick Jump: Selector para ir directamente al detalle
+        st.markdown("---")
+        quick_jump_nif = st.selectbox(
+            "⚡ Quick Jump: Ver detalle de empresa",
+            options=top10['nif'].tolist(),
+            format_func=lambda x: f"{x} - Score: {top10[top10['nif']==x]['fraud_score_normalized'].values[0]:.2f}",
+            key="quick_jump_top10"
+        )
+        
+        if st.button("🔍 Ver Análisis Detallado", use_container_width=True):
+            st.session_state.selected_company_nif = quick_jump_nif
+            st.session_state.active_tab = 1
+            st.rerun()
     
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -2068,9 +2106,20 @@ if st.session_state.active_tab == 1:
         empresa_options = [f"{row['nif']} - {row['sector']} ({row['riesgo']})" 
                           for _, row in df_sorted.iterrows()]
         
+        # Determinar índice inicial basado en Quick Jump
+        default_idx = 0
+        if st.session_state.selected_company_nif:
+            matching = [i for i, opt in enumerate(empresa_options) 
+                       if opt.startswith(st.session_state.selected_company_nif)]
+            if matching:
+                default_idx = matching[0]
+            # Limpiar después de usar
+            st.session_state.selected_company_nif = None
+        
         selected_empresa = st.selectbox(
             "🏢 Seleccionar Empresa",
             options=empresa_options,
+            index=default_idx,
             help="Las empresas están ordenadas por nivel de riesgo (mayor a menor)",
             key="empresa_selector_tab2"
         )
