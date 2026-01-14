@@ -271,6 +271,333 @@ st.markdown("""
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
     }
+    
+    /* ========== HELP PAGE STYLES ========== */
+    
+    /* Hero Section */
+    .help-hero {
+        background: linear-gradient(145deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .help-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+        animation: pulse-bg 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-bg {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .help-hero-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f64f59 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .help-hero-subtitle {
+        color: #a0a0a0;
+        font-size: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Section Headers */
+    .help-section-header {
+        display: flex;
+        align-items: center;
+        margin: 2rem 0 1.5rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+    }
+    
+    .help-section-number {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: 1rem;
+        font-size: 1rem;
+    }
+    
+    .help-section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #e0e0e0;
+    }
+    
+    /* Algorithm Cards */
+    .algo-card {
+        background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .algo-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .algo-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(102, 126, 234, 0.5);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+    }
+    
+    .algo-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .algo-icon {
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+    
+    .algo-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    
+    .algo-subtitle {
+        font-size: 0.8rem;
+        color: #667eea;
+        font-weight: 500;
+    }
+    
+    .algo-content {
+        color: #b0b0b0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .algo-value {
+        background: rgba(102, 126, 234, 0.1);
+        border-left: 3px solid #667eea;
+        padding: 0.8rem 1rem;
+        margin-top: 1rem;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.85rem;
+        color: #c0c0c0;
+    }
+    
+    .algo-value strong {
+        color: #38ef7d;
+    }
+    
+    /* Data Tables */
+    .data-table-container {
+        background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .data-table-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .data-table-icon {
+        font-size: 1.5rem;
+        margin-right: 0.8rem;
+    }
+    
+    .data-table-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e0e0e0;
+    }
+    
+    .data-table-subtitle {
+        font-size: 0.8rem;
+        color: #888;
+        margin-left: auto;
+    }
+    
+    .data-row {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr 1.5fr;
+        gap: 1rem;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 0.85rem;
+    }
+    
+    .data-row:last-child {
+        border-bottom: none;
+    }
+    
+    .data-row:hover {
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .data-label {
+        color: #f2c94c;
+        font-weight: 600;
+    }
+    
+    .data-treatment {
+        color: #a0a0a0;
+    }
+    
+    .data-risk {
+        color: #f64f59;
+        font-style: italic;
+    }
+    
+    /* Pipeline Steps */
+    .pipeline-container {
+        display: flex;
+        justify-content: space-between;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .pipeline-step {
+        background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        flex: 1;
+        margin: 0 0.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .pipeline-step:hover {
+        transform: translateY(-5px);
+        border-color: rgba(102, 126, 234, 0.6);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    }
+    
+    .pipeline-number {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin: 0 auto 1rem auto;
+        font-size: 1.2rem;
+    }
+    
+    .pipeline-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .pipeline-desc {
+        font-size: 0.8rem;
+        color: #888;
+    }
+    
+    /* Argument Cards */
+    .argument-card {
+        background: linear-gradient(145deg, rgba(56, 239, 125, 0.05) 0%, rgba(17, 153, 142, 0.1) 100%);
+        border: 1px solid rgba(56, 239, 125, 0.2);
+        border-radius: 12px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .argument-card:hover {
+        border-color: rgba(56, 239, 125, 0.5);
+        transform: translateX(5px);
+    }
+    
+    .argument-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #38ef7d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .argument-desc {
+        font-size: 0.85rem;
+        color: #a0a0a0;
+        line-height: 1.5;
+    }
+    
+    /* Executive Summary Box */
+    .executive-summary {
+        background: linear-gradient(145deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .executive-summary p {
+        color: #d0d0d0;
+        font-size: 1rem;
+        line-height: 1.8;
+    }
+    
+    .highlight {
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .highlight-warning {
+        color: #f2c94c;
+        font-weight: 600;
+    }
+    
+    .highlight-danger {
+        color: #f64f59;
+        font-weight: 600;
+    }
+    
+    .highlight-success {
+        color: #38ef7d;
+        font-weight: 600;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -783,7 +1110,7 @@ with col_nav3:
         st.rerun()
 
 with col_nav4:
-    if st.button("📑 Presentación", use_container_width=True,
+    if st.button("❓ Ayuda", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 3 else "secondary"):
         st.session_state.active_tab = 3
         st.rerun()
@@ -791,25 +1118,413 @@ with col_nav4:
 st.markdown("---")
 
 # =============================================================================
-# TAB 4: PRESENTACIÓN (Renderizado de HTML)
+# TAB 4: AYUDA Y PRESENTACIÓN DE LA SOLUCIÓN
 # =============================================================================
 if st.session_state.active_tab == 3:
-    try:
-        # Cargar el archivo HTML
-        base_path = Path(__file__).parent if '__file__' in dir() else Path('.')
-        html_path = base_path / 'Presentación_solucion.html'
+    
+    # Hero Section
+    st.markdown("""
+        <div class="help-hero">
+            <div class="help-hero-title">🛡️ FraudHunter: Plataforma de Inteligencia Forense Financiera</div>
+            <div class="help-hero-subtitle">Informe Técnico y de Negocio para el Comité de Dirección</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # ==========================================================================
+    # SECCIÓN 1: RESUMEN EJECUTIVO
+    # ==========================================================================
+    st.markdown("""
+        <div class="help-section-header">
+            <div class="help-section-number">1</div>
+            <div class="help-section-title">Resumen Ejecutivo</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="executive-summary">
+            <p>
+                <strong>FraudHunter</strong> no es simplemente una herramienta de validación documental; 
+                es un <span class="highlight">motor de decisión autónomo</span>. Transforma la gestión del riesgo 
+                de crédito pasando de un modelo <span class="highlight-warning">reactivo</span> (validar lo que el cliente presenta) 
+                a uno <span class="highlight-success">proactivo</span> (descubrir la realidad operativa detrás de los datos).
+            </p>
+            <p style="margin-top: 1rem;">
+                La solución utiliza <span class="highlight">Inteligencia Artificial No Supervisada</span> y 
+                <span class="highlight">Teoría de Grafos</span> para detectar patrones de fraude sofisticado 
+                (<span class="highlight-danger">tramas organizadas</span>, <span class="highlight-danger">maquillaje de balances</span> 
+                y <span class="highlight-danger">empresas instrumentales</span>) que escapan a las reglas tradicionales y al ojo humano.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # ==========================================================================
+    # SECCIÓN 2: ARQUITECTURA ALGORÍTMICA
+    # ==========================================================================
+    st.markdown("""
+        <div class="help-section-header">
+            <div class="help-section-number">2</div>
+            <div class="help-section-title">Arquitectura Algorítmica (El "Core" de la Solución)</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
+            El sistema implementa una <strong style="color: #667eea;">arquitectura de defensa en capas</strong>, 
+            donde cada algoritmo cubre un ángulo ciego de los sistemas tradicionales.
+        </p>
+    """, unsafe_allow_html=True)
+    
+    col_algo1, col_algo2 = st.columns(2)
+    
+    with col_algo1:
+        # Algoritmo A: Isolation Forest
+        st.markdown("""
+            <div class="algo-card">
+                <div class="algo-header">
+                    <div class="algo-icon">🔬</div>
+                    <div>
+                        <div class="algo-title">A. Detección de Anomalías Desconocidas</div>
+                        <div class="algo-subtitle">Isolation Forest - Machine Learning</div>
+                    </div>
+                </div>
+                <div class="algo-content">
+                    <strong>Qué es:</strong> Un modelo de IA no supervisado (Machine Learning).<br><br>
+                    <strong>Cómo funciona:</strong> En lugar de aprender "qué es fraude" (lo cual requiere haber visto 
+                    el fraude antes), aprende "qué es normal". Construye bosques de decisión aleatorios para aislar 
+                    observaciones. Las empresas fraudulentas, al tener comportamientos numéricos atípicos, se aíslan 
+                    más rápido ("flotan" en el bosque).
+                </div>
+                <div class="algo-value">
+                    <strong>💡 Valor para el Banco:</strong> Detecta fraudes inéditos o "Cisnes Negros" para los que no tenemos reglas escritas.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
         
-        if html_path.exists():
-            with open(html_path, 'r', encoding='utf-8') as f:
-                html_content = f.read()
-            
-            # Renderizar HTML
-            st.markdown("### 📑 Presentación del Proyecto")
-            components.html(html_content, height=800, scrolling=True)
-        else:
-            st.error("Archivo de presentación no encontrado.")
-    except Exception as e:
-        st.error(f"Error al cargar la presentación: {e}")
+        # Algoritmo C: Mahalanobis
+        st.markdown("""
+            <div class="algo-card">
+                <div class="algo-header">
+                    <div class="algo-icon">📊</div>
+                    <div>
+                        <div class="algo-title">C. Benchmarking Sectorial</div>
+                        <div class="algo-subtitle">Distancia de Mahalanobis</div>
+                    </div>
+                </div>
+                <div class="algo-content">
+                    <strong>Qué es:</strong> Estadística multivariante contextual.<br><br>
+                    <strong>Cómo funciona:</strong> Compara a cada empresa exclusivamente con sus pares del mismo sector (CNAE). 
+                    Calcula la distancia matemática de una empresa respecto al "centro de gravedad" de su industria.
+                </div>
+                <div class="algo-value">
+                    <strong>💡 Valor para el Banco:</strong> Reduce drásticamente los Falsos Positivos. Entiende que una 
+                    estructura financiera normal para una "Constructora" es anómala para una "Consultora de Software".
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col_algo2:
+        # Algoritmo B: Graph Analysis
+        st.markdown("""
+            <div class="algo-card">
+                <div class="algo-header">
+                    <div class="algo-icon">🕸️</div>
+                    <div>
+                        <div class="algo-title">B. Análisis de Redes y Tramas</div>
+                        <div class="algo-subtitle">GraphFrames & PageRank</div>
+                    </div>
+                </div>
+                <div class="algo-content">
+                    <strong>Qué es:</strong> Análisis topológico de conexiones.<br><br>
+                    <strong>Cómo funciona:</strong> Convierte el Modelo 347 en un mapa de interconexiones.
+                    <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                        <li><strong>PageRank Ponderado:</strong> Identifica "Hubs" o nodos centrales. Una empresa recién creada con alta centralidad es sospechosa.</li>
+                        <li><strong>Detección de Circularidad:</strong> Busca patrones triangulares (A → B → C → A) típicos del fraude de IVA.</li>
+                    </ul>
+                </div>
+                <div class="algo-value">
+                    <strong>💡 Valor para el Banco:</strong> Bloquea no solo a la empresa insolvente, sino a toda la trama organizada que la sustenta.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Algoritmo D: Benford
+        st.markdown("""
+            <div class="algo-card">
+                <div class="algo-header">
+                    <div class="algo-icon">🔢</div>
+                    <div>
+                        <div class="algo-title">D. Forense Estadístico</div>
+                        <div class="algo-subtitle">Ley de Benford</div>
+                    </div>
+                </div>
+                <div class="algo-content">
+                    <strong>Qué es:</strong> Análisis de la distribución natural de los dígitos.<br><br>
+                    <strong>Cómo funciona:</strong> Analiza el primer dígito de los importes declarados. En la naturaleza 
+                    financiera, el 1 aparece un 30% de las veces; el 9, solo un 4.6%.
+                </div>
+                <div class="algo-value">
+                    <strong>💡 Valor para el Banco:</strong> Detecta datos inventados o manipulados manualmente, ya que el 
+                    cerebro humano es incapaz de replicar esta ley natural al falsificar facturas.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # ==========================================================================
+    # SECCIÓN 3: TRATAMIENTO DE DATOS TRIBUTARIOS
+    # ==========================================================================
+    st.markdown("""
+        <div class="help-section-header">
+            <div class="help-section-number">3</div>
+            <div class="help-section-title">Tratamiento de Datos Tributarios (La Lógica de Negocio)</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
+            El sistema ingiere y cruza <strong style="color: #667eea;">tres fuentes tributarias críticas</strong>. 
+            A continuación, se detalla cómo el algoritmo procesa cada etiqueta para extraer inteligencia forense.
+        </p>
+    """, unsafe_allow_html=True)
+    
+    # Modelo 200
+    st.markdown("""
+        <div class="data-table-container">
+            <div class="data-table-header">
+                <div class="data-table-icon">📊</div>
+                <div class="data-table-title">Modelo 200 (Impuesto de Sociedades)</div>
+                <div class="data-table-subtitle">La "Salud" de la empresa</div>
+            </div>
+            <div class="data-row" style="font-weight: 600; color: #667eea;">
+                <div>Etiqueta</div>
+                <div>Tratamiento Algorítmico</div>
+                <div>Riesgo Detectado</div>
+            </div>
+            <div class="data-row">
+                <div class="data-label">Cifra de Negocios</div>
+                <div class="data-treatment">Denominador base para ratios. Se cruza con el M347.</div>
+                <div class="data-risk">Ventas Ficticias (inflado de balance)</div>
+            </div>
+            <div class="data-row">
+                <div class="data-label">Resultado del Ejercicio</div>
+                <div class="data-treatment">Componente del Accruals Ratio. Se compara con la Caja Real.</div>
+                <div class="data-risk">Maquillaje Contable</div>
+            </div>
+            <div class="data-row">
+                <div class="data-label">Gastos Financieros</div>
+                <div class="data-treatment">Numerador del Coste de Deuda. Se divide por la Deuda Bancaria.</div>
+                <div class="data-risk">Pasivo Oculto (deuda no declarada)</div>
+            </div>
+            <div class="data-row">
+                <div class="data-label">Gastos de Transporte</div>
+                <div class="data-treatment">Variable de control físico.</div>
+                <div class="data-risk">Paradoja Logística</div>
+            </div>
+            <div class="data-row">
+                <div class="data-label">Gastos de Personal</div>
+                <div class="data-treatment">Variable de productividad.</div>
+                <div class="data-risk">Empresa Pantalla</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_m347, col_m349 = st.columns(2)
+    
+    with col_m347:
+        # Modelo 347
+        st.markdown("""
+            <div class="data-table-container">
+                <div class="data-table-header">
+                    <div class="data-table-icon">🕸️</div>
+                    <div class="data-table-title">Modelo 347</div>
+                    <div class="data-table-subtitle">La "Red"</div>
+                </div>
+                <div class="data-row" style="font-weight: 600; color: #667eea; font-size: 0.8rem;">
+                    <div>Etiqueta</div>
+                    <div>Tratamiento</div>
+                    <div>Riesgo</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">NIF Declarante / Contraparte</div>
+                    <div class="data-treatment">Nodos del Grafo (Vértices)</div>
+                    <div class="data-risk">Entity Resolution</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Importe Total</div>
+                    <div class="data-treatment">Peso de la Arista (Edge Weight)</div>
+                    <div class="data-risk">Dependencia excesiva</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Desglose Trimestral</div>
+                    <div class="data-treatment">Análisis de Velocity</div>
+                    <div class="data-risk">Facturación concentrada en 4T</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Importes en Metálico</div>
+                    <div class="data-treatment">Flag de Riesgo PBC</div>
+                    <div class="data-risk">Blanqueo de Capitales</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col_m349:
+        # Modelo 349
+        st.markdown("""
+            <div class="data-table-container">
+                <div class="data-table-header">
+                    <div class="data-table-icon">🚚</div>
+                    <div class="data-table-title">Modelo 349</div>
+                    <div class="data-table-subtitle">La "Física"</div>
+                </div>
+                <div class="data-row" style="font-weight: 600; color: #667eea; font-size: 0.8rem;">
+                    <div>Etiqueta</div>
+                    <div>Tratamiento</div>
+                    <div>Riesgo</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Entregas Intracomunitarias</div>
+                    <div class="data-treatment">Variable de Exportación</div>
+                    <div class="data-risk">Fraude Carrusel</div>
+                </div>
+                <div class="data-row" style="grid-template-columns: 1fr;">
+                    <div class="data-treatment" style="color: #f2c94c; padding: 0.5rem; background: rgba(242, 201, 76, 0.1); border-radius: 8px; margin-top: 0.5rem;">
+                        <strong>⚠️ Paradoja Logística:</strong> Si una empresa declara Entregas UE (M349) altas 
+                        pero Gastos de Transporte (M200) nulos, la operación es físicamente imposible.
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # ==========================================================================
+    # SECCIÓN 4: FUNCIONALIDADES DEL PIPELINE
+    # ==========================================================================
+    st.markdown("""
+        <div class="help-section-header">
+            <div class="help-section-number">4</div>
+            <div class="help-section-title">Funcionalidades del Pipeline (Flujo de Trabajo)</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
+            Según el código analizado, la solución opera en un <strong style="color: #667eea;">flujo automatizado de tres fases</strong>:
+        </p>
+    """, unsafe_allow_html=True)
+    
+    col_pipe1, col_pipe2, col_pipe3 = st.columns(3)
+    
+    with col_pipe1:
+        st.markdown("""
+            <div class="pipeline-step">
+                <div class="pipeline-number">1</div>
+                <div class="pipeline-title">📥 Ingesta Inteligente</div>
+                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">ETL Silver Layer</div>
+                <div class="pipeline-desc">
+                    La clase <code style="color: #f2c94c;">TaxDataLoader</code> filtra el ruido desde el origen. 
+                    No carga todo el modelo tributario, sino que selecciona quirúrgicamente las casillas relevantes 
+                    (TAX_MAPPING), optimizando el rendimiento para procesar millones de empresas.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col_pipe2:
+        st.markdown("""
+            <div class="pipeline-step">
+                <div class="pipeline-number">2</div>
+                <div class="pipeline-title">⚙️ Ingeniería Forense</div>
+                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">Feature Engineering Gold</div>
+                <div class="pipeline-desc">
+                    La clase <code style="color: #f2c94c;">ForensicFeatureEngineer</code> calcula más de 50 indicadores 
+                    derivados (Ratios de Cobertura, Productividad Laboral, Tasa de Interés Implícita). Aquí se aplican las 
+                    reglas de negocio duras ("Hard Rules").
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col_pipe3:
+        st.markdown("""
+            <div class="pipeline-step">
+                <div class="pipeline-number">3</div>
+                <div class="pipeline-title">🤖 Scoring y Decisión</div>
+                <div style="font-size: 0.75rem; color: #667eea; margin-bottom: 0.5rem;">AI Serving Layer</div>
+                <div class="pipeline-desc">
+                    La clase <code style="color: #f2c94c;">FraudDetectorModel</code> unifica todas las evidencias 
+                    (Grafos + Ratios + Anomalías) en un único Fraud Score (0-100). Genera un informe explicativo (JSON) 
+                    con las razones exactas del rechazo.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # ==========================================================================
+    # SECCIÓN 5: ARGUMENTARIO DE VENTA
+    # ==========================================================================
+    st.markdown("""
+        <div class="help-section-header">
+            <div class="help-section-number">5</div>
+            <div class="help-section-title">Argumentario de Venta: ¿Por qué invertir en FraudHunter?</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
+            Para cerrar la presentación al comité, estos son los <strong style="color: #38ef7d;">argumentos clave</strong>:
+        </p>
+    """, unsafe_allow_html=True)
+    
+    col_arg1, col_arg2 = st.columns(2)
+    
+    with col_arg1:
+        st.markdown("""
+            <div class="argument-card">
+                <div class="argument-title">⚡ Eficiencia Operativa</div>
+                <div class="argument-desc">
+                    Reduce el tiempo de análisis manual al filtrar automáticamente el <strong>95% de empresas "sanas"</strong> 
+                    y focalizar a los analistas solo en las alertas complejas justificadas.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+            <div class="argument-card">
+                <div class="argument-title">🔍 Explicabilidad (Compliance)</div>
+                <div class="argument-desc">
+                    A diferencia de las "Cajas Negras" de IA tradicionales, FraudHunter <strong>desglosa el "por qué"</strong> 
+                    de cada alerta, facilitando la defensa ante auditoría interna y reguladores.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col_arg2:
+        st.markdown("""
+            <div class="argument-card">
+                <div class="argument-title">🛡️ Mitigación de Riesgo Sistémico</div>
+                <div class="argument-desc">
+                    Al detectar redes (grafos), evitamos que la caída de una empresa fraudulenta 
+                    <strong>arrastre a toda una cartera</strong> de clientes interconectados.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+            <div class="argument-card">
+                <div class="argument-title">📈 Escalabilidad</div>
+                <div class="argument-desc">
+                    Diseñado en Spark/Databricks, está listo para procesar desde <strong>10.000 hasta 10 millones</strong> 
+                    de clientes sin cambios en la arquitectura.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # Footer
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style="text-align: center; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡️</div>
+            <div style="color: #667eea; font-weight: 600; font-size: 1.1rem;">FraudHunter Pro</div>
+            <div style="color: #888; font-size: 0.85rem;">Plataforma de Inteligencia Forense Financiera</div>
+            <div style="color: #555; font-size: 0.75rem; margin-top: 0.5rem;">© 2026 - Análisis Avanzado de Riesgo Empresarial</div>
+        </div>
+    """, unsafe_allow_html=True)
+
 
 # =============================================================================
 # TAB 1: DASHBOARD EJECUTIVO
