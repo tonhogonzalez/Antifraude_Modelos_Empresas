@@ -1258,8 +1258,7 @@ if st.session_state.active_tab == 3:
     st.markdown("""
         <div class="toc-container">
             <a href="#resumen-ejecutivo" class="toc-link">📋 Resumen</a>
-            <a href="#arquitectura-algor-tmica" class="toc-link">🧠 Algoritmos</a>
-            <a href="#l-gica-de-negocio" class="toc-link">📊 Datos Tributarios</a>
+            <a href="#matriz-interaccion-forense" class="toc-link">🧠 Matriz Forense</a>
             <a href="#pipeline-process" class="toc-link">⚙️ Pipeline</a>
             <a href="#argumentario-de-venta" class="toc-link">💡 Argumentario</a>
         </div>
@@ -1298,225 +1297,11 @@ if st.session_state.active_tab == 3:
     """, unsafe_allow_html=True)
     
     # ==========================================================================
-    # SECCIÓN 2: ARQUITECTURA ALGORÍTMICA
+    # SECCIÓN 2: MATRIZ DE INTERACCIÓN (NUEVA)
     # ==========================================================================
     st.markdown("""
-        <div id="arquitectura-algor-tmica" class="help-section-header">
+        <div id="matriz-interaccion-forense" class="help-section-header">
             <div class="help-section-number">2</div>
-            <div class="help-section-title">Arquitectura Algorítmica (El "Core")</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
-            El sistema implementa una <strong style="color: #667eea;">arquitectura de defensa en capas</strong>, 
-            donde cada algoritmo cubre un ángulo ciego de los sistemas tradicionales.
-        </p>
-    """, unsafe_allow_html=True)
-    
-    col_algo1, col_algo2 = st.columns(2)
-    
-    with col_algo1:
-        # Algoritmo A: Isolation Forest
-        st.markdown("""
-            <div class="algo-card">
-                <div class="algo-header">
-                    <div class="algo-icon">🔬</div>
-                    <div>
-                        <div class="algo-title">A. Detección de Anomalías Desconocidas</div>
-                        <div class="algo-subtitle">Isolation Forest - Machine Learning</div>
-                    </div>
-                </div>
-                <div class="algo-content">
-                    <strong>Qué es:</strong> Un modelo de IA no supervisado (Machine Learning).<br><br>
-                    <strong>Cómo funciona:</strong> En lugar de aprender "qué es fraude" (lo cual requiere haber visto 
-                    el fraude antes), aprende "qué es normal". Construye bosques de decisión aleatorios para aislar 
-                    observaciones. Las empresas fraudulentas, al tener comportamientos numéricos atípicos, se aíslan 
-                    más rápido ("flotan" en el bosque).
-                </div>
-                <div class="algo-value">
-                    <strong>💡 Valor para el Banco:</strong> Detecta fraudes inéditos o "Cisnes Negros" para los que no tenemos reglas escritas.
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Algoritmo C: Mahalanobis
-        st.markdown("""
-            <div class="algo-card">
-                <div class="algo-header">
-                    <div class="algo-icon">📊</div>
-                    <div>
-                        <div class="algo-title">C. Benchmarking Sectorial</div>
-                        <div class="algo-subtitle">Distancia de Mahalanobis</div>
-                    </div>
-                </div>
-                <div class="algo-content">
-                    <strong>Qué es:</strong> Estadística multivariante contextual.<br><br>
-                    <strong>Cómo funciona:</strong> Compara a cada empresa exclusivamente con sus pares del mismo sector (CNAE). 
-                    Calcula la distancia matemática de una empresa respecto al "centro de gravedad" de su industria.
-                </div>
-                <div class="algo-value">
-                    <strong>💡 Valor para el Banco:</strong> Reduce drásticamente los Falsos Positivos. Entiende que una 
-                    estructura financiera normal para una "Constructora" es anómala para una "Consultora de Software".
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-    
-    with col_algo2:
-        # Algoritmo B: Graph Analysis
-        st.markdown("""
-            <div class="algo-card">
-                <div class="algo-header">
-                    <div class="algo-icon">🕸️</div>
-                    <div>
-                        <div class="algo-title">B. Análisis de Redes y Tramas</div>
-                        <div class="algo-subtitle">GraphFrames & PageRank</div>
-                    </div>
-                </div>
-                <div class="algo-content">
-                    <strong>Qué es:</strong> Análisis topológico de conexiones.<br><br>
-                    <strong>Cómo funciona:</strong> Convierte el Modelo 347 en un mapa de interconexiones.
-                    <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
-                        <li><strong>PageRank Ponderado:</strong> Identifica "Hubs" o nodos centrales. Una empresa recién creada con alta centralidad es sospechosa.</li>
-                        <li><strong>Detección de Circularidad:</strong> Busca patrones triangulares (A → B → C → A) típicos del fraude de IVA.</li>
-                    </ul>
-                </div>
-                <div class="algo-value">
-                    <strong>💡 Valor para el Banco:</strong> Bloquea no solo a la empresa insolvente, sino a toda la trama organizada que la sustenta.
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Algoritmo D: Benford
-        st.markdown("""
-            <div class="algo-card">
-                <div class="algo-header">
-                    <div class="algo-icon">🔢</div>
-                    <div>
-                        <div class="algo-title">D. Forense Estadístico</div>
-                        <div class="algo-subtitle">Ley de Benford</div>
-                    </div>
-                </div>
-                <div class="algo-content">
-                    <strong>Qué es:</strong> Análisis de la distribución natural de los dígitos.<br><br>
-                    <strong>Cómo funciona:</strong> Analiza el primer dígito de los importes declarados. En la naturaleza 
-                    financiera, el 1 aparece un 30% de las veces; el 9, solo un 4.6%.
-                </div>
-                <div class="algo-value">
-                    <strong>💡 Valor para el Banco:</strong> Detecta datos inventados o manipulados manualmente, ya que el 
-                    cerebro humano es incapaz de replicar esta ley natural al falsificar facturas.
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-    
-    # ==========================================================================
-    # SECCIÓN 3: TRATAMIENTO DE DATOS TRIBUTARIOS
-    # ==========================================================================
-    st.markdown("""
-        <div id="l-gica-de-negocio" class="help-section-header">
-            <div class="help-section-number">3</div>
-            <div class="help-section-title">Tratamiento de Datos Tributarios</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
-            El sistema ingiere y cruza <strong style="color: #667eea;">tres fuentes tributarias críticas</strong>. 
-            A continuación, se detalla cómo el algoritmo procesa cada etiqueta para extraer inteligencia forense.
-        </p>
-    """, unsafe_allow_html=True)
-    
-    # Modelo 200
-    st.markdown("""
-        <div class="data-table-container">
-            <div class="data-table-header">
-                <div class="data-table-icon">📊</div>
-                <div class="data-table-title">Modelo 200 (Impuesto de Sociedades)</div>
-                <div class="data-table-subtitle">La "Salud" de la empresa</div>
-            </div>
-            <div class="data-row" style="font-weight: 600; color: #667eea;">
-                <div>Etiqueta</div>
-                <div>Tratamiento Algorítmico</div>
-                <div>Riesgo Detectado</div>
-            </div>
-            <div class="data-row">
-                <div class="data-label">Cifra de Negocios</div>
-                <div class="data-treatment">Denominador base para ratios. Se cruza con el M347.</div>
-                <div class="data-risk">Ventas Ficticias (inflado de balance)</div>
-            </div>
-            <div class="data-row">
-                <div class="data-label">Resultado del Ejercicio</div>
-                <div class="data-treatment">Componente del Accruals Ratio. Se compara con la Caja Real.</div>
-                <div class="data-risk">Maquillaje Contable</div>
-            </div>
-            <div class="data-row">
-                <div class="data-label">Gastos Financieros</div>
-                <div class="data-treatment">Numerador del Coste de Deuda. Se divide por la Deuda Bancaria.</div>
-                <div class="data-risk">Pasivo Oculto (deuda no declarada)</div>
-            </div>
-            <div class="data-row">
-                <div class="data-label">Gastos de Transporte</div>
-                <div class="data-treatment">Variable de control físico.</div>
-                <div class="data-risk">Paradoja Logística</div>
-            </div>
-            <div class="data-row">
-                <div class="data-label">Gastos de Personal</div>
-                <div class="data-treatment">Variable de productividad.</div>
-                <div class="data-risk">Empresa Pantalla</div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_m347, col_m349 = st.columns(2)
-    
-    with col_m347:
-        # Modelo 347
-        st.markdown("""
-            <div class="data-table-container">
-                <div class="data-table-header">
-                    <div class="data-table-icon">🕸️</div>
-                    <div class="data-table-title">Modelo 347</div>
-                    <div class="data-table-subtitle">La "Red"</div>
-                </div>
-                <div class="data-row" style="font-weight: 600; color: #667eea; font-size: 0.8rem;">
-                    <div>Etiqueta</div>
-                    <div>Tratamiento</div>
-                    <div>Riesgo</div>
-                </div>
-                <div class="data-row">
-                    <div class="data-label">NIF Declarante / Contraparte</div>
-                    <div class="data-treatment">Nodos del Grafo (Vértices)</div>
-                    <div class="data-risk">Entity Resolution</div>
-                </div>
-                <div class="data-row">
-                    <div class="data-label">Importe Total</div>
-                    <div class="data-treatment">Peso de la Arista (Edge Weight)</div>
-                    <div class="data-risk">Dependencia excesiva</div>
-                </div>
-                <div class="data-row">
-                    <div class="data-label">Desglose Trimestral</div>
-                    <div class="data-treatment">Análisis de Velocity</div>
-                    <div class="data-risk">Facturación concentrada en 4T</div>
-                </div>
-                <div class="data-row">
-                    <div class="data-label">Importes en Metálico</div>
-                    <div class="data-treatment">Flag de Riesgo PBC</div>
-                    <div class="data-risk">Blanqueo de Capitales</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-    
-    with col_m349:
-        # Modelo 349
-        st.markdown("""
-            <div class="data-table-container">
-                <div class="data-table-header">
-                    <div class="data-table-icon">🚚</div>
-                    <div class="data-table-title">Modelo 349</div>
-                    <div class="data-table-subtitle">La "Física"</div>
-                </div>
-                <div class="data-row" style="font-weight: 600; color: #667eea; font-size: 0.8rem;">
-                    <div>Etiqueta</div>
                     <div>Tratamiento</div>
                     <div>Riesgo</div>
                 </div>
@@ -1530,9 +1315,226 @@ if st.session_state.active_tab == 3:
                         <strong>⚠️ Paradoja Logística:</strong> Si una empresa declara Entregas UE (M349) altas 
                         pero Gastos de Transporte (M200) nulos, la operación es físicamente imposible.
                     </div>
-                </div>
+            <div class="help-section-title">Matriz de Interacción Algoritmo-Variable</div>
+        </div>
+        <p style="color: #667eea; font-size: 1.1rem; margin-bottom: 2rem; font-style: italic;">
+            "Esta es la guía definitiva de la lógica forense del sistema."
+        </p>
+    """, unsafe_allow_html=True)
+
+    # ESTILOS ADICIONALES PARA LA MATRIZ DE TABLAS
+    st.markdown("""
+    <style>
+        .matrix-card {
+            background: #1e1e2e;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .matrix-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+        }
+        .matrix-icon {
+            font-size: 2rem;
+            background: rgba(102, 126, 234, 0.1);
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+        }
+        .matrix-title { font-size: 1.3rem; font-weight: 700; color: #fff; }
+        .matrix-obj { font-size: 0.9rem; color: #a0a0a0; margin-top: 0.2rem; }
+        
+        .matrix-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .matrix-table th { text-align: left; color: #667eea; font-size: 0.85rem; padding: 0.5rem; }
+        .matrix-table td { background: rgba(255,255,255,0.03); padding: 1rem; vertical-align: top; font-size: 0.9rem; color: #d0d0d0; }
+        .matrix-table td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-weight: 600; color: #f2c94c; width: 25%; }
+        .matrix-table td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; color: #f64f59; font-weight: 600; width: 30%; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # 1. Isolation Forest
+    st.markdown("""
+    <div class="matrix-card">
+        <div class="matrix-header">
+            <div class="matrix-icon">🔬</div>
+            <div>
+                <div class="matrix-title">1. El Detector de Anomalías (Isolation Forest)</div>
+                <div class="matrix-obj"><strong>Objetivo:</strong> Encontrar comportamiento financiero "matemáticamente absurdo" o extremadamente raro.</div>
             </div>
-        """, unsafe_allow_html=True)
+        </div>
+        <table class="matrix-table">
+            <tr>
+                <th>VARIABLE (Modelo 200)</th>
+                <th>PROCESAMIENTO ALGORÍTMICO</th>
+                <th>RIESGO DETECTADO</th>
+            </tr>
+            <tr>
+                <td>00255 (Cifra Negocios)</td>
+                <td>Se normaliza junto con los Activos (00033). El algoritmo busca desproporciones extremas (ventas gigantes con activos minúsculos).</td>
+                <td><strong>Empresas Pantalla:</strong> Facturan millones para mover dinero, pero no tienen infraestructura (activos) para generar esas ventas.</td>
+            </tr>
+            <tr>
+                <td>00263 (Gastos Personal)</td>
+                <td>Se cruza con Ventas. El algoritmo aísla empresas con Ventas > 1M€ y Personal ≈ 0.</td>
+                <td><strong>Fraude Carrusel:</strong> Mueven mercancía (papel) sin empleados reales. Solo hay un administrador firmando facturas.</td>
+            </tr>
+            <tr>
+                <td>00296 (Gastos Fcieros)</td>
+                <td>Se compara contra la Deuda Bancaria (00195 + 00215). Si los gastos son muy altos para la deuda declarada, es una anomalía.</td>
+                <td><strong>Pasivo Oculto:</strong> La empresa paga intereses por una deuda "B" (prestamistas, no bancaria) oculta al balance oficial.</td>
+            </tr>
+            <tr>
+                <td>00032 (Tesorería)</td>
+                <td>Se analiza su variación respecto al Beneficio (00500). Si Beneficio sube y Caja baja drásticamente sin inversión, dispara el score.</td>
+                <td><strong>Beneficio Ficticio (Paper Profit):</strong> Declaran ganancias para pedir crédito, pero el dinero nunca entra en el banco.</td>
+            </tr>
+        </table>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 2. Graph Analysis
+    st.markdown("""
+    <div class="matrix-card">
+        <div class="matrix-header">
+            <div class="matrix-icon">🕸️</div>
+            <div>
+                <div class="matrix-title">2. El Analista de Redes (GraphSAGE / GraphFrames)</div>
+                <div class="matrix-obj"><strong>Objetivo:</strong> Juzgar a una empresa por sus "malas compañías" y patrones de conexión.</div>
+            </div>
+        </div>
+        <table class="matrix-table">
+            <tr>
+                <th>VARIABLE (Modelo 347)</th>
+                <th>PROCESAMIENTO ALGORÍTMICO</th>
+                <th>RIESGO DETECTADO</th>
+            </tr>
+            <tr>
+                <td>NIF_CONTRAPARTE</td>
+                <td>Los convierte en nodos. Si una empresa (Nodo A) se conecta con proveedores (Nodos B, C) marcados como fraude.</td>
+                <td><strong>Culpa por Asociación (Contagio):</strong> "Dime con quién andas". Bloquea empresas nuevas que usan proveedores sucios.</td>
+            </tr>
+            <tr>
+                <td>IMPORTE_OPS</td>
+                <td>Analiza la dirección y cuantía. Busca el patrón: A vende 100 a B, B vende 100 a C, C vende 100 a A.</td>
+                <td><strong>Circularidad (Carrusel IVA):</strong> El dinero da vueltas para inflar facturación artificialmente sin valor real.</td>
+            </tr>
+            <tr>
+                <td>FECHA_ALTA_CENSAL</td>
+                <td>Se combina con centralidad (PageRank). Si Antigüedad < 6 meses y PageRank > 90% (muchas conexiones).</td>
+                <td><strong>Empresa "Trucha" (Burner):</strong> Sociedad creada para emitir facturas falsas masivamente y desaparecer rápido.</td>
+            </tr>
+            <tr>
+                <td>REF_CATASTRAL</td>
+                <td>Agrupa nodos que comparten la misma referencia catastral en direcciones distintas.</td>
+                <td><strong>Nidos de Fraude:</strong> Detecta que 50 empresas distintas "viven" en el mismo piso franco de 60m².</td>
+            </tr>
+        </table>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 3. NLP
+    st.markdown("""
+    <div class="matrix-card">
+        <div class="matrix-header">
+            <div class="matrix-icon">🧠</div>
+            <div>
+                <div class="matrix-title">3. El Auditor Semántico (BERT / NLP)</div>
+                <div class="matrix-obj"><strong>Objetivo:</strong> Leer la "letra pequeña" para encontrar mentiras en la descripción del negocio.</div>
+            </div>
+        </div>
+        <table class="matrix-table">
+            <tr>
+                <th>VARIABLE (Texto)</th>
+                <th>PROCESAMIENTO ALGORÍTMICO</th>
+                <th>RIESGO DETECTADO</th>
+            </tr>
+            <tr>
+                <td>OBJETO_SOCIAL</td>
+                <td>El modelo "lee" el texto y extrae el vector semántico (de qué va el negocio realmente) comparándolo con CNAE.</td>
+                <td><strong>Incoherencia de Actividad:</strong> Declara CNAE "Tecnología" (subvenciones) pero escrituras dicen "Construcción".</td>
+            </tr>
+            <tr>
+                <td>MEMORIA_ACTIVIDAD</td>
+                <td>Busca palabras clave de riesgo y analiza el "tono lingüístico" y genericidad.</td>
+                <td><strong>Empresa Zombi Reciclada:</strong> Descripciones "copia-pega" o incoherentes con importes (consultoría vs venta mercadería).</td>
+            </tr>
+        </table>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 4. Benford
+    st.markdown("""
+    <div class="matrix-card">
+        <div class="matrix-header">
+            <div class="matrix-icon">🔢</div>
+            <div>
+                <div class="matrix-title">4. El Forense Estadístico (Ley de Benford)</div>
+                <div class="matrix-obj"><strong>Objetivo:</strong> Detectar la intervención humana manual en las cifras.</div>
+            </div>
+        </div>
+        <table class="matrix-table">
+            <tr>
+                <th>VARIABLE (Facturas)</th>
+                <th>PROCESAMIENTO ALGORÍTMICO</th>
+                <th>RIESGO DETECTADO</th>
+            </tr>
+            <tr>
+                <td>IMPORTE (1er Dígito)</td>
+                <td>Calcula frecuencia del primer dígito (1-9). Si el '9' aparece el 15% (lo natural es 4.6%).</td>
+                <td><strong>Falsificación Manual:</strong> El contable inventa facturas justo debajo de umbrales auditoría (ej: 9.900€).</td>
+            </tr>
+            <tr>
+                <td>IMPORTE (Terminación)</td>
+                <td>Busca exceso de terminaciones en .00 o .000.</td>
+                <td><strong>Invención de Cifras:</strong> Con IVA y descuentos, los números redondos son rarísimos. Si abundan, son falsos.</td>
+            </tr>
+        </table>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 5. Mahalanobis
+    st.markdown("""
+    <div class="matrix-card">
+        <div class="matrix-header">
+            <div class="matrix-icon">📊</div>
+            <div>
+                <div class="matrix-title">5. El Contextualizador (Mahalanobis)</div>
+                <div class="matrix-obj"><strong>Objetivo:</strong> Evitar culpar a inocentes entendiendo el contexto de su sector.</div>
+            </div>
+        </div>
+        <table class="matrix-table">
+            <tr>
+                <th>VARIABLE (Ratios)</th>
+                <th>PROCESAMIENTO ALGORÍTMICO</th>
+                <th>RIESGO DETECTADO</th>
+            </tr>
+            <tr>
+                <td>EBITDA / DEUDA</td>
+                <td>No mira valor absoluto. Mira la distancia al promedio del sector (CNAE).</td>
+                <td><strong>Falsos Positivos:</strong> Startup tech pierde dinero pero es normal en su sector. Mahalanobis evita la alerta "Quiebra".</td>
+            </tr>
+        </table>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # FINAL QUOTE
+    st.markdown("""
+        <div style="background: linear-gradient(90deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); 
+                    border-left: 4px solid #38ef7d; padding: 2rem; border-radius: 0 16px 16px 0; margin: 3rem 0;">
+            <p style="font-size: 1.2rem; font-style: italic; color: #e0e0e0; line-height: 1.6;">
+                "Señores, mientras los sistemas antiguos solo validan si el documento Excel cuadra (A = B), 
+                <strong>FraudHunter valida si la realidad física, matemática y relacional detrás de ese Excel es posible</strong>. 
+                Detectamos lo que el defraudador no puede esconder: sus relaciones, su incoherencia semántica y su huella estadística."
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
     
     # ==========================================================================
     # SECCIÓN 4: PIPELINE CON FLECHAS
