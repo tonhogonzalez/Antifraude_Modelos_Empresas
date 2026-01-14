@@ -1251,37 +1251,17 @@ st.markdown("---")
 # =============================================================================
 if st.session_state.active_tab == 3:
     
-    # Cargar logo para el Hero
-    logo_file = Path("logo_dark.png")
-    img_b64 = ""
-    if logo_file.exists():
-        with open(logo_file, "rb") as f:
-            img_b64 = base64.b64encode(f.read()).decode()
-            
-    # Hero Section
-    st.markdown(f"""
-        <div class="help-hero">
-            <div class="help-header-content">
-                <div class="help-logo-container">
-                     <img src="data:image/png;base64,{img_b64}" class="help-logo-img">
-                </div>
-                <div class="help-text-container">
-                    <h1 class="help-main-title">FraudHunter</h1>
-                    <h2 class="help-subtitle">Plataforma de Inteligencia Forense Financiera</h2>
-                    <div class="help-meta-badge">Informe Comité Dirección v2.2</div>
-                </div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    # TOC de Navegación Rápida
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # TOC de Navegación Rápida
     st.markdown("""
         <div class="toc-container">
             <a href="#resumen-ejecutivo" class="toc-link">📋 Resumen</a>
-            <a href="#arquitectura-algor-tmica-el-core-de-la-soluci-n" class="toc-link">🧠 Algoritmos</a>
-            <a href="#tratamiento-de-datos-tributarios-la-l-gica-de-negocio" class="toc-link">📊 Datos Tributarios</a>
-            <a href="#funcionalidades-del-pipeline-flujo-de-trabajo" class="toc-link">⚙️ Pipeline</a>
-            <a href="#argumentario-de-venta-por-qu-invertir-en-fraudhunter" class="toc-link">💡 Argumentario</a>
+            <a href="#arquitectura-algor-tmica" class="toc-link">🧠 Algoritmos</a>
+            <a href="#l-gica-de-negocio" class="toc-link">📊 Datos Tributarios</a>
+            <a href="#pipeline-process" class="toc-link">⚙️ Pipeline</a>
+            <a href="#argumentario-de-venta" class="toc-link">💡 Argumentario</a>
         </div>
     """, unsafe_allow_html=True)
     
