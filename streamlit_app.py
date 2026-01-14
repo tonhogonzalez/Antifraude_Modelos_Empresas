@@ -1186,6 +1186,39 @@ with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
     - Modelo 349 (Operaciones Intracomunitarias)
     """)
 
+# Botón para abrir presentación en nueva pestaña
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 📽️ Presentación de la Solución")
+
+# Leer el archivo HTML y codificarlo en base64 para abrir en nueva pestaña
+try:
+    from pathlib import Path
+    html_path = Path(__file__).parent / "Presentación_solucion.html"
+    if html_path.exists():
+        html_content = html_path.read_text(encoding='utf-8')
+        b64_html = base64.b64encode(html_content.encode()).decode()
+        href = f'data:text/html;base64,{b64_html}'
+        st.sidebar.markdown(f'''
+            <a href="{href}" target="_blank" style="
+                display: inline-block;
+                width: 100%;
+                padding: 0.75rem 1rem;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                text-align: center;
+                font-weight: 600;
+                transition: transform 0.2s;
+            " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                🔗 Abrir Presentación en Nueva Pestaña
+            </a>
+        ''', unsafe_allow_html=True)
+    else:
+        st.sidebar.warning("⚠️ Archivo de presentación no encontrado")
+except Exception as e:
+    st.sidebar.error(f"Error cargando presentación: {e}")
+
 # Ejecutar análisis
 if st.session_state.get('run_analysis', False) or 'df_results' not in st.session_state:
     try:
