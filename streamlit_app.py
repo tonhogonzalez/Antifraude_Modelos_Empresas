@@ -2265,15 +2265,168 @@ if st.session_state.active_tab == 3:
             </div>
         """, unsafe_allow_html=True)
     
+    # ==========================================================================
+    # SECCIÓN 7: CENTRO DE RESOLUCIÓN DE DUDAS (FAQs)
+    # ==========================================================================
+    st.markdown("""
+<div id="faqs" class="help-section-header">
+    <div class="help-section-number">7</div>
+    <div class="help-section-title">Centro de Resolución de Dudas (FAQs)</div>
+</div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+<p style="color: #a0a0a0; margin-bottom: 2rem; text-align: center; font-size: 1.1rem;">
+    Respuestas directas para el <strong style="color: #667eea;">Comité de Dirección</strong>, 
+    el equipo de <strong style="color: #667eea;">IT</strong> y los responsables de <strong style="color: #667eea;">Implementación</strong>.
+</p>
+    """, unsafe_allow_html=True)
+    
+    # --- CATEGORÍA 1: Negocio y Metodología ---
+    st.markdown("""
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+    <div style="padding: 0.75rem; background: rgba(102, 126, 234, 0.2); border-radius: 12px;">
+        <span style="font-size: 1.5rem;">💼</span>
+    </div>
+    <div>
+        <div style="font-size: 1.3rem; font-weight: 700; color: #fff;">Negocio y Metodología</div>
+        <div style="font-size: 0.85rem; color: #888;">Fiabilidad, sesgos y explicabilidad del modelo.</div>
+    </div>
+</div>
+    """, unsafe_allow_html=True)
+    
+    with st.expander("🤖 ¿Cómo 'aprende' el sistema sin un histórico de fraudes previo?"):
+        st.markdown("""
+Utilizamos **Aprendizaje No Supervisado (Isolation Forest)**. En lugar de memorizar "la cara del ladrón" 
+(que requiere miles de casos previos), el sistema aprende la estructura matemática de una "empresa honesta". 
+
+Cualquier desviación estadística (ej: beneficios récord con caja negativa) se aísla automáticamente como anomalía. 
+Es un enfoque **proactivo** que detecta nuevas tipologías de fraude desde el primer día.
+        """)
+    
+    with st.expander("⚖️ ¿Es justo comparar una Startup con una Constructora? (Falsos Positivos)"):
+        st.markdown("""
+Sí, gracias al **Benchmarking Sectorial Contextual**. El sistema usa la distancia de Mahalanobis para 
+comparar a cada empresa *exclusivamente* con sus pares del mismo código CNAE. 
+
+Entiende que tener pérdidas y deuda alta es "normal" en el sector Software, pero una alerta crítica de quiebra en Construcción. 
+Esto **elimina el ruido** y protege a empresas innovadoras.
+        """)
+    
+    with st.expander("🔢 ¿Cómo distingue datos reales de cifras inventadas?"):
+        st.markdown("""
+Aplicamos **Forense Estadístico (Ley de Benford)**. En la contabilidad real, el número '1' aparece como primer dígito 
+el 30% de las veces. Los humanos son incapaces de replicar esta distribución natural al inventar facturas. 
+
+Además, penalizamos el exceso de "números redondos" (.00), que son estadísticamente improbables en el comercio real con IVA.
+        """)
+    
+    with st.expander("🕸️ ¿Detecta tramas organizadas o solo empresas aisladas?"):
+        st.markdown("""
+Detecta la **trama completa**. Al convertir el Modelo 347 en un **Grafo de Relaciones**, identificamos el "contagio". 
+
+Si una empresa parece sana pero sus proveedores son empresas fantasma (alto PageRank, baja antigüedad), el riesgo se propaga. 
+También detectamos automáticamente la "Circularidad" (dinero moviéndose A→B→C→A) típica del fraude de IVA.
+        """)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # --- CATEGORÍA 2: Arquitectura Técnica ---
+    st.markdown("""
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; border-bottom: 1px solid rgba(59, 130, 246, 0.3);">
+    <div style="padding: 0.75rem; background: rgba(59, 130, 246, 0.2); border-radius: 12px;">
+        <span style="font-size: 1.5rem;">🔧</span>
+    </div>
+    <div>
+        <div style="font-size: 1.3rem; font-weight: 700; color: #fff;">Arquitectura Técnica</div>
+        <div style="font-size: 0.85rem; color: #888;">Escalabilidad, Stack tecnológico y MLOps.</div>
+    </div>
+</div>
+    """, unsafe_allow_html=True)
+    
+    with st.expander("📊 ¿Cómo escala el sistema con millones de registros tributarios?"):
+        st.markdown("""
+La arquitectura es **Spark Nativa (Databricks)**. Implementamos una optimización crítica llamada "Push-Down Filtering" 
+en la capa de ingesta. 
+
+Filtramos las casillas tributarias irrelevantes *antes* de realizar el pivoteo horizontal de datos. 
+Esto reduce el consumo de memoria del clúster en un **80%**, permitiendo procesar millones de empresas en minutos.
+        """)
+    
+    with st.expander("🔄 ¿Qué ocurre si la AEAT cambia los códigos de las casillas?"):
+        st.markdown("""
+El sistema es **resiliente al cambio regulatorio**. Hemos desacoplado la lógica técnica de la fiscal mediante 
+un archivo de configuración externo (`tax_mapping_config.py`). 
+
+Si una casilla cambia el año que viene, solo se actualiza este JSON de configuración. 
+**No es necesario reescribir ni recompilar el motor central del algoritmo.**
+        """)
+    
+    with st.expander("📋 ¿Cómo se gestiona la trazabilidad y versión de modelos?"):
+        st.markdown("""
+Integración nativa con **MLflow**. Cada ejecución registra automáticamente:
+- Los hiperparámetros
+- El artefacto del modelo serializado
+- Las métricas de anomalía
+
+Esto permite **auditoría completa** del modelo ("¿Por qué denegamos esta operación hace 6 meses?") 
+y facilita el despliegue automático (CI/CD) a producción.
+        """)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # --- CATEGORÍA 3: Implementación y Roadmap ---
+    st.markdown("""
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; border-bottom: 1px solid rgba(56, 239, 125, 0.3);">
+    <div style="padding: 0.75rem; background: rgba(56, 239, 125, 0.2); border-radius: 12px;">
+        <span style="font-size: 1.5rem;">🚀</span>
+    </div>
+    <div>
+        <div style="font-size: 1.3rem; font-weight: 700; color: #fff;">Implementación y Roadmap</div>
+        <div style="font-size: 0.85rem; color: #888;">Tiempos, equipo y privacidad.</div>
+    </div>
+</div>
+    """, unsafe_allow_html=True)
+    
+    with st.expander("⏱️ ¿Cuándo veremos resultados? (Estrategia Quick Wins)"):
+        st.markdown("""
+En **4 semanas**. Desplegamos primero el módulo de "Reglas Duras" (Paradoja Logística y Ratios Financieros), 
+que filtra automáticamente el 30% de las incoherencias más obvias. 
+
+El motor completo de **IA y Grafos** estará calibrado y en producción para la **Semana 12**.
+        """)
+    
+    with st.expander("👥 ¿Qué infraestructura y equipo necesitamos?"):
+        st.markdown("""
+**🖥️ Infraestructura:** Cero inversión en hardware. Se despliega como un Job en su clúster Spark/Databricks existente.
+
+**👨‍💻 Equipo:** Mantenimiento mínimo:
+- 1 Data Engineer para la actualización anual de mapeos tributarios
+- 1 Data Scientist (parcial) para la recalibración trimestral de umbrales
+        """)
+    
+    with st.expander("🔒 ¿Cumple con GDPR y privacidad del dato?"):
+        st.markdown("""
+Sí, es **"Privacy-Preserving"**. El algoritmo analiza **patrones matemáticos y topológicos**, no identidades personales. 
+
+Los NIFs se anonimizan (hash) en la ingesta. El sistema detecta la estructura del fraude sin necesidad de leer 
+el nombre real de la empresa hasta que se genera la alerta final de seguridad.
+        """)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     # Footer
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
-        <div style="text-align: center; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡️</div>
-            <div style="color: #667eea; font-weight: 600; font-size: 1.1rem;">FraudHunter Pro</div>
-            <div style="color: #888; font-size: 0.85rem;">Plataforma de Inteligencia Forense Financiera</div>
-            <div style="color: #555; font-size: 0.75rem; margin-top: 0.5rem;">© 2026 - Análisis Avanzado de Riesgo Empresarial</div>
-        </div>
+<div style="text-align: center; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;">
+    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡️</div>
+    <div style="color: #667eea; font-weight: 600; font-size: 1.1rem;">FraudHunter Pro</div>
+    <div style="color: #888; font-size: 0.85rem;">Plataforma de Inteligencia Forense Financiera</div>
+    <div style="color: #555; font-size: 0.75rem; margin-top: 0.5rem;">© 2026 - Análisis Avanzado de Riesgo Empresarial</div>
+</div>
     """, unsafe_allow_html=True)
 
 
