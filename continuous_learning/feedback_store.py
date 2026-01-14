@@ -50,22 +50,26 @@ logger = logging.getLogger(__name__)
 # SCHEMAS
 # =============================================================================
 
-FEEDBACK_SCHEMA = StructType([
-    StructField("feedback_id", StringType(), False),
-    StructField("nif", StringType(), False),
-    StructField("fecha_alerta", TimestampType(), False),
-    StructField("fecha_analisis", TimestampType(), False),
-    StructField("model_version", StringType(), False),
-    StructField("analyst_id", StringType(), True),
-    StructField("analyst_verdict", IntegerType(), False),  # 0=FP, 1=Fraude
-    StructField("reason_code", StringType(), True),
-    StructField("fraud_score_original", DoubleType(), False),
-    StructField("feature_vector_hash", StringType(), False),
-    StructField("cnae_sector", StringType(), True),
-    StructField("ventas_netas", DoubleType(), True),
-    StructField("flags_active", ArrayType(StringType()), True),
-    StructField("created_at", TimestampType(), False),
-])
+# Definir schema solo si Spark está disponible
+if SPARK_AVAILABLE:
+    FEEDBACK_SCHEMA = StructType([
+        StructField("feedback_id", StringType(), False),
+        StructField("nif", StringType(), False),
+        StructField("fecha_alerta", TimestampType(), False),
+        StructField("fecha_analisis", TimestampType(), False),
+        StructField("model_version", StringType(), False),
+        StructField("analyst_id", StringType(), True),
+        StructField("analyst_verdict", IntegerType(), False),  # 0=FP, 1=Fraude
+        StructField("reason_code", StringType(), True),
+        StructField("fraud_score_original", DoubleType(), False),
+        StructField("feature_vector_hash", StringType(), False),
+        StructField("cnae_sector", StringType(), True),
+        StructField("ventas_netas", DoubleType(), True),
+        StructField("flags_active", ArrayType(StringType()), True),
+        StructField("created_at", TimestampType(), False),
+    ])
+else:
+    FEEDBACK_SCHEMA = None  # Fallback para entornos sin Spark
 
 
 @dataclass
