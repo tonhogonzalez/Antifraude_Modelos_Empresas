@@ -1754,6 +1754,132 @@ if st.session_state.active_tab == 0:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # ==========================================================================
+    # NUEVA SECCIÓN: GAUGE + TOP 10
+    # ==========================================================================
+    col_gauge, col_top10 = st.columns([1, 2])
+    
+    with col_gauge:
+        st.markdown("#### 🎯 Salud de la Cartera")
+        
+        # Calcular % de empresas sanas
+        pct_sanas = (len(df) - n_anomalies) / len(df) * 100
+        
+        # Determinar color según salud
+        if pct_sanas >= 90:
+            gauge_color = "#38ef7d"  # Verde
+        elif pct_sanas >= 75:
+            gauge_color = "#f2c94c"  # Amarillo
+        else:
+            gauge_color = "#f64f59"  # Rojo
+        
+        fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number+delta",
+            value=pct_sanas,
+            number={'suffix': '%', 'font': {'size': 40, 'color': 'white'}},
+            delta={'reference': 95, 'relative': False, 'valueformat': '.1f', 'suffix': ' vs objetivo'},
+            gauge={
+                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "white", 'tickfont': {'color': 'white'}},
+                'bar': {'color': gauge_color, 'thickness': 0.8},
+                'bgcolor': "rgba(255,255,255,0.1)",
+                'borderwidth': 0,
+                'steps': [
+                    {'range': [0, 75], 'color': 'rgba(246, 79, 89, 0.2)'},
+                    {'range': [75, 90], 'color': 'rgba(242, 201, 76, 0.2)'},
+                    {'range': [90, 100], 'color': 'rgba(56, 239, 125, 0.2)'}
+                ],
+                'threshold': {
+                    'line': {'color': "white", 'width': 3},
+                    'thickness': 0.8,
+                    'value': 95
+                }
+            },
+            title={'text': "Empresas Sanas", 'font': {'size': 16, 'color': '#a0a0a0'}}
+        ))
+        
+        fig_gauge.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            font={'color': 'white'},
+            height=280,
+            margin=dict(t=50, b=20, l=30, r=30)
+        )
+        st.plotly_chart(fig_gauge, use_container_width=True)
+        
+        # Mini resumen debajo del gauge
+        st.markdown(f"""
+            <div style="text-align: center; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                <span style="color: #38ef7d; font-weight: 600;">{len(df) - n_anomalies:,}</span> sanas
+                &nbsp;|&nbsp;
+                <span style="color: #f64f59; font-weight: 600;">{n_anomalies:,}</span> sospechosas
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with col_top10:
+        st.markdown("#### 🚨 Top 10 Empresas de Mayor Riesgo")
+        
+        # Obtener top 10 por fraud_score_normalized
+        top10 = df.nlargest(10, 'fraud_score_normalized')[['nif', 'sector', 'fraud_score_normalized', 'riesgo', 'ventas_netas']].copy()
+        top10['rank'] = range(1, 11)
+        
+        # Crear flags activos
+        flag_details = get_flag_details()
+        flag_cols = [col for col in flag_details.keys() if col in df.columns]
+        
+        def get_active_flags(nif):
+            row = df[df['nif'] == nif].iloc[0]
+            icons = []
+            for col in flag_cols:
+                if row.get(col, 0) == 1:
+                    icons.append(flag_details[col]['icono'])
+            return " ".join(icons[:4])  # Max 4 icons
+        
+        top10['flags'] = top10['nif'].apply(get_active_flags)
+        
+        # HTML table con barras de progreso
+        table_html = """
+        <style>
+            .top10-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+            .top10-table th { text-align: left; padding: 0.5rem; color: #667eea; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .top10-table td { padding: 0.6rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: #d0d0d0; }
+            .top10-table tr:hover { background: rgba(102, 126, 234, 0.1); }
+            .score-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #f64f59, #c471ed); }
+            .score-container { background: rgba(255,255,255,0.1); border-radius: 3px; width: 100%; }
+            .risk-alto { color: #f64f59; font-weight: 600; }
+            .risk-medio { color: #f2c94c; font-weight: 600; }
+        </style>
+        <table class="top10-table">
+            <tr>
+                <th>#</th>
+                <th>NIF</th>
+                <th>Sector</th>
+                <th>Score</th>
+                <th>Flags</th>
+            </tr>
+        """
+        
+        for _, row in top10.iterrows():
+            score_pct = row['fraud_score_normalized'] * 100
+            risk_class = 'risk-alto' if row['riesgo'] == 'Alto' else 'risk-medio'
+            table_html += f"""
+            <tr>
+                <td><strong>{row['rank']}</strong></td>
+                <td>{row['nif']}</td>
+                <td>{row['sector'][:15]}...</td>
+                <td>
+                    <div class="score-container">
+                        <div class="score-bar" style="width: {score_pct}%;"></div>
+                    </div>
+                    <span class="{risk_class}">{row['fraud_score_normalized']:.2f}</span>
+                </td>
+                <td>{row['flags']}</td>
+            </tr>
+            """
+        
+        table_html += "</table>"
+        st.markdown(table_html, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     # Gráficos principales
     col_chart1, col_chart2 = st.columns(2)
     
