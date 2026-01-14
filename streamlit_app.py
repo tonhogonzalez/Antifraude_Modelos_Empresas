@@ -680,8 +680,6 @@ with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
     - Modelo 200 (Impuesto Sociedades)
     - Modelo 347 (Operaciones +3.005€)
     - Modelo 349 (Operaciones Intracomunitarias)
-    
-    [📑 Ver Presentación Técnica Completa](https://github.com/tonhogonzalez/Antifraude_Modelos_Empresas/blob/main/Presentaci%C3%B3n_solucion.html)
     """)
 st.sidebar.markdown("---")
 
