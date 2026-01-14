@@ -1112,6 +1112,14 @@ with st.sidebar:
         st.image(logo_path, use_container_width=True)
     except:
         pass
+    
+    st.markdown("""
+        <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
+            <p style="color: #888; font-size: 0.7rem; line-height: 1.4; font-style: italic; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                Metodología: Isolation Forest + Análisis Sectorial Mahalanobis + Cruces Tributarios (M200/M347/M349)
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
 
 # Main Content Area
 # Header con tecnologías y modelos
