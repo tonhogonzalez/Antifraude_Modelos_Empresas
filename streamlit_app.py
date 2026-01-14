@@ -1190,19 +1190,23 @@ with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 📽️ Presentación")
 
+# Inicializar estado de presentación
+if 'show_presentation' not in st.session_state:
+    st.session_state.show_presentation = False
+
 try:
     from pathlib import Path
     import streamlit.components.v1 as components
     
     html_path = Path(__file__).parent / "Presentación_solucion.html"
     if html_path.exists():
-        show_presentation = st.sidebar.checkbox("📺 Mostrar Presentación", value=False)
+        # Botón toggle para mostrar/ocultar presentación
+        if st.sidebar.button("📺 Ver Presentación" if not st.session_state.show_presentation else "❌ Cerrar Presentación", 
+                             use_container_width=True):
+            st.session_state.show_presentation = not st.session_state.show_presentation
+            st.rerun()
         
-        if show_presentation:
-            # Guardar estado del tab actual
-            current_tab = st.session_state.active_tab
-            st.session_state.active_tab = -1  # Tab especial para presentación
-            
+        if st.session_state.show_presentation:
             st.markdown("## 📽️ Presentación de la Solución")
             st.markdown("---")
             
@@ -1211,11 +1215,13 @@ try:
             components.html(html_content, height=800, scrolling=True)
             
             st.markdown("---")
-            if st.button("⬅️ Volver al Dashboard"):
-                st.session_state.active_tab = 0
-                st.rerun()
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                if st.button("⬅️ Volver", use_container_width=True):
+                    st.session_state.show_presentation = False
+                    st.rerun()
             
-            st.stop()  # Detener ejecución para mostrar solo la presentación
+            st.stop()
     else:
         st.sidebar.warning("⚠️ HTML no encontrado")
 except Exception as e:
