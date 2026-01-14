@@ -1321,39 +1321,45 @@ if 'active_tab' not in st.session_state:
 if 'selected_company_nif' not in st.session_state:
     st.session_state.selected_company_nif = None
 
-# Crear navegación con botones - AHORA 4 BOTONES
-col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
+# Crear navegación con botones - AHORA 5 BOTONES
+col_nav1, col_nav2, col_nav3, col_nav4, col_nav5 = st.columns(5)
 
 with col_nav1:
-    if st.button("📊 Dashboard Ejecutivo", use_container_width=True, 
+    if st.button("📊 Dashboard", use_container_width=True, 
                  type="primary" if st.session_state.active_tab == 0 else "secondary"):
         st.session_state.active_tab = 0
         st.rerun()
 
 with col_nav2:
-    if st.button("🔎 Análisis por Empresa", use_container_width=True,
+    if st.button("🔎 Análisis", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 1 else "secondary"):
         st.session_state.active_tab = 1
         st.rerun()
 
 with col_nav3:
-    if st.button("📥 Exportar Resultados", use_container_width=True,
+    if st.button("📥 Exportar", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 2 else "secondary"):
         st.session_state.active_tab = 2
         st.rerun()
 
 with col_nav4:
-    if st.button("❓ Ayuda", use_container_width=True,
+    if st.button("🧠 IA Learning", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 3 else "secondary"):
         st.session_state.active_tab = 3
+        st.rerun()
+
+with col_nav5:
+    if st.button("❓ Ayuda", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 4 else "secondary"):
+        st.session_state.active_tab = 4
         st.rerun()
 
 st.markdown("---")
 
 # =============================================================================
-# TAB 4: AYUDA Y PRESENTACIÓN DE LA SOLUCIÓN
+# TAB 5: AYUDA Y PRESENTACIÓN DE LA SOLUCIÓN
 # =============================================================================
-if st.session_state.active_tab == 3:
+if st.session_state.active_tab == 4:
     
     # TOC de Navegación Rápida
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2456,15 +2462,25 @@ el nombre real de la empresa hasta que se genera la alerta final de seguridad.
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # ==========================================================================
-    # SECCIÓN 8: SISTEMA DE APRENDIZAJE CONTINUO (CONTINUOUS LEARNING)
-    # ==========================================================================
+    # Footer
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
-<div id="continuous-learning" class="help-section-header">
-    <div class="help-section-number">8</div>
-    <div class="help-section-title">Sistema de Aprendizaje Continuo</div>
+<div style="text-align: center; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;">
+    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡️</div>
+    <div style="color: #667eea; font-weight: 600; font-size: 1.1rem;">FraudHunter Pro</div>
+    <div style="color: #888; font-size: 0.85rem;">Plataforma de Inteligencia Forense Financiera</div>
+    <div style="color: #555; font-size: 0.75rem; margin-top: 0.5rem;">© 2026 - Análisis Avanzado de Riesgo Empresarial</div>
 </div>
     """, unsafe_allow_html=True)
+
+
+# =============================================================================
+# TAB 4: SISTEMA DE APRENDIZAJE CONTINUO (IA LEARNING)
+# =============================================================================
+
+if st.session_state.active_tab == 3:
+    
+    st.markdown("### 🧠 Sistema de Aprendizaje Continuo")
     
     st.markdown("""
 <div style="background: linear-gradient(145deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
@@ -2527,258 +2543,111 @@ el nombre real de la empresa hasta que se genera la alerta final de seguridad.
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- Subsección: Módulos del Sistema ---
-    st.markdown("#### 🔧 Módulos del Sistema de Aprendizaje Continuo")
+    # --- Módulos del Sistema ---
+    st.markdown("#### 🔧 Módulos del Sistema")
     
     # Módulo 1: FeedbackStore
-    with st.expander("📦 **Módulo 1: FeedbackStore** - Almacén de Decisiones del Analista", expanded=True):
+    with st.expander("📦 **FeedbackStore** - Almacén de Decisiones", expanded=True):
         st.markdown("""
 **¿Qué es?**  
-El FeedbackStore es una tabla que almacena todas las decisiones que tomas sobre las alertas. 
-Cada vez que marcas una empresa como "Fraude Confirmado" o "Falso Positivo", se guarda un registro completo.
+Almacena todas las decisiones sobre alertas. Cada vez que marcas una empresa como "Fraude" o "Falso Positivo", se guarda.
 
-**¿Qué información guarda?**
+**Campos guardados:** `nif`, `analyst_verdict`, `fraud_score_original`, `fecha_analisis`, `cnae_sector`, `flags_active`
 
-| Campo | Descripción |
-|-------|-------------|
-| `nif` | NIF de la empresa evaluada |
-| `analyst_verdict` | Tu decisión: 0 = Falso Positivo, 1 = Fraude Confirmado |
-| `fraud_score_original` | Score que el Isolation Forest asignó originalmente |
-| `fecha_analisis` | Cuándo tomaste la decisión |
-| `reason_code` | Código de razón (ej: "justificado_por_sector") |
-| `cnae_sector` | Sector de la empresa para análisis por industria |
-| `flags_active` | Qué alertas estaban activas (incoherencia logística, empresa pantalla, etc.) |
+**Ubicación:** `data/feedback_store.parquet`
 
-**¿Dónde está ubicado?**  
-`data/feedback_store.parquet` (versión local) o tabla Delta en Databricks (producción).
-
-**¿Cómo se usa en la práctica?**  
-1. Ve a **TAB 2: Análisis por Empresa**
-2. Selecciona una empresa sospechosa
-3. Revisa las alertas y el grafo de relaciones
-4. Haz clic en ✅ **"Confirmar Fraude"** o ❌ **"Falso Positivo"**
-5. El sistema guarda tu decisión automáticamente
+**Uso:**  
+1. Ve a **🔎 Análisis** → Selecciona empresa
+2. Clic en ✅ **Confirmar Fraude** o ❌ **Falso Positivo**
         """)
     
     # Módulo 2: HybridFraudReRanker
-    with st.expander("🤖 **Módulo 2: HybridFraudReRanker** - Calibrador Supervisado"):
+    with st.expander("🤖 **ReRanker** - Calibrador Supervisado"):
         st.markdown("""
 **¿Qué es?**  
-Es una **capa de inteligencia artificial supervisada** que se entrena con tus decisiones. 
-Actúa como un "segundo cerebro" que valida las alertas del Isolation Forest.
+Capa de IA que se entrena con tus decisiones. Predice: *"¿El analista confirmaría esto como fraude?"*
 
-**¿Cómo funciona?**  
-1. **Entrenamiento**: Usa XGBoost para aprender de tu historial de decisiones
-2. **Predicción**: Para cada alerta nueva, predice: *"¿El analista confirmaría esto como fraude?"*
-3. **Ajuste de Scores**:
-   - Si el Isolation Forest dice **"Alto Riesgo"**
-   - PERO el ReRanker predice **"95% probabilidad de que sea Falso Positivo"**
-   - ENTONCES → Bajar el score automáticamente
+**Funcionamiento:**
+- Si Isolation Forest dice **"Alto Riesgo"** PERO ReRanker predice **"95% FP"** → Bajar score
 
-**¿Cuándo se activa?**  
-El ReRanker necesita un **mínimo de 100 muestras de feedback** (con al menos 30 Falsos Positivos y 30 Fraudes Confirmados) 
-antes de poder entrenarse. Esto evita el problema del "Cold Start".
+**Requisitos:** Mínimo 100 muestras (30 por clase) para entrenar.
 
-**Guardrails de Seguridad:**
-- ⛔ **Máximo 20% de supresión**: El ReRanker nunca puede suprimir más del 20% de las alertas en un batch
-- ⏱️ **14 días en Shadow Mode**: Antes de activarse en producción, el ReRanker debe operar en modo "sombra" durante 14 días mínimo
-- 📋 **Auditoría completa**: Todas las decisiones de supresión quedan registradas para revisión
+**Guardrails:**
+- ⛔ Máximo 20% de supresión por batch
+- ⏱️ 14 días obligatorios en Shadow Mode
         """)
-        
-        st.info("💡 **Shadow Mode**: El ReRanker calcula los ajustes pero NO los aplica. Solo se registran las diferencias para validar que el modelo funciona correctamente antes de activarlo.")
+        st.info("💡 **Shadow Mode**: Calcula ajustes pero NO los aplica. Solo para validación.")
     
     # Módulo 3: AdaptiveThresholdManager
-    with st.expander("📊 **Módulo 3: AdaptiveThresholdManager** - Ajuste Dinámico de Umbrales"):
+    with st.expander("📊 **ThresholdManager** - Ajuste de Umbrales"):
         st.markdown("""
 **¿Qué es?**  
-Un sistema que analiza el rendimiento de cada **regla de detección** y sugiere ajustes automáticos 
-cuando una regla genera demasiados falsos positivos.
-
-**Ejemplo práctico:**  
-Si la regla `flag_incoherencia_logistica` tiene una **tasa de Falsos Positivos del 85%** en el sector "Software" 
-(porque las empresas de software rara vez tienen gastos de transporte), el sistema sugiere relajar el umbral 
-específicamente para ese sector.
+Analiza el rendimiento de cada regla y sugiere ajustes cuando hay muchos FP.
 
 **Reglas gestionadas:**
+| Regla | Umbral | Rango |
+|-------|--------|-------|
+| Empresa Pantalla | 50x | 20x-100x |
+| Incoherencia Logística | 1% | 0.1%-10% |
+| Hidden Debt | 2x | 1.5x-4x |
+| Números Redondos | 30% | 15%-50% |
 
-| Regla | Descripción | Umbral Actual | Rango Permitido |
-|-------|-------------|---------------|-----------------|
-| `flag_empresa_pantalla` | Ventas/Personal muy alto | 50x | 20x - 100x |
-| `flag_incoherencia_logistica` | Operaciones UE sin transporte | 1% | 0.1% - 10% |
-| `flag_hidden_debt` | Tasa interés implícita alta | 2x mercado | 1.5x - 4x |
-| `flag_numeros_redondos` | % facturas redondas | 30% | 15% - 50% |
-| `flag_benford_anomaly` | Divergencia Benford | 0.15 | 0.08 - 0.30 |
-| `flag_sectoral_outlier` | Distancia Mahalanobis | 3σ | 2σ - 5σ |
-
-**Guardrails de Seguridad:**
-- 🔒 **Límites mínimos/máximos**: Cada regla tiene límites duros que no pueden superarse
-- ⏳ **Cooldown de 7 días**: No se puede modificar la misma regla dos veces en una semana
-- 📝 **Aprobación requerida**: Los cambios son sugerencias que requieren aprobación manual (a menos que se configure auto-ajuste)
+**Guardrails:** Límites min/max, cooldown 7 días, aprobación manual.
         """)
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- Subsección: Pipeline de Reentrenamiento ---
+    # --- Pipeline ---
     st.markdown("#### 🚀 Pipeline de Reentrenamiento")
     
     st.markdown("""
 <div style="background: rgba(30, 30, 50, 0.5); border: 1px solid rgba(102, 126, 234, 0.3); 
-            border-radius: 12px; padding: 1.5rem; margin: 1rem 0;">
-    <div style="font-weight: 600; color: #fff; margin-bottom: 1rem;">
-        📋 El pipeline ejecuta automáticamente 8 etapas:
-    </div>
+            border-radius: 12px; padding: 1rem; margin: 1rem 0;">
     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #667eea;">ETAPA 1</div>
-            <div style="font-size: 0.8rem; color: #fff;">Cargar Feedback</div>
+        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
+            1. Cargar Feedback
         </div>
-        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #667eea;">ETAPA 2</div>
-            <div style="font-size: 0.8rem; color: #fff;">Validar Cold Start</div>
+        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
+            2. Validar Cold Start
         </div>
-        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #667eea;">ETAPA 3</div>
-            <div style="font-size: 0.8rem; color: #fff;">Preparar Datos</div>
+        <div style="background: rgba(56, 239, 125, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
+            3. Entrenar XGBoost
         </div>
-        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #667eea;">ETAPA 4</div>
-            <div style="font-size: 0.8rem; color: #fff;">Entrenar XGBoost</div>
-        </div>
-        <div style="background: rgba(56, 239, 125, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #38ef7d;">ETAPA 5</div>
-            <div style="font-size: 0.8rem; color: #fff;">Evaluar Métricas</div>
-        </div>
-        <div style="background: rgba(56, 239, 125, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #38ef7d;">ETAPA 6</div>
-            <div style="font-size: 0.8rem; color: #fff;">Registrar en MLflow</div>
-        </div>
-        <div style="background: rgba(56, 239, 125, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #38ef7d;">ETAPA 7</div>
-            <div style="font-size: 0.8rem; color: #fff;">Promocionar Modelo</div>
-        </div>
-        <div style="background: rgba(245, 158, 11, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center;">
-            <div style="font-size: 0.7rem; color: #f59e0b;">ETAPA 8</div>
-            <div style="font-size: 0.8rem; color: #fff;">Analizar Umbrales</div>
+        <div style="background: rgba(245, 158, 11, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
+            4. Promocionar
         </div>
     </div>
 </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("""
-**¿Cómo ejecutar el pipeline?**
-
-```bash
-# Modo simulación (sin aplicar cambios)
-python pipelines/retrain_pipeline.py --dry-run
-
-# Ejecución completa con auto-promoción
-python pipelines/retrain_pipeline.py --auto-promote --min-precision 0.85
-```
-
-**Métricas de validación:**
-- **Precision mínima**: 80% (el modelo debe acertar al menos el 80% de las veces)
-- Si las métricas son insuficientes, el modelo NO se promociona a producción
-    """)
+    st.code("""
+# Ejecutar pipeline
+python pipelines/retrain_pipeline.py --dry-run  # Simulación
+python pipelines/retrain_pipeline.py --auto-promote  # Producción
+    """, language="bash")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- Subsección: Fases de Implementación ---
+    # --- Fases ---
     st.markdown("#### 📅 Fases de Implementación")
     
-    col_fase1, col_fase2, col_fase3 = st.columns(3)
+    col_f1, col_f2, col_f3 = st.columns(3)
     
-    with col_fase1:
-        st.markdown("""
-<div style="background: rgba(102, 126, 234, 0.15); border: 2px solid rgba(102, 126, 234, 0.5); 
-            border-radius: 12px; padding: 1rem; height: 100%;">
-    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <span style="background: #667eea; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">FASE 1</span>
-        <span style="font-weight: 600; color: #fff;">Infraestructura</span>
-    </div>
-    <div style="font-size: 0.85rem; color: #b0b0b0;">
-        <div>✅ FeedbackStore implementado</div>
-        <div>✅ Botones de feedback en UI</div>
-        <div>✅ Panel de estadísticas</div>
-        <div style="color: #38ef7d; margin-top: 0.5rem;">Estado: COMPLETADO</div>
-    </div>
-</div>
-        """, unsafe_allow_html=True)
+    with col_f1:
+        st.success("**FASE 1: Infraestructura** ✅")
+        st.caption("FeedbackStore, botones UI, panel estadísticas")
     
-    with col_fase2:
-        st.markdown("""
-<div style="background: rgba(245, 158, 11, 0.15); border: 2px solid rgba(245, 158, 11, 0.5); 
-            border-radius: 12px; padding: 1rem; height: 100%;">
-    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <span style="background: #f59e0b; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">FASE 2</span>
-        <span style="font-weight: 600; color: #fff;">Shadow Mode</span>
-    </div>
-    <div style="font-size: 0.85rem; color: #b0b0b0;">
-        <div>⏳ Acumular 100+ feedback</div>
-        <div>⏳ Entrenar ReRanker</div>
-        <div>⏳ Validar 14 días en shadow</div>
-        <div style="color: #f59e0b; margin-top: 0.5rem;">Estado: PENDIENTE</div>
-    </div>
-</div>
-        """, unsafe_allow_html=True)
+    with col_f2:
+        st.warning("**FASE 2: Shadow Mode** ⏳")
+        st.caption("Acumular 100+ feedback, validar 14 días")
     
-    with col_fase3:
-        st.markdown("""
-<div style="background: rgba(107, 114, 128, 0.15); border: 2px solid rgba(107, 114, 128, 0.5); 
-            border-radius: 12px; padding: 1rem; height: 100%;">
-    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <span style="background: #6b7280; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">FASE 3</span>
-        <span style="font-weight: 600; color: #fff;">Producción</span>
-    </div>
-    <div style="font-size: 0.85rem; color: #b0b0b0;">
-        <div>🔜 Activar ReRanker (10%)</div>
-        <div>🔜 Escalar gradualmente</div>
-        <div>🔜 Auto-ajuste de umbrales</div>
-        <div style="color: #6b7280; margin-top: 0.5rem;">Estado: FUTURO</div>
-    </div>
-</div>
-        """, unsafe_allow_html=True)
+    with col_f3:
+        st.info("**FASE 3: Producción** 🔜")
+        st.caption("Activar ReRanker, escalar gradualmente")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- Subsección: Guardrails de Seguridad ---
-    st.markdown("#### 🛡️ Guardrails de Seguridad")
-    
-    st.markdown("""
-<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); 
-            border-radius: 12px; padding: 1rem; margin: 1rem 0;">
-    <div style="font-weight: 600; color: #ef4444; margin-bottom: 0.75rem;">
-        ⚠️ Mecanismos de Protección Implementados
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 8px;">
-            <div style="font-weight: 500; color: #fff;">🔒 Cold Start Protection</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">
-                Mínimo 100 muestras (30 por clase) antes de activar cualquier ajuste automático
-            </div>
-        </div>
-        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 8px;">
-            <div style="font-weight: 500; color: #fff;">⛔ Suppression Limit</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">
-                Máximo 20% de alertas pueden ser suprimidas por el ReRanker en cualquier batch
-            </div>
-        </div>
-        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 8px;">
-            <div style="font-weight: 500; color: #fff;">⏱️ Shadow Mode Obligatorio</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">
-                14 días mínimo de validación en shadow antes de activar en producción
-            </div>
-        </div>
-        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 8px;">
-            <div style="font-weight: 500; color: #fff;">📋 Audit Log Completo</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">
-                Todas las decisiones de supresión y cambios de umbral quedan registradas
-            </div>
-        </div>
-    </div>
-</div>
-    """, unsafe_allow_html=True)
-    
-    # --- Subsección: Estado Actual ---
+    # --- Estado Actual ---
     st.markdown("#### 📊 Estado Actual del Sistema")
     
     if CONTINUOUS_LEARNING_AVAILABLE:
@@ -2788,41 +2657,30 @@ python pipelines/retrain_pipeline.py --auto-promote --min-precision 0.85
             is_ready, reason = store.is_ready_for_training()
             config = get_config()
             
-            col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
+            col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+            col_s1.metric("📝 Total Feedback", counts['total'])
+            col_s2.metric("✅ Fraudes", counts['confirmed_fraud'])
+            col_s3.metric("❌ Falsos Positivos", counts['false_positives'])
+            progress = min(counts['total'] / config.min_samples_for_training * 100, 100)
+            col_s4.metric("📈 Progreso", f"{progress:.0f}%")
             
-            with col_stat1:
-                st.metric("📝 Feedback Total", counts['total'])
-            with col_stat2:
-                st.metric("✅ Fraudes Confirmados", counts['confirmed_fraud'])
-            with col_stat3:
-                st.metric("❌ Falsos Positivos", counts['false_positives'])
-            with col_stat4:
-                progress = counts['total'] / config.min_samples_for_training * 100
-                st.metric("📈 Progreso", f"{min(progress, 100):.0f}%")
-            
-            # Barra de progreso
             st.progress(min(counts['total'] / config.min_samples_for_training, 1.0))
             
             if is_ready:
-                st.success(f"✅ **{reason}** - Puedes ejecutar el pipeline de reentrenamiento.")
+                st.success(f"✅ {reason}")
             else:
-                st.info(f"⏳ **{reason}** - Continúa proporcionando feedback en TAB 2.")
+                st.info(f"⏳ {reason}")
                 
         except Exception as e:
-            st.info(f"ℹ️ Sistema de Continuous Learning inicializado. Empieza a proporcionar feedback en TAB 2 para activar el aprendizaje.")
+            st.info("ℹ️ Empieza a proporcionar feedback en la pestaña 🔎 Análisis")
     else:
-        st.warning("⚠️ Módulo de Continuous Learning no disponible. Ejecuta: `pip install xgboost`")
-    
-    st.markdown("<br>", unsafe_allow_html=True)
+        st.warning("⚠️ Módulo no disponible. Ejecuta: `pip install xgboost`")
     
     # Footer
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("""
-<div style="text-align: center; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;">
-    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡️</div>
-    <div style="color: #667eea; font-weight: 600; font-size: 1.1rem;">FraudHunter Pro</div>
-    <div style="color: #888; font-size: 0.85rem;">Plataforma de Inteligencia Forense Financiera</div>
-    <div style="color: #555; font-size: 0.75rem; margin-top: 0.5rem;">© 2026 - Análisis Avanzado de Riesgo Empresarial</div>
+<div style="text-align: center; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+    <div style="color: #667eea; font-weight: 600;">🧠 Continuous Learning powered by XGBoost</div>
 </div>
     """, unsafe_allow_html=True)
 
