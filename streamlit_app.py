@@ -1285,6 +1285,7 @@ if st.session_state.active_tab == 3:
             <a href="#resumen-ejecutivo" class="toc-link">📋 Resumen</a>
             <a href="#matriz-interaccion-forense" class="toc-link">🧠 Matriz Forense</a>
             <a href="#pipeline-process" class="toc-link">⚙️ Pipeline</a>
+            <a href="#modelos-fiscales" class="toc-link">📊 Modelos AEAT</a>
             <a href="#argumentario-de-venta" class="toc-link">💡 Argumentario</a>
         </div>
     """, unsafe_allow_html=True)
@@ -1617,11 +1618,86 @@ if st.session_state.active_tab == 3:
         """, unsafe_allow_html=True)
     
     # ==========================================================================
-    # SECCIÓN 5: ARGUMENTARIO DE VENTA
+    # SECCIÓN 5: MODELOS FISCALES UTILIZADOS (NUEVA)
+    # ==========================================================================
+    st.markdown("""
+        <div id="modelos-fiscales" class="help-section-header">
+            <div class="help-section-number">5</div>
+            <div class="help-section-title">Modelos Fiscales y Datos Utilizados</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
+            El sistema procesa datos de los <strong style="color: #667eea;">tres modelos fiscales</strong> principales de la AEAT España:
+        </p>
+    """, unsafe_allow_html=True)
+    
+    # Tabla M200
+    st.markdown("#### 📋 Modelo 200 - Impuesto de Sociedades")
+    m200_data = {
+        'Casilla': ['C00255', 'C00258', 'C00260', 'C00263', 'C00279', 'C00280', 'C00296', 'C00500', 'C00033', 'C00062', 'C00195', 'C00215', 'C00032'],
+        'Variable': ['cifra_negocios', 'aprovisionamientos', 'otros_ingresos', 'gastos_personal', 'otros_gastos_expl', 'amortizaciones', 'gastos_financieros', 'resultado_ejercicio', 'total_activo', 'patrimonio_neto', 'deuda_bancaria_lp', 'deuda_bancaria_cp', 'efectivo_tesoreria'],
+        'Descripción': ['Ingresos de Explotación', 'Compras y Aprovisionamientos', 'Subvenciones Recibidas', 'Sueldos y Seg. Social', 'Transportes/Servicios Ext.', 'Amortización del Inmovilizado', 'Intereses de Deuda', 'Beneficio/Pérdida Neto', 'Total Activo Balance', 'Patrimonio Neto', 'Deudas Bancarias L/P', 'Deudas Bancarias C/P', 'Caja y Equivalentes'],
+        'Uso Principal': ['Base de ventas', 'Márgenes', 'Ayudas públicas', 'Empresa pantalla', 'Carrusel IVA', 'Maquillaje', 'Deuda oculta', 'Márgenes anómalos', 'Pantalla/Inflado', 'Empresas zombie', 'Deuda oculta', 'Deuda oculta', 'Liquidez ficticia']
+    }
+    st.dataframe(pd.DataFrame(m200_data), hide_index=True, use_container_width=True)
+    
+    col_m347, col_m349 = st.columns(2)
+    
+    with col_m347:
+        st.markdown("#### 📊 Modelo 347 - Operaciones con Terceros")
+        st.markdown("""
+        | Campo | Uso |
+        |-------|-----|
+        | `NIF_DECLARANTE` | Nodo origen en grafo |
+        | `NIF_CONTRAPARTE` | Nodo destino en grafo |
+        | `IMPORTE_OPS` | Peso de la conexión |
+        | `is_circular` | Flag de circularidad |
+        
+        **Umbral declaración:** > 3.005,06€
+        """)
+    
+    with col_m349:
+        st.markdown("#### 🇪🇺 Modelo 349 - Operaciones UE")
+        st.markdown("""
+        | Campo | Uso |
+        |-------|-----|
+        | `ENTREGAS_UE` | Ventas intracomunitarias |
+        | `ADQUISICIONES_UE` | Compras de UE |
+        
+        **Riesgo Carrusel:** Entregas UE altas + Transporte bajo = 🚨
+        
+        **Países riesgo alto:** CY, LU, MT, NL, IE, BG, RO
+        """)
+    
+    # Dataset Info
+    st.markdown("#### 📊 Dataset Actual")
+    st.markdown("""
+    | Métrica | Valor |
+    |---------|-------|
+    | **Empresas** | 100,000 |
+    | **Sectores CNAE** | 48 diferentes |
+    | **Casillas EAV** | 14 por empresa (1.4M filas) |
+    | **Transacciones M347** | 100,000 |
+    | **Tamaño total** | ~44 MB |
+    
+    **Distribución por tamaño:**
+    - Micro (<2M€): 85%
+    - Pequeña (2-10M€): 10%
+    - Mediana (10-50M€): 4%
+    - Grande (>50M€): 1%
+    
+    **Patrones de fraude inyectados (5%):**
+    🔄 Carrusel | 📊 Maquillaje | 🏭 Pantalla | 💀 Zombie
+    """)
+    
+    # ==========================================================================
+    # SECCIÓN 6: ARGUMENTARIO DE VENTA
     # ==========================================================================
     st.markdown("""
         <div id="argumentario-de-venta" class="help-section-header">
-            <div class="help-section-number">5</div>
+            <div class="help-section-number">6</div>
             <div class="help-section-title">Argumentario de Venta: ¿Por qué invertir en FraudHunter?</div>
         </div>
     """, unsafe_allow_html=True)
