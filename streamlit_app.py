@@ -1120,23 +1120,6 @@ st.markdown(f"""
 
 st.sidebar.header("⚙️ Configuración del Análisis")
 
-# Enlace a documentación
-st.sidebar.markdown("---")
-with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
-    st.markdown("""
-    ### FraudHunter - Inteligencia Forense
-    
-    **Tecnologías utilizadas:**
-    - 🔬 **Isolation Forest** - ML no supervisado
-    - 📊 **Distancia Mahalanobis** - Contexto sectorial
-    - 🔢 **Ley de Benford** - Detección estadística
-    - 🌐 **Graph Analysis** - Redes de transacciones
-    
-    **Modelos fiscales analizados:**
-    - Modelo 200 (Impuesto Sociedades)
-    - Modelo 347 (Operaciones +3.005€)
-    - Modelo 349 (Operaciones Intracomunitarias)
-    """)
 st.sidebar.markdown("---")
 
 # Selector de fuente de datos
@@ -1184,6 +1167,24 @@ st.sidebar.markdown("---")
 if st.sidebar.button("🚀 Ejecutar Análisis", type="primary", use_container_width=True):
     st.session_state.run_analysis = True
     st.session_state.use_real_data = use_real_data
+
+st.sidebar.markdown("---")
+# Enlace a documentación
+with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
+    st.markdown("""
+    ### FraudHunter - Inteligencia Forense
+    
+    **Tecnologías utilizadas:**
+    - 🔬 **Isolation Forest** - ML no supervisado
+    - 📊 **Distancia Mahalanobis** - Contexto sectorial
+    - 🔢 **Ley de Benford** - Detección estadística
+    - 🌐 **Graph Analysis** - Redes de transacciones
+    
+    **Modelos fiscales analizados:**
+    - Modelo 200 (Impuesto Sociedades)
+    - Modelo 347 (Operaciones +3.005€)
+    - Modelo 349 (Operaciones Intracomunitarias)
+    """)
 
 # Ejecutar análisis
 if st.session_state.get('run_analysis', False) or 'df_results' not in st.session_state:
