@@ -1834,49 +1834,33 @@ if st.session_state.active_tab == 0:
             return " ".join(icons[:4])  # Max 4 icons
         
         top10['flags'] = top10['nif'].apply(get_active_flags)
+        top10['sector_short'] = top10['sector'].str[:20] + '...'
         
-        # HTML table con barras de progreso
-        table_html = """
-        <style>
-            .top10-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-            .top10-table th { text-align: left; padding: 0.5rem; color: #667eea; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            .top10-table td { padding: 0.6rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: #d0d0d0; }
-            .top10-table tr:hover { background: rgba(102, 126, 234, 0.1); }
-            .score-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #f64f59, #c471ed); }
-            .score-container { background: rgba(255,255,255,0.1); border-radius: 3px; width: 100%; }
-            .risk-alto { color: #f64f59; font-weight: 600; }
-            .risk-medio { color: #f2c94c; font-weight: 600; }
-        </style>
-        <table class="top10-table">
-            <tr>
-                <th>#</th>
-                <th>NIF</th>
-                <th>Sector</th>
-                <th>Score</th>
-                <th>Flags</th>
-            </tr>
-        """
+        # Reordenar y renombrar para mostrar
+        display_df = top10[['rank', 'nif', 'sector_short', 'fraud_score_normalized', 'riesgo', 'flags']].copy()
+        display_df.columns = ['#', 'NIF', 'Sector', 'Score', 'Riesgo', 'Alertas']
         
-        for _, row in top10.iterrows():
-            score_pct = row['fraud_score_normalized'] * 100
-            risk_class = 'risk-alto' if row['riesgo'] == 'Alto' else 'risk-medio'
-            table_html += f"""
-            <tr>
-                <td><strong>{row['rank']}</strong></td>
-                <td>{row['nif']}</td>
-                <td>{row['sector'][:15]}...</td>
-                <td>
-                    <div class="score-container">
-                        <div class="score-bar" style="width: {score_pct}%;"></div>
-                    </div>
-                    <span class="{risk_class}">{row['fraud_score_normalized']:.2f}</span>
-                </td>
-                <td>{row['flags']}</td>
-            </tr>
-            """
-        
-        table_html += "</table>"
-        st.markdown(table_html, unsafe_allow_html=True)
+        # Usar st.dataframe con column_config para mejor visualización
+        st.dataframe(
+            display_df,
+            column_config={
+                "#": st.column_config.NumberColumn("#", width="small"),
+                "NIF": st.column_config.TextColumn("NIF", width="medium"),
+                "Sector": st.column_config.TextColumn("Sector", width="medium"),
+                "Score": st.column_config.ProgressColumn(
+                    "Score de Fraude",
+                    help="Score normalizado de riesgo (0-1)",
+                    format="%.2f",
+                    min_value=0,
+                    max_value=1,
+                ),
+                "Riesgo": st.column_config.TextColumn("Riesgo", width="small"),
+                "Alertas": st.column_config.TextColumn("Flags", width="small"),
+            },
+            hide_index=True,
+            use_container_width=True,
+            height=400
+        )
     
     st.markdown("<br>", unsafe_allow_html=True)
     
