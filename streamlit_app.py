@@ -1186,49 +1186,38 @@ with st.sidebar.expander("📖 Documentación del Sistema", expanded=False):
     - Modelo 349 (Operaciones Intracomunitarias)
     """)
 
-# Botón para abrir presentación en nueva pestaña
+# Botón para ver presentación
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 📽️ Presentación de la Solución")
+st.sidebar.markdown("### 📽️ Presentación")
 
-# Usar componente HTML con JavaScript para abrir en nueva ventana
 try:
     from pathlib import Path
     import streamlit.components.v1 as components
     
     html_path = Path(__file__).parent / "Presentación_solucion.html"
     if html_path.exists():
-        html_content = html_path.read_text(encoding='utf-8')
-        # Escapar caracteres problemáticos para JavaScript
-        escaped_content = html_content.replace('\\', '\\\\').replace('`', '\\`').replace('${', '\\${')
+        show_presentation = st.sidebar.checkbox("📺 Mostrar Presentación", value=False)
         
-        # Botón que usa JavaScript para abrir nueva ventana
-        button_html = f'''
-        <button onclick="openPresentation()" style="
-            width: 100%;
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        " onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-            🔗 Abrir Presentación
-        </button>
-        <script>
-            function openPresentation() {{
-                var win = window.open('', '_blank');
-                win.document.write(`{escaped_content}`);
-                win.document.close();
-            }}
-        </script>
-        '''
-        with st.sidebar:
-            components.html(button_html, height=50)
+        if show_presentation:
+            # Guardar estado del tab actual
+            current_tab = st.session_state.active_tab
+            st.session_state.active_tab = -1  # Tab especial para presentación
+            
+            st.markdown("## 📽️ Presentación de la Solución")
+            st.markdown("---")
+            
+            # Leer y mostrar HTML
+            html_content = html_path.read_text(encoding='utf-8')
+            components.html(html_content, height=800, scrolling=True)
+            
+            st.markdown("---")
+            if st.button("⬅️ Volver al Dashboard"):
+                st.session_state.active_tab = 0
+                st.rerun()
+            
+            st.stop()  # Detener ejecución para mostrar solo la presentación
     else:
-        st.sidebar.warning("⚠️ Archivo Presentación_solucion.html no encontrado")
+        st.sidebar.warning("⚠️ HTML no encontrado")
 except Exception as e:
     st.sidebar.error(f"Error: {e}")
 
