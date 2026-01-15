@@ -3318,12 +3318,35 @@ if st.session_state.active_tab == 1:
             'Bajo': 'risk-low'
         }.get(empresa_data['riesgo'], 'risk-low')
         
+        # Mapeo de iconos por sector
+        sector_lower = str(empresa_data['sector']).lower()
+        if 'auto' in sector_lower or 'coche' in sector_lower or 'vehículo' in sector_lower:
+            sector_icon = "🚗"
+        elif 'informática' in sector_lower or 'software' in sector_lower or 'tecnología' in sector_lower:
+            sector_icon = "💻"
+        elif 'inmobiliari' in sector_lower or 'compraventa' in sector_lower or 'construcción' in sector_lower:
+            sector_icon = "🏗️"
+        elif 'transporte' in sector_lower or 'logística' in sector_lower:
+            sector_icon = "🚚"
+        elif 'comercio' in sector_lower or 'retail' in sector_lower or 'tienda' in sector_lower:
+            sector_icon = "🛍️"
+        elif 'eléctri' in sector_lower or 'energía' in sector_lower:
+            sector_icon = "⚡"
+        elif 'consultor' in sector_lower or 'asesor' in sector_lower:
+            sector_icon = "💼"
+        elif 'sanidad' in sector_lower or 'salud' in sector_lower or 'hospital' in sector_lower:
+            sector_icon = "🏥"
+        elif 'turismo' in sector_lower or 'hotel' in sector_lower or 'viaje' in sector_lower:
+            sector_icon = "✈️"
+        else:
+            sector_icon = "🏢"  # Fallback default
+        
         st.markdown(f"""
             <div class="company-card">
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
                     <div style="display: flex; align-items: center; gap: 15px; min-width: 300px;">
                         <div style="background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid rgba(255,255,255,0.1);">
-                            🏢
+                            {sector_icon}
                         </div>
                         <div>
                             <div style="font-size: 1.5rem; font-weight: 700; color: white; line-height: 1.1; letter-spacing: 0.5px;">{empresa_data['nif']}</div>
