@@ -163,7 +163,7 @@ st.markdown("""
         text-align: center;
         color: white;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        height: 100%;
+        min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: center;
