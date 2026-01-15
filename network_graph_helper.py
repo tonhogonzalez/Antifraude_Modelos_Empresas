@@ -307,8 +307,24 @@ def create_interactive_network_html(center_nif, center_risk, center_score):
     </div>
     """
     
-    # Insertar leyenda después del body
+    # Script para forzar centrado inicial
+    center_script = """
+    <script type="text/javascript">
+        network.once("stabilizationIterationsDone", function() {
+            network.fit({
+                animation: {
+                    offset: {x: 0, y: 0},
+                    duration: 1000,
+                    easingFunction: "easeInOutQuad"
+                }
+            });
+        });
+    </script>
+    """
+    
+    # Insertar leyenda después del body y script antes del cierre
     html_content = html_content.replace('<body>', f'<body>{legend_html}')
+    html_content = html_content.replace('</body>', f'{center_script}</body>')
     
     return html_content
 
