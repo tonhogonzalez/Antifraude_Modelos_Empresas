@@ -3321,8 +3321,6 @@ if st.session_state.active_tab == 1:
         st.markdown(f"""
             <div class="company-card">
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
-                    
-                    <!-- 1. IDENTIDAD (Left) -->
                     <div style="display: flex; align-items: center; gap: 15px; min-width: 300px;">
                         <div style="background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid rgba(255,255,255,0.1);">
                             🏢
@@ -3335,8 +3333,6 @@ if st.session_state.active_tab == 1:
                             </div>
                         </div>
                     </div>
-
-                    <!-- 2. MÉTRICAS CLAVE (Center) -->
                     <div style="display: flex; gap: 40px; border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); padding: 0 40px;">
                          <div style="text-align: center;">
                             <div style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Ventas</div>
@@ -3347,8 +3343,6 @@ if st.session_state.active_tab == 1:
                             <div style="font-size: 1.2rem; font-weight: 700; color: white; margin-top: 2px;">{empresa_data['fraud_score_normalized']:.3f}</div>
                          </div>
                     </div>
-
-                    <!-- 3. RIESGO (Right) -->
                     <div style="text-align: right; min-width: 150px;">
                         <span class="risk-badge {risk_class}" style="font-size: 1rem; padding: 0.5rem 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                             {empresa_data['riesgo'].upper()}
@@ -3357,7 +3351,6 @@ if st.session_state.active_tab == 1:
                             Nivel de Alerta
                         </div>
                     </div>
-
                 </div>
             </div>
         """, unsafe_allow_html=True)
