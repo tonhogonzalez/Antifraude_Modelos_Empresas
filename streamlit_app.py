@@ -1137,15 +1137,38 @@ def get_flag_details():
 # INTERFAZ PRINCIPAL
 # =============================================================================
 
-# Resolve logo path
-logo_path = "logo_integrated.png" if Path("logo_integrated.png").exists() else ("logo_dark.png" if Path("logo_dark.png").exists() else "logo.png")
+# Helper para cargar imagen en base64
+def get_img_as_base64(file_path):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+# Resolve logo path - Prefer logo_dark.png for better integration
+target_logo = "logo_dark.png" if Path("logo_dark.png").exists() else ("logo_integrated.png" if Path("logo_integrated.png").exists() else "logo.png")
 
 # Sidebar Branding
 with st.sidebar:
     try:
-        st.image(logo_path, use_container_width=True)
-    except:
-        pass
+        if Path(target_logo).exists():
+            img_b64 = get_img_as_base64(target_logo)
+            st.markdown(
+                f"""
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <a href="https://antifraudemodelosempresas.streamlit.app/" target="_self" style="text-decoration: none;">
+                        <img src="data:image/png;base64,{img_b64}" 
+                             style="width: 100%; max-width: 280px; transition: transform 0.3s ease; border-radius: 10px;"
+                             onmouseover="this.style.transform='scale(1.02)';"
+                             onmouseout="this.style.transform='scale(1.0)';"
+                             alt="FraudHunter Logo">
+                    </a>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.warning("Logo not found")
+    except Exception as e:
+        st.error(f"Error loading logo: {e}")
     
     st.markdown("""
         <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
