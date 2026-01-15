@@ -307,18 +307,41 @@ def create_interactive_network_html(center_nif, center_risk, center_score):
     </div>
     """
     
-    # Script para forzar centrado inicial
+    # Script para forzar centrado inicial (Versión Robusta)
     center_script = """
     <script type="text/javascript">
-        network.once("stabilizationIterationsDone", function() {
-            network.fit({
-                animation: {
-                    offset: {x: 0, y: 0},
-                    duration: 1000,
-                    easingFunction: "easeInOutQuad"
-                }
+        // Función de centrado seguro
+        function forceFit() {
+            if (typeof network !== 'undefined') {
+                network.fit({
+                    animation: {
+                        duration: 1000,
+                        easingFunction: "easeInOutQuad"
+                    }
+                });
+                console.log("Network forcing fit...");
+            }
+        }
+
+        // 1. Intentar inmediatamente por si ya está listo
+        setTimeout(forceFit, 100);
+
+        // 2. Intentar después de estabilización
+        if (typeof network !== 'undefined') {
+            network.once("stabilizationIterationsDone", function() {
+                console.log("Stabilization done");
+                forceFit();
             });
-        });
+            
+            // 3. Intentar en al primer dibujo (fallback)
+            network.once("afterDrawing", function() {
+                console.log("First drawing done");
+                forceFit();
+            });
+        }
+        
+        // 4. Último recurso: timer largo
+        setTimeout(forceFit, 2000);
     </script>
     """
     
