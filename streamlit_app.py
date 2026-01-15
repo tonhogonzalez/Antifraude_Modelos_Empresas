@@ -3479,6 +3479,32 @@ if st.session_state.active_tab == 1:
                         st.session_state[f'verdict_{selected_nif}'] = 'watch'
                         st.rerun()
                 
+                # === RECUPERAR FEEDBACK HISTÓRICO ===
+                # Intentar recuperar feedback previo si no hay uno en sesión
+                if f'verdict_{selected_nif}' not in st.session_state:
+                    try:
+                        store = get_feedback_store()
+                        last_feedback = store.get_last_feedback(selected_nif)
+                        if last_feedback:
+                            verdict_map_rev = {0: 'fp', 1: 'fraud', 2: 'watch'}
+                            stored_verdict = verdict_map_rev.get(last_feedback.get('analyst_verdict'))
+                            
+                            if stored_verdict:
+                                st.session_state[f'verdict_{selected_nif}'] = stored_verdict
+                                
+                                # Restaurar detalles si existen
+                                if stored_verdict == 'fraud' and last_feedback.get('fraud_typology_code'):
+                                    st.session_state[f"fraud_type_{selected_nif}"] = last_feedback.get('fraud_typology_code')
+                                elif stored_verdict == 'fp' and last_feedback.get('rejection_reason_code'):
+                                    st.session_state[f"fp_reason_{selected_nif}"] = last_feedback.get('rejection_reason_code')
+                                
+                                # Restaurar confianza
+                                if last_feedback.get('analyst_confidence'):
+                                    st.session_state[f"confidence_{selected_nif}"] = last_feedback.get('analyst_confidence')
+                    except Exception as e:
+                        # Fallo silencioso en recuperación para no bloquear UI
+                        pass
+
                 current_verdict = st.session_state.get(f'verdict_{selected_nif}')
                 
                 if current_verdict:
@@ -3574,12 +3600,13 @@ if st.session_state.active_tab == 1:
                                 store.log_feedback(feedback)
                                 
                                 st.session_state.feedback_submitted[selected_nif] = True
-                                # Limpiar estado temporal
-                                if f'verdict_{selected_nif}' in st.session_state:
-                                    del st.session_state[f'verdict_{selected_nif}']
+                                # No borrar el veredicto de la sesión para mantener la UI consistente
+                                # if f'verdict_{selected_nif}' in st.session_state:
+                                #    del st.session_state[f'verdict_{selected_nif}']
                                 
-                                st.success(f"✅ Feedback guardado correctamente")
-                                st.rerun()
+                                st.toast(f"✅ Feedback guardado correctamente para {selected_nif}", icon="💾")
+                                # Evitar rerun completo si no es necesario, solo actualizar UI localmente
+                                # st.rerun()
                                 
                             except Exception as e:
                                 st.error(f"Error al guardar: {e}")

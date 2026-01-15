@@ -282,6 +282,41 @@ class FeedbackStorePandas:
         )
         
         return record["feedback_id"]
+
+    def get_last_feedback(self, nif: str) -> Optional[Dict]:
+        """
+        Obtiene el último feedback registrado para un NIF.
+        Retorna None si no hay feedback previo.
+        """
+        try:
+            # Optimización: Leer solo si el archivo existe
+            if not os.path.exists(self.storage_path):
+                return None
+                
+            # Leer dataframe (potencial mejora: cachear lectura si es frecuente)
+            df = pd.read_parquet(self.storage_path)
+            
+            if len(df) == 0:
+                return None
+                
+            # Filtrar por NIF
+            nif_feedback = df[df['nif'] == nif]
+            
+            if len(nif_feedback) == 0:
+                return None
+                
+            # Ordenar por fecha (más reciente primero) y tomar el primero
+            if 'created_at' in nif_feedback.columns:
+                latest = nif_feedback.sort_values('created_at', ascending=False).iloc[0]
+            else:
+                # Fallback si no hay created_at (usar orden de inserción)
+                latest = nif_feedback.iloc[-1]
+            
+            return latest.to_dict()
+            
+        except Exception as e:
+            logger.error(f"Error recuperando feedback para {nif}: {e}")
+            return None
     
     def _validate_feedback(self, feedback: FeedbackRecord) -> bool:
         """Valida la integridad del feedback."""
