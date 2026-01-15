@@ -193,15 +193,24 @@ st.markdown("""
     
     /* Tarjeta de empresa */
     .company-card {
-        background: linear-gradient(145deg, #1e1e2e 0%, #2d2d44 100%);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        max-width: 850px;
-        margin-left: auto;
-        margin-right: auto;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        background: linear-gradient(90deg, #1e1e2e 0%, #252540 100%);
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 12px;
+        padding: 1.2rem 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .company-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea, #764ba2);
     }
     
     .company-header {
@@ -3302,7 +3311,7 @@ if st.session_state.active_tab == 1:
         selected_nif = selected_empresa.split(" - ")[0]
         empresa_data = df[df['nif'] == selected_nif].iloc[0]
         
-        # Tarjeta principal de la empresa
+        # Tarjeta principal de la empresa (Diseño Profesional Full-Width)
         risk_class = {
             'Alto': 'risk-high',
             'Medio': 'risk-medium', 
@@ -3311,22 +3320,44 @@ if st.session_state.active_tab == 1:
         
         st.markdown(f"""
             <div class="company-card">
-                <div class="company-header" style="border-bottom: none; margin-bottom: 0px; padding-bottom: 0px;">
-                    <div style="display: flex; align-items: center; gap: 1.2rem;">
-                        <div style="background: rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                    
+                    <!-- 1. IDENTIDAD (Left) -->
+                    <div style="display: flex; align-items: center; gap: 15px; min-width: 300px;">
+                        <div style="background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid rgba(255,255,255,0.1);">
                             🏢
                         </div>
                         <div>
-                            <div class="company-nif" style="margin-bottom: 0.2rem; line-height: 1.1;">{empresa_data['nif']}</div>
-                            <div style="color: #a0a0a0; font-size: 0.85rem; font-weight: 500;">{empresa_data['sector']}</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: white; line-height: 1.1; letter-spacing: 0.5px;">{empresa_data['nif']}</div>
+                            <div style="color: #a0a0a0; font-size: 0.9rem; margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+                                <span>{empresa_data['sector']}</span>
+                                <span style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">CNAE Active</span>
+                            </div>
                         </div>
                     </div>
-                    <div style="text-align: right;">
-                        <span class="risk-badge {risk_class}">🎯 Riesgo {empresa_data['riesgo']}</span>
-                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
-                            Score: <strong style="color: #fff;">{empresa_data['fraud_score_normalized']:.3f}</strong>
+
+                    <!-- 2. MÉTRICAS CLAVE (Center) -->
+                    <div style="display: flex; gap: 40px; border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); padding: 0 40px;">
+                         <div style="text-align: center;">
+                            <div style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Ventas</div>
+                            <div style="font-size: 1.1rem; font-weight: 600; color: #e0e0e0; margin-top: 4px;">€{empresa_data['ventas_netas']:,.0f}</div>
+                         </div>
+                         <div style="text-align: center;">
+                            <div style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Score</div>
+                            <div style="font-size: 1.2rem; font-weight: 700; color: white; margin-top: 2px;">{empresa_data['fraud_score_normalized']:.3f}</div>
+                         </div>
+                    </div>
+
+                    <!-- 3. RIESGO (Right) -->
+                    <div style="text-align: right; min-width: 150px;">
+                        <span class="risk-badge {risk_class}" style="font-size: 1rem; padding: 0.5rem 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                            {empresa_data['riesgo'].upper()}
+                        </span>
+                        <div style="margin-top: 8px; font-size: 0.8rem; color: #aaa;">
+                            Nivel de Alerta
                         </div>
                     </div>
+
                 </div>
             </div>
         """, unsafe_allow_html=True)
