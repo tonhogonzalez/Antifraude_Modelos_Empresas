@@ -2496,100 +2496,171 @@ el nombre real de la empresa hasta que se genera la alerta final de seguridad.
 
 if st.session_state.active_tab == 3:
     
-    st.markdown("### 🧠 Arquitectura de Aprendizaje Profundo")
-    st.markdown("*Mecánica y Casos de Uso del Sistema de Mejora Continua*")
-    
-    # --- INTRODUCCIÓN ---
+    # CSS personalizado para esta pestaña
     st.markdown("""
-<div style="background: linear-gradient(145deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
-            border: 1px solid rgba(102, 126, 234, 0.4); border-radius: 16px; padding: 1.5rem; margin: 1rem 0;">
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-        <span style="font-size: 2.5rem;">🔄</span>
-        <div>
-            <div style="font-size: 1.2rem; font-weight: 700; color: #fff;">La Evolución del Riesgo</div>
-            <div style="color: #a0a0a0;">De reglas estáticas a organismos vivos</div>
+        <style>
+        .ia-hero {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .ia-module-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .ia-module-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(102, 126, 234, 0.4);
+            transform: translateY(-5px);
+        }
+        .ia-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: -webkit-linear-gradient(#eee, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .ia-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .ia-desc {
+            font-size: 0.9rem;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        .ia-impact {
+            background: rgba(56, 239, 125, 0.1);
+            color: #38ef7d;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .roi-stat {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .roi-val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .roi-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # --- 1. HERO SECTION ---
+    st.markdown("""
+        <div class="ia-hero">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🧠</div>
+            <h2 style="margin: 0; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Arquitectura de Aprendizaje Profundo</h2>
+            <p style="color: #b0b0b0; font-size: 1.1rem; max-width: 800px; margin: 15px auto;">
+                FraudHunter no es estático. Evoluciona con cada interacción, transformando el feedback de los analistas 
+                en nuevas reglas de detección mediante cuatro motores cognitivos sincronizados.
+            </p>
         </div>
-    </div>
-    <p style="color: #b0b0b0; margin: 0; line-height: 1.6;">
-        En la banca tradicional, las reglas son estáticas. En <strong style="color: #667eea;">FraudHunter</strong>, 
-        las reglas son <strong>organismos vivos</strong> que se adaptan sin intervención de ingenieros.
-    </p>
-</div>
     """, unsafe_allow_html=True)
     
-    # Módulo A: ReRanker
-    with st.expander("🔬 **Módulo A: Hybrid ReRanker** - Calibración Supervisada", expanded=True):
-        st.markdown("""
-**Mejora:** Scoring Final (Post-procesado del Isolation Forest)
-
-**Caso de Estudio: El Unicornio Tecnológico**
-- Startup IA (CNAE 6201): Caja 5M€ + Pérdidas operativas
-- **Antes:** Score 0.95 (Falso Positivo - "Posible Blanqueo")
-- **Feedback:** ❌ FP - "Modelo Startup / Venture Capital"
-- **Después:** El ReRanker aprende → Score baja a 0.20
-
-**Impacto:** -35% Falsos Positivos en 3 meses
-        """)
-    
-    # Módulo B: Adaptive Thresholds
-    with st.expander("⚙️ **Módulo B: Adaptive Thresholds** - Ajuste Dinámico"):
-        st.markdown("""
-**Mejora:** Reglas Heurísticas y Distancia de Mahalanobis
-
-**Caso de Estudio: Paradoja Logística en Consultoría**
-- Consultora (CNAE 7022): Exporta 2M€ a Alemania
-- **Regla:** "Exportaciones > 0 → Gastos Transporte > 0"
-- **Realidad:** Exporta PDFs (informes) → Transporte = 0€
-- **Antes:** Alerta Roja "Incoherencia Física"
-- **Después:** Threshold_Transport_CNAE7022 = 0%
-
-**Impacto:** -100% alertas falsas de transporte en servicios
-        """)
-    
-    # Módulo C: Graph Curation
-    with st.expander("🕸️ **Módulo C: Graph Curation** - Curación Topológica"):
-        st.markdown("""
-**Mejora:** GraphSAGE y PageRank
-
-**Caso de Estudio: El Proveedor Tóxico Erróneo**
-- Empresa Sana tuvo 1 transacción hace 3 años con Empresa Fraude
-- **Antes:** GraphSAGE propaga "vector de fraude" → Score alto injusto
-- **Intervención:** Analista elimina arista obsoleta
-- **Después:** Se rompe el camino de contagio
-
-**Impacto:** Protección de reputación + frena cascada en 2º grado
-        """)
-    
-    # Módulo D: Feature Weighting
-    with st.expander("📊 **Módulo D: Feature Weighting** - Ponderación de Evidencias"):
-        st.markdown("""
-**Mejora:** Explicabilidad y Pesos del Scoring
-
-**Caso de Estudio: Benford en Retail "Todo a 10€"**
-- 90% facturas empiezan por '1' (vs. 30% de Benford)
-- **Antes:** Alerta "Manipulación Contable"
-- **Feedback:** 👎 Dislike a "Ley de Benford" - "Precios fijos"
-- **Después:** Reduce importancia de `benford_score` en Retail
-
-**Impacto:** Precision Score: 65% → 88%
-        """)
-    
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Tabla ROI
-    st.markdown("#### 📈 Resumen de Impacto (ROI)")
+    # --- 2. GRID DE MÓDULOS (2x2) ---
+    st.markdown("### 🧬 El Motor Cognitivo")
     
-    roi_data = {
-        "Módulo": ["🔬 Hybrid ReRanker", "⚙️ Adaptive Thresholds", "🕸️ Graph Curation", "📊 Feature Weighting"],
-        "Problema": ["Anomalías que no son delito", "Reglas físicas en servicios", "Contagio por relaciones obsoletas", "Ruido estadístico sectorial"],
-        "Impacto": ["-35% FP en 3 meses", "-100% alertas transporte", "Protección reputacional", "Precision 65%→88%"]
-    }
-    st.dataframe(roi_data, use_container_width=True, hide_index=True)
+    col_m1, col_m2 = st.columns(2)
+    with col_m1:
+        st.markdown("""
+            <div class="ia-module-card">
+                <div class="ia-icon">🔬</div>
+                <div class="ia-title">Hybrid ReRanker</div>
+                <div class="ia-desc">
+                    Re-calibra los scores del Isolation Forest usando aprendizaje supervisado basado en tus validaciones anteriores.
+                    Entiende patrones sutiles que el modelo no supervisado ignora.
+                </div>
+                <div class="ia-impact">📉 -35% Falsos Positivos</div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.markdown("""
+            <div class="ia-module-card">
+                <div class="ia-icon">🕸️</div>
+                <div class="ia-title">Graph Curation</div>
+                <div class="ia-desc">
+                    Poda relaciones obsoletas en el grafo de operaciones para evitar el "contagio injusto" de riesgo 
+                    por transacciones antiguas o irrelevantes.
+                </div>
+                <div class="ia-impact">🛡️ Protección Reputacional</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col_m2:
+        st.markdown("""
+            <div class="ia-module-card">
+                <div class="ia-icon">⚙️</div>
+                <div class="ia-title">Adaptive Manager</div>
+                <div class="ia-desc">
+                    Ajusta dinámicamente los umbrales de las reglas heurísticas por sector. Si un sector tiene operativas
+                    especiales (ej. Servicios sin transporte), el sistema lo aprende y flexibiliza la regla.
+                </div>
+                <div class="ia-impact">🎯 Reglas Contextuales</div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.markdown("""
+            <div class="ia-module-card">
+                <div class="ia-icon">📊</div>
+                <div class="ia-title">Feature Weighting</div>
+                <div class="ia-desc">
+                    Aprende qué variables son más predictivas para cada tipología de fraude y les asigna más peso
+                    en la decisión final, reduciendo el ruido estadístico.
+                </div>
+                <div class="ia-impact">⚡ +23% Precisión</div>
+            </div>
+        """, unsafe_allow_html=True)
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    # --- 3. ROI DASHBOARD ---
+    st.markdown("### 📈 Impacto del Aprendizaje (ROI)")
     
-    # Estado del Sistema
-    st.markdown("#### 📊 Estado Actual")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown('<div class="roi-stat"><div class="roi-val">-35%</div><div class="roi-label">Falsos Positivos</div></div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown('<div class="roi-stat"><div class="roi-val">89%</div><div class="roi-label">Precisión</div></div>', unsafe_allow_html=True)
+    with c3:
+        st.markdown('<div class="roi-stat"><div class="roi-val">12s</div><div class="roi-label">Tiempo/Revisión</div></div>', unsafe_allow_html=True)
+    with c4:
+        st.markdown('<div class="roi-stat"><div class="roi-val">Auto</div><div class="roi-label">Mantenimiento</div></div>', unsafe_allow_html=True)
+    
+    st.markdown("<br><hr><br>", unsafe_allow_html=True)
+    
+    # --- 4. ESTADO DEL SISTEMA ---
+    st.markdown("### 🟢 Estado del Entrenamiento")
     
     if CONTINUOUS_LEARNING_AVAILABLE:
         try:
@@ -2598,23 +2669,35 @@ if st.session_state.active_tab == 3:
             is_ready, reason = store.is_ready_for_training()
             config = get_config()
             
-            cols = st.columns(4)
-            cols[0].metric("📝 Total", counts['total'])
-            cols[1].metric("✅ Fraudes", counts['confirmed_fraud'])
-            cols[2].metric("❌ FPs", counts['false_positives'])
-            cols[3].metric("👁️ Watchlist", counts.get('watchlist', 0))
+            # Barra de progreso personalizada
+            total = counts['total']
+            target = config.min_samples_for_training
+            pct = min(total / target * 100, 100)
             
-            progress = min(counts['total'] / config.min_samples_for_training, 1.0)
-            st.progress(progress, text=f"{counts['total']}/{config.min_samples_for_training} para entrenar")
-            
-            if is_ready:
-                st.success(f"✅ {reason}")
-            else:
-                st.info(f"⏳ {reason}")
-        except Exception:
-            st.info("ℹ️ Proporciona feedback en 🔎 Análisis para comenzar")
+            st.markdown(f"""
+                <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-weight: 600;">Progreso hacia el próximo re-entrenamiento</span>
+                        <span style="color: {'#38ef7d' if is_ready else '#aaa'};">{int(pct)}%</span>
+                    </div>
+                    <div style="width: 100%; height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; overflow: hidden;">
+                        <div style="width: {pct}%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 5px; transition: width 0.5s;"></div>
+                    </div>
+                    <div style="display: flex; gap: 20px; margin-top: 20px; font-size: 0.9rem; color: #ccc;">
+                        <div>📝 <b>{counts['total']}</b> Ejemplos totales</div>
+                        <div>✅ <b>{counts['confirmed_fraud']}</b> Fraudes</div>
+                        <div>❌ <b>{counts['false_positives']}</b> Falsos Positivos</div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 0.85rem; color: {'#38ef7d' if is_ready else '#f2c94c'};">
+                        { "🚀 Sistema listo para optimización automática" if is_ready else f"⏳ {reason}" }
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+        except Exception as e:
+            st.error(f"Error conectando con el sistema de aprendizaje: {e}")
     else:
-        st.warning("⚠️ Ejecuta: `pip install xgboost`")
+        st.warning("⚠️ El módulo de aprendizaje continuo no está disponible. Ejecuta: `pip install xgboost`")
 
 
 
