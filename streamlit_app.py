@@ -242,6 +242,93 @@ st.markdown("""
     
     .risk-medium {
         background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+        color: white;
+    }
+
+    /* Red de Flags (Grid) */
+    .flag-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        margin-top: 1rem;
+    }
+
+    .flag-card {
+        background: linear-gradient(145deg, #1e1e2e 0%, #252540 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .flag-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .flag-icon-box {
+        min-width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+    }
+
+    .severity-high .flag-icon-box {
+        background: linear-gradient(135deg, rgba(246, 79, 89, 0.2), rgba(196, 113, 237, 0.2));
+        border-color: rgba(246, 79, 89, 0.4);
+        color: #ff6b6b;
+    }
+
+    .severity-medium .flag-icon-box {
+        background: linear-gradient(135deg, rgba(242, 153, 74, 0.2), rgba(242, 201, 76, 0.2));
+        border-color: rgba(242, 153, 74, 0.4);
+        color: #f2c94c;
+    }
+
+    .flag-content {
+        flex: 1;
+    }
+
+    .flag-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #fff;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .flag-desc {
+        font-size: 0.85rem;
+        color: #a0a0a0;
+        line-height: 1.4;
+    }
+
+    .flag-badge {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.1);
+        color: #ccc;
+        font-weight: 500;
+    }
+
+    .severity-high .flag-badge { background: rgba(246, 79, 89, 0.2); color: #ff6b6b; }
+    .severity-medium .flag-badge { background: rgba(242, 153, 74, 0.2); color: #f2c94c; }
+    
+    .risk-medium {
+        background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
         color: #1a1a2e;
     }
     
@@ -3452,8 +3539,30 @@ if st.session_state.active_tab == 1:
                     active_flags.append(details)
             
             if active_flags:
+                html_flags = '<div class="flag-grid">'
                 for flag in active_flags:
-                    st.warning(f"**{flag['nombre']}** ({flag['icono']}): {flag['descripcion']}")
+                    # Determinar severidad (Simulada, idealmente vendría en la definición del flag)
+                    severity = 'severity-high' if 'Pantalla' in flag['nombre'] or 'M347' in flag['nombre'] else 'severity-medium'
+                    severity_label = 'CRÍTICO' if severity == 'severity-high' else 'ALERTA'
+                    
+                    html_flags += f"""
+                    <div class="flag-card {severity}">
+                        <div class="flag-icon-box">
+                            {flag['icono']}
+                        </div>
+                        <div class="flag-content">
+                            <div class="flag-title">
+                                {flag['nombre']}
+                                <span class="flag-badge">{severity_label}</span>
+                            </div>
+                            <div class="flag-desc">
+                                {flag['descripcion']}
+                            </div>
+                        </div>
+                    </div>
+                    """
+                html_flags += '</div>'
+                st.markdown(html_flags, unsafe_allow_html=True)
             else:
                 st.success("✅ No se han detectado anomalías específicas en las reglas predefinidas.")
             
