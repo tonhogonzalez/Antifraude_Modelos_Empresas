@@ -3257,19 +3257,93 @@ if st.session_state.active_tab == 1:
             st.success("🖱️ **Interacción:** Arrastra los nodos para reorganizarlos | Scroll para zoom | Click + arrastrar fondo para mover vista")
         
         # =================================================================
-        # SECCIÓN DE FEEDBACK DEL ANALISTA
+        # SECCIÓN DE FEEDBACK DEL ANALISTA - NIVEL 2 (AVANZADO)
         # =================================================================
         st.markdown("---")
         st.markdown("#### 🧠 Feedback del Analista")
         st.markdown("Tu decisión ayuda al sistema a aprender y reducir falsos positivos.")
         
         if CONTINUOUS_LEARNING_AVAILABLE:
-            col_fb1, col_fb2, col_fb3 = st.columns([1, 1, 2])
+            # Importar constantes para los dropdowns
+            try:
+                from continuous_learning import (
+                    REJECTION_REASON_CODES, FRAUD_TYPOLOGY_CODES,
+                    VERDICT_FALSE_POSITIVE, VERDICT_FRAUD, VERDICT_WATCHLIST
+                )
+            except ImportError:
+                REJECTION_REASON_CODES = {}
+                FRAUD_TYPOLOGY_CODES = {}
+                VERDICT_FALSE_POSITIVE, VERDICT_FRAUD, VERDICT_WATCHLIST = 0, 1, 2
             
-            with col_fb1:
-                if st.button("✅ Confirmar Fraude", key=f"confirm_{selected_nif}", type="primary", use_container_width=True):
+            # Layout en dos filas
+            col_verdict, col_details, col_confidence = st.columns([1.2, 1.5, 1])
+            
+            with col_verdict:
+                st.markdown("**Veredicto:**")
+                verdict_option = st.radio(
+                    "Selecciona tu decisión",
+                    options=["✅ Confirmar Fraude", "❌ Falso Positivo", "👁️ Watchlist"],
+                    key=f"verdict_{selected_nif}",
+                    horizontal=False,
+                    label_visibility="collapsed"
+                )
+            
+            with col_details:
+                # Dropdown condicional según veredicto
+                if "Falso Positivo" in verdict_option:
+                    st.markdown("**¿Por qué es falso positivo?**")
+                    rejection_options = {code: f"{code} - {desc}" for code, desc in REJECTION_REASON_CODES.items()}
+                    selected_rejection = st.selectbox(
+                        "Causa del rechazo",
+                        options=list(REJECTION_REASON_CODES.keys()),
+                        format_func=lambda x: f"{x} - {REJECTION_REASON_CODES.get(x, '')}",
+                        key=f"rejection_{selected_nif}",
+                        label_visibility="collapsed"
+                    )
+                    selected_typology = None
+                elif "Confirmar Fraude" in verdict_option:
+                    st.markdown("**¿Qué tipo de fraude?**")
+                    selected_typology = st.selectbox(
+                        "Tipología del fraude",
+                        options=list(FRAUD_TYPOLOGY_CODES.keys()),
+                        format_func=lambda x: f"{x} - {FRAUD_TYPOLOGY_CODES.get(x, '')}",
+                        key=f"typology_{selected_nif}",
+                        label_visibility="collapsed"
+                    )
+                    selected_rejection = None
+                else:  # Watchlist
+                    st.markdown("**Zona gris - Seguimiento**")
+                    st.info("La empresa quedará en vigilancia. Su score recibirá un boost de +0.20 en futuros análisis.")
+                    selected_rejection = None
+                    selected_typology = None
+            
+            with col_confidence:
+                st.markdown("**Tu confianza:**")
+                confidence = st.slider(
+                    "Nivel de certeza",
+                    min_value=1, max_value=5, value=4,
+                    help="1=Muy inseguro, 5=Totalmente seguro",
+                    key=f"conf_{selected_nif}",
+                    label_visibility="collapsed"
+                )
+                confidence_labels = {1: "🤔 Muy inseguro", 2: "😕 Inseguro", 3: "😐 Algo seguro", 4: "😊 Seguro", 5: "💪 Totalmente seguro"}
+                st.caption(confidence_labels.get(confidence, ""))
+            
+            # Botón de envío
+            col_submit, col_stats = st.columns([1, 2])
+            
+            with col_submit:
+                if st.button("📤 Enviar Feedback", key=f"submit_fb_{selected_nif}", type="primary", use_container_width=True):
                     try:
                         store = get_feedback_store()
+                        
+                        # Determinar veredicto numérico
+                        if "Confirmar Fraude" in verdict_option:
+                            verdict_val = VERDICT_FRAUD
+                        elif "Falso Positivo" in verdict_option:
+                            verdict_val = VERDICT_FALSE_POSITIVE
+                        else:
+                            verdict_val = VERDICT_WATCHLIST
                         
                         # Obtener flags activos
                         flag_details = get_flag_details()
@@ -3278,10 +3352,10 @@ if st.session_state.active_tab == 1:
                             if col in empresa_data and empresa_data[col] == 1
                         ]
                         
-                        # Crear registro de feedback
+                        # Crear registro de feedback con todos los campos
                         feedback = FeedbackRecord(
                             nif=selected_nif,
-                            analyst_verdict=1,  # 1 = Fraude confirmado
+                            analyst_verdict=verdict_val,
                             fraud_score_original=float(empresa_data.get('fraud_score_normalized', 0)),
                             feature_vector={
                                 'ventas_netas': float(empresa_data.get('ventas_netas', 0)),
@@ -3289,76 +3363,60 @@ if st.session_state.active_tab == 1:
                                 'cobertura_ventas': float(empresa_data.get('cobertura_ventas', 0)),
                                 'productividad_laboral': float(empresa_data.get('productividad_laboral', 0)),
                             },
-                            reason_code="analista_confirma",
+                            rejection_reason_code=selected_rejection,
+                            fraud_typology_code=selected_typology,
+                            analyst_confidence=confidence,
                             cnae_sector=str(empresa_data.get('sector', '')),
                             ventas_netas=float(empresa_data.get('ventas_netas', 0)),
                             flags_active=active_flag_names
                         )
                         store.log_feedback(feedback)
-                        st.success(f"✅ Feedback registrado: **{selected_nif}** marcado como FRAUDE CONFIRMADO")
+                        
+                        # Mensaje de confirmación según tipo
+                        if verdict_val == VERDICT_FRAUD:
+                            st.success(f"✅ Feedback: **{selected_nif}** → FRAUDE ({selected_typology}) | Confianza: {confidence}/5")
+                        elif verdict_val == VERDICT_FALSE_POSITIVE:
+                            st.success(f"❌ Feedback: **{selected_nif}** → FALSO POSITIVO ({selected_rejection}) | Confianza: {confidence}/5")
+                        else:
+                            st.warning(f"👁️ Feedback: **{selected_nif}** → WATCHLIST (vigilancia) | Confianza: {confidence}/5")
+                            
                     except Exception as e:
                         st.error(f"Error guardando feedback: {e}")
             
-            with col_fb2:
-                if st.button("❌ Falso Positivo", key=f"false_pos_{selected_nif}", type="secondary", use_container_width=True):
-                    try:
-                        store = get_feedback_store()
-                        
-                        # Obtener flags activos
-                        flag_details = get_flag_details()
-                        active_flag_names = [
-                            col for col, details in flag_details.items()
-                            if col in empresa_data and empresa_data[col] == 1
-                        ]
-                        
-                        # Crear registro de feedback
-                        feedback = FeedbackRecord(
-                            nif=selected_nif,
-                            analyst_verdict=0,  # 0 = Falso positivo
-                            fraud_score_original=float(empresa_data.get('fraud_score_normalized', 0)),
-                            feature_vector={
-                                'ventas_netas': float(empresa_data.get('ventas_netas', 0)),
-                                'resultado_neto': float(empresa_data.get('resultado_neto', 0)),
-                                'cobertura_ventas': float(empresa_data.get('cobertura_ventas', 0)),
-                                'productividad_laboral': float(empresa_data.get('productividad_laboral', 0)),
-                            },
-                            reason_code="analista_descarta",
-                            cnae_sector=str(empresa_data.get('sector', '')),
-                            ventas_netas=float(empresa_data.get('ventas_netas', 0)),
-                            flags_active=active_flag_names
-                        )
-                        store.log_feedback(feedback)
-                        st.success(f"❌ Feedback registrado: **{selected_nif}** marcado como FALSO POSITIVO")
-                    except Exception as e:
-                        st.error(f"Error guardando feedback: {e}")
-            
-            with col_fb3:
-                # Mostrar estadísticas de feedback
-                with st.expander("📊 Estadísticas de Feedback Acumulado", expanded=False):
+            with col_stats:
+                # Mostrar estadísticas de feedback compactas
+                with st.expander("📊 Estadísticas de Feedback", expanded=False):
                     try:
                         store = get_feedback_store()
                         counts = store.get_sample_count()
                         stats = store.get_feedback_stats(window_days=30)
                         
-                        st.markdown(f"""
-                        | Métrica | Valor |
-                        |---------|-------|
-                        | **Total feedback** | {counts['total']} |
-                        | Fraudes confirmados | {counts['confirmed_fraud']} |
-                        | Falsos positivos | {counts['false_positives']} |
-                        | Tasa FP (30 días) | {stats['fp_rate']:.1%} |
-                        """)
+                        # Métricas en fila
+                        m1, m2, m3, m4 = st.columns(4)
+                        m1.metric("Total", counts['total'])
+                        m2.metric("Fraudes", counts['confirmed_fraud'])
+                        m3.metric("FPs", counts['false_positives'])
+                        m4.metric("Watchlist", counts.get('watchlist', 0))
                         
-                        # Verificar si está listo para entrenar
+                        # Estado del sistema
                         is_ready, reason = store.is_ready_for_training()
                         if is_ready:
-                            st.success(f"✅ Listo para entrenar: {reason}")
+                            st.success(f"✅ {reason}")
                         else:
                             st.info(f"⏳ {reason}")
+                            
+                        # Análisis de razones de rechazo (si hay datos)
+                        rejection_stats = store.analyze_rejection_reasons(window_days=30)
+                        if rejection_stats.get('by_reason'):
+                            st.markdown("**Causas de FP más frecuentes:**")
+                            for reason, data in list(rejection_stats['by_reason'].items())[:3]:
+                                st.caption(f"• {reason}: {data['count']} ({data['percentage']:.0f}%)")
+                                
                     except Exception as e:
-                        st.warning(f"No hay feedback acumulado aún: {e}")
+                        st.caption(f"Sin datos de feedback: {e}")
         else:
             st.info("ℹ️ Módulo de Continuous Learning no disponible. Instala las dependencias con: `pip install xgboost`")
+
 
 
 # =============================================================================
