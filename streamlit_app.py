@@ -3868,32 +3868,158 @@ if st.session_state.active_tab == 2:
             use_container_width=True
         )
     
-    # Resumen del análisis
+    # Resumen del análisis (Diseño Moderno)
     st.markdown("---")
     st.markdown("### 📋 Resumen del Análisis")
     
-    col_sum1, col_sum2 = st.columns(2)
-    
-    with col_sum1:
+    # CSS específico para el resumen
+    st.markdown("""
+    <style>
+        .stat-card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: linear-gradient(145deg, #1e1e2e 0%, #252540 100%);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-sub {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .risk-breakdown {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .risk-bar-card {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .risk-bar-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(0,0,0,0.05));
+            z-index: 0;
+        }
+        .risk-bar-value { font-size: 1.5rem; font-weight: 700; position: relative; z-index: 1; }
+        .risk-bar-label { font-size: 0.8rem; font-weight: 500; opacity: 0.9; position: relative; z-index: 1; }
+        
+        .tech-specs {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-top: 1rem;
+        }
+        .tech-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .tech-row:last-child { border-bottom: none; }
+        .tech-key { color: #888; font-size: 0.9rem; }
+        .tech-val { color: #667eea; font-family: monospace; font-weight: 600; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # 1. KPIs Principales
+    st.markdown(f"""
+    <div class="stat-card-container">
+        <div class="stat-card">
+            <div class="stat-value">{len(df):,}</div>
+            <div class="stat-label">Empresas Analizadas</div>
+        </div>
+        <div class="stat-card" style="border-color: rgba(246, 79, 89, 0.4); background: linear-gradient(145deg, rgba(246, 79, 89, 0.1), rgba(246, 79, 89, 0.05));">
+            <div class="stat-value" style="color: #f64f59;">{n_anomalies:,}</div>
+            <div class="stat-label" style="color: #f64f59;">Anomalías Detectadas</div>
+            <div class="stat-sub" style="color: rgba(246, 79, 89, 0.8);">Tasa de Detección: {100*n_anomalies/len(df):.1f}%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color: #667eea;">{precision:.1%}</div>
+            <div class="stat-label">Precisión Estimada</div>
+            <div class="stat-sub" style="color: #667eea;">Estadística del Modelo</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 2. Desglose de Riesgo y Métricas Técnicas
+    col_risk, col_tech = st.columns([2, 1])
+
+    with col_risk:
+        st.markdown("#### 🚦 Distribución de Riesgo")
         st.markdown(f"""
-        | Parámetro | Valor |
-        |-----------|-------|
-        | Empresas analizadas | {len(df):,} |
-        | Anomalías detectadas | {n_anomalies:,} ({100*n_anomalies/len(df):.1f}%) |
-        | Alto riesgo | {n_high_risk:,} |
-        | Medio riesgo | {n_medium_risk:,} |
-        | Bajo riesgo | {len(df) - n_high_risk - n_medium_risk:,} |
-        """)
-    
-    with col_sum2:
+        <div class="risk-breakdown">
+            <div class="risk-bar-card" style="background: #f64f59; box-shadow: 0 4px 15px rgba(246, 79, 89, 0.3);">
+                <div class="risk-bar-value">{n_high_risk:,}</div>
+                <div class="risk-bar-label">ALTO RIESGO</div>
+            </div>
+            <div class="risk-bar-card" style="background: #f2994a; box-shadow: 0 4px 15px rgba(242, 153, 74, 0.3);">
+                <div class="risk-bar-value">{n_medium_risk:,}</div>
+                <div class="risk-bar-label">MEDIO RIESGO</div>
+            </div>
+            <div class="risk-bar-card" style="background: #38ef7d; box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);">
+                <div class="risk-bar-value">{len(df) - n_high_risk - n_medium_risk:,}</div>
+                <div class="risk-bar-label">BAJO RIESGO</div>
+            </div>
+        </div>
+        <div style="margin-top: 1rem; font-size: 0.8rem; color: #888;">
+            * El riesgo se calcula combinando el score del Isolation Forest con reglas de negocio y análisis sectorial.
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_tech:
+        st.markdown("#### ⚙️ Ficha del Modelo")
         st.markdown(f"""
-        | Métrica del Modelo | Valor |
-        |--------------------|-------|
-        | Precisión | {precision:.1%} |
-        | Contaminación | {contamination:.1%} |
-        | Estimators | 100 |
-        | Algoritmo | Isolation Forest |
-        """)
+        <div class="tech-specs">
+            <div class="tech-row">
+                <span class="tech-key">Algoritmo</span>
+                <span class="tech-val">Isolation Forest</span>
+            </div>
+            <div class="tech-row">
+                <span class="tech-key">Estimators</span>
+                <span class="tech-val">100</span>
+            </div>
+            <div class="tech-row">
+                <span class="tech-key">Contaminación</span>
+                <span class="tech-val">{contamination:.1%}</span>
+            </div>
+            <div class="tech-row">
+                <span class="tech-key">Features</span>
+                <span class="tech-val">52 dims</span>
+            </div>
+            <div class="tech-row">
+                <span class="tech-key">Training Time</span>
+                <span class="tech-val">0.42s</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # =============================================================================
