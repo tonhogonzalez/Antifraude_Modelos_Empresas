@@ -6,6 +6,7 @@ Diseñado para presentaciones ante comité de dirección.
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import base64
 import numpy as np
@@ -38,6 +39,17 @@ st.set_page_config(
     page_icon="favicon.ico",
     layout="wide",
     initial_sidebar_state="expanded"
+)
+
+# Fix browser translation prompt
+components.html(
+    """
+    <script>
+        window.parent.document.documentElement.lang = 'es';
+    </script>
+    """,
+    height=0,
+    width=0
 )
 
 # CSS personalizado premium
