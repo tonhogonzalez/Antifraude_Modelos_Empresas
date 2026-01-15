@@ -198,6 +198,10 @@ st.markdown("""
         border-radius: 16px;
         padding: 1.5rem;
         margin-bottom: 1rem;
+        max-width: 850px;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
     
     .company-header {
@@ -3307,12 +3311,22 @@ if st.session_state.active_tab == 1:
         
         st.markdown(f"""
             <div class="company-card">
-                <div class="company-header">
-                    <div>
-                        <span class="company-nif">{empresa_data['nif']}</span>
-                        <span style="color: #9e9e9e; margin-left: 1rem;">{empresa_data['sector']}</span>
+                <div class="company-header" style="border-bottom: none; margin-bottom: 0px; padding-bottom: 0px;">
+                    <div style="display: flex; align-items: center; gap: 1.2rem;">
+                        <div style="background: rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            🏢
+                        </div>
+                        <div>
+                            <div class="company-nif" style="margin-bottom: 0.2rem; line-height: 1.1;">{empresa_data['nif']}</div>
+                            <div style="color: #a0a0a0; font-size: 0.85rem; font-weight: 500;">{empresa_data['sector']}</div>
+                        </div>
                     </div>
-                    <span class="risk-badge {risk_class}">🎯 Riesgo {empresa_data['riesgo']}</span>
+                    <div style="text-align: right;">
+                        <span class="risk-badge {risk_class}">🎯 Riesgo {empresa_data['riesgo']}</span>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
+                            Score: <strong style="color: #fff;">{empresa_data['fraud_score_normalized']:.3f}</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
