@@ -2659,6 +2659,107 @@ if st.session_state.active_tab == 3:
     
     st.markdown("<br><hr><br>", unsafe_allow_html=True)
     
+    # --- 4. DEEP DIVE TABS ---
+    st.markdown("### 📘 Documentación Técnica y Casos de Uso")
+    
+    tab_cases, tab_tech, tab_metrics = st.tabs(["📚 Casos de Estudio", "🧠 Lógica Algorítmica", "📏 Glosario de Métricas"])
+    
+    with tab_cases:
+        st.markdown("#### 1. El Caso del 'Unicornio' (Falso Positivo)")
+        st.info("""
+        **Contexto:** Una startup tecnológica (CNAE 6201) recibió una inversión de 5M€ (Serie A).
+        
+        **El Problema:** 
+        El sistema detectó "Ingresos = 0" pero "Caja = 5M€". Para reglas tradicionales, esto parece **Blanqueo de Capitales** (dinero en cuenta sin origen comercial justificado).
+        
+        **La Solución (ReRanker):**
+        1. El analista marcó la alerta como "Falso Positivo" indicando "Ronda de Inversión".
+        2. El **Hybrid ReRanker** analizó empresas similares en CNAE 6201.
+        3. Aprendió que en el sector "Tecnología", tener mucha caja y pocas ventas es normal en etapas tempranas.
+        
+        **Resultado:**
+        El sistema creó una "excepción latente" para startups tecnológicas con altos fondos propios, reduciendo alertas similares en un 40%.
+        """)
+        
+        st.markdown("---")
+        
+        st.markdown("#### 2. La 'Consultora Logística' (Falso Positivo)")
+        st.info("""
+        **Contexto:** Una consultora de estrategia (CNAE 7022) facturó 2M€ a un cliente en Alemania.
+        
+        **El Problema:**
+        La regla heurística `Exportaciones > 0 AND Gastos_Transporte == 0` marcó la operación como **"Incoherencia Física"** (¿Cómo envías 2M€ de bienes sin transporte?).
+        
+        **La Solución (Adaptive Thresholds):**
+        1. El sistema recibió feedback: "Son servicios intelectuales, no bienes físicos".
+        2. El módulo **Adaptive Manager** ajustó el umbral de `ratio_transporte_ventas` específicamente para el CNAE 7022.
+        3. Nuevo Umbral para Consultoría: 0% (se permite transporte 0).
+        
+        **Resultado:**
+        Eliminación total de este tipo de alertas en el sector servicios, manteniendo la regla estricta para el sector industrial.
+        """)
+        
+    with tab_tech:
+        st.markdown("#### ⚙️ Arquitectura del Motor de Decisión")
+        
+        col_t1, col_t2 = st.columns(2)
+        
+        with col_t1:
+            st.markdown("**1. Isolation Forest (Detección de Anomalías)**")
+            st.markdown("""
+            Algoritmo no supervisado que "aísla" observaciones.
+            *   **Principio:** Las anomalías son pocas y diferentes. Es más fácil aislarlas (se requieren menos cortes en un árbol de decisión aleatorio).
+            *   **Input:** Variables financieras transformadas (Log, Ratios).
+            *   **Output:** `anomaly_score` (Cuanto más negativo, más anómalo).
+            """)
+            
+            st.markdown("**2. Hybrid ReRanker (XGBoost)**")
+            st.markdown("""
+            Capa supervisada que corrige al Isolation Forest.
+            *   **Objetivo:** Reducir Falsos Positivos.
+            *   **Training:** Se entrena con el feedback histórico (`{Features} -> {Es_Fraude?}`).
+            *   **Output:** Probabilidad de Fraude (0-1) que modula el score original.
+            """)
+            
+        with col_t2:
+            st.markdown("**3. Adaptive Threshold Manager**")
+            st.markdown("""
+            Sistema estadístico bayesiano para reglas heurísticas.
+            *   **Lógica:** Calcula la distribución normal de ratios (ej. Impuestos/Ventas) por Sector (CNAE).
+            *   **Adaptación:** Si muchas empresas legítimas de un sector violan una regla, el sistema "ensancha" los límites de tolerancia para ese sector automáticamente.
+            """)
+            
+            st.markdown("**4. Graph Curation (Network Theory)**")
+            st.markdown("""
+            Análisis de grafos usando GraphSAGE.
+            *   **Función:** Detecta comunidades de fraude (carruseles).
+            *   **Curación:** Elimina aristas (relaciones) que tienen una antigüedad > 3 años para evitar que una empresa sana se contamine por una relación comercial pasada con una empresa que hoy es fraudulenta.
+            """)
+
+    with tab_metrics:
+        st.markdown("#### 📊 Glosario de Métricas de Rendimiento")
+        
+        st.success("""
+        **Precision (Precisión):**
+        De todas las empresas que el sistema marcó como "FRAUDE", ¿cuántas lo eran realmente?
+        *   *Alta Precisión = Pocos Falsos Positivos.*
+        *   *Meta:* > 85% para no cansar a los analistas.
+        """)
+        
+        st.warning("""
+        **Recall (Sensibilidad):**
+        De todas las empresas que ERAN realmente fraude, ¿cuántas detectó el sistema?
+        *   *Alto Recall = Pocos Falsos Negativos (Fraudes que se escapan).*
+        *   *Meta:* > 90% para seguridad.
+        """)
+        
+        st.info("""
+        **F1-Score:**
+        Media armónica entre Precision y Recall. Es la métrica única más fiable para balancear el sistema.
+        """)
+    
+    st.markdown("<br><hr><br>", unsafe_allow_html=True)
+    
     # --- 4. ESTADO DEL SISTEMA ---
     st.markdown("### 🟢 Estado del Entrenamiento")
     
