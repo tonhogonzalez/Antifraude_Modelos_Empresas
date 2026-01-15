@@ -3347,150 +3347,208 @@ if st.session_state.active_tab == 1:
             st.success("🖱️ **Interacción:** Arrastra los nodos para reorganizarlos | Scroll para zoom | Click + arrastrar fondo para mover vista")
         
         # =================================================================
-        # SECCIÓN DE FEEDBACK DEL ANALISTA - OPTIMIZADO
+        # SECCIÓN DE FEEDBACK DEL ANALISTA - UX MEJORADA
         # =================================================================
         st.markdown("---")
-        st.markdown("#### 🧠 Feedback del Analista")
-        st.markdown("Tu decisión ayuda al sistema a aprender y reducir falsos positivos.")
+        
+        # Encabezado con ayuda contextual
+        st.markdown("""
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+                <span style="font-size: 1.3rem; font-weight: 700;">🧠 Feedback del Analista</span>
+                <span style="color: #888; font-size: 0.9rem; margin-left: 0.5rem;">Tu decisión entrena al modelo</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         if CONTINUOUS_LEARNING_AVAILABLE:
-            # Inicializar session_state para feedback si no existe
+            # Session state
             if 'feedback_submitted' not in st.session_state:
                 st.session_state.feedback_submitted = {}
             
-            # Verificar si ya se envió feedback para este NIF
             if selected_nif in st.session_state.feedback_submitted:
-                st.success(f"✅ Feedback ya registrado para **{selected_nif}**")
-                if st.button("🔄 Enviar otro feedback", key=f"reset_{selected_nif}"):
+                st.success(f"✅ Feedback registrado para **{selected_nif}**. El modelo usará esta información en el próximo entrenamiento.")
+                if st.button("🔄 Enviar nuevo feedback", key=f"reset_{selected_nif}"):
                     del st.session_state.feedback_submitted[selected_nif]
                     st.rerun()
             else:
-                # ===== FILA 1: Veredicto y Tipología/Razón =====
-                col_verdict, col_detail = st.columns([1, 2])
+                # === PASO 1: VEREDICTO ===
+                st.markdown("##### 1️⃣ ¿Cuál es tu veredicto sobre esta empresa?")
                 
-                with col_verdict:
-                    verdict_option = st.radio(
-                        "**Veredicto:**",
-                        options=["✅ Fraude", "❌ Falso Positivo", "👁️ Watchlist"],
-                        key=f"v_{selected_nif}",
-                        horizontal=True
+                verdict_cols = st.columns(3)
+                
+                with verdict_cols[0]:
+                    fraud_btn = st.button(
+                        "✅ FRAUDE CONFIRMADO",
+                        key=f"btn_fraud_{selected_nif}",
+                        type="primary" if st.session_state.get(f'verdict_{selected_nif}') == 'fraud' else "secondary",
+                        use_container_width=True,
+                        help="La empresa presenta indicios claros de fraude fiscal"
                     )
+                    st.caption("📈 **Impacto:** El modelo aprenderá que este perfil ES fraude y AUMENTARÁ el score futuro de casos similares.")
+                    if fraud_btn:
+                        st.session_state[f'verdict_{selected_nif}'] = 'fraud'
+                        st.rerun()
                 
-                with col_detail:
-                    if "Falso Positivo" in verdict_option:
-                        rejection_reason = st.selectbox(
-                            "**¿Por qué es FP?**",
-                            options=["SECTOR_NORMAL", "DATA_ERROR", "LEGITIMATE_BUSINESS", "SEASONAL", "ONE_TIME"],
-                            key=f"rej_{selected_nif}"
-                        )
-                        fraud_type = None
-                    elif "Fraude" in verdict_option:
+                with verdict_cols[1]:
+                    fp_btn = st.button(
+                        "❌ FALSO POSITIVO",
+                        key=f"btn_fp_{selected_nif}",
+                        type="primary" if st.session_state.get(f'verdict_{selected_nif}') == 'fp' else "secondary",
+                        use_container_width=True,
+                        help="La alerta es incorrecta, la empresa es legítima"
+                    )
+                    st.caption("📉 **Impacto:** El modelo aprenderá que este perfil NO es fraude y REDUCIRÁ el score futuro de casos similares.")
+                    if fp_btn:
+                        st.session_state[f'verdict_{selected_nif}'] = 'fp'
+                        st.rerun()
+                
+                with verdict_cols[2]:
+                    watch_btn = st.button(
+                        "👁️ WATCHLIST",
+                        key=f"btn_watch_{selected_nif}",
+                        type="primary" if st.session_state.get(f'verdict_{selected_nif}') == 'watch' else "secondary",
+                        use_container_width=True,
+                        help="Hay dudas, requiere seguimiento futuro"
+                    )
+                    st.caption("🔍 **Impacto:** Se añade +0.20 boost al score en futuros análisis. No entrena el modelo aún.")
+                    if watch_btn:
+                        st.session_state[f'verdict_{selected_nif}'] = 'watch'
+                        st.rerun()
+                
+                current_verdict = st.session_state.get(f'verdict_{selected_nif}')
+                
+                if current_verdict:
+                    st.markdown("---")
+                    
+                    # === PASO 2: DETALLE (Condicional) ===
+                    if current_verdict == 'fraud':
+                        st.markdown("##### 2️⃣ ¿Qué tipo de fraude detectaste?")
+                        fraud_types = {
+                            "CARRUSEL": "🔄 Fraude Carrusel IVA - Triangulación de facturas para evadir IVA",
+                            "PANTALLA": "🏢 Empresa Pantalla - Sin actividad real, solo facturación",
+                            "FACTURAS_FALSAS": "📄 Facturas Falsas - Servicios inexistentes facturados",
+                            "CONTABILIDAD": "📊 Manipulación Contable - Maquillaje de cuentas",
+                            "DEUDA_OCULTA": "💳 Deuda Oculta - Pasivos no declarados"
+                        }
                         fraud_type = st.selectbox(
-                            "**Tipo de fraude:**",
-                            options=["CARRUSEL", "PANTALLA", "FACTURAS_FALSAS", "CONTABILIDAD", "DEUDA_OCULTA"],
-                            key=f"typ_{selected_nif}"
+                            "Tipo de fraude",
+                            options=list(fraud_types.keys()),
+                            format_func=lambda x: fraud_types[x],
+                            key=f"fraud_type_{selected_nif}",
+                            label_visibility="collapsed"
                         )
                         rejection_reason = None
-                    else:
-                        st.info("📌 Empresa en vigilancia - se añadirá +0.20 boost al score")
+                        
+                    elif current_verdict == 'fp':
+                        st.markdown("##### 2️⃣ ¿Por qué es un falso positivo?")
+                        fp_reasons = {
+                            "SECTOR_NORMAL": "🏭 Comportamiento normal del sector - Las métricas son típicas de esta industria",
+                            "DATA_ERROR": "⚠️ Error en los datos - Información incorrecta o desactualizada",
+                            "LEGITIMATE_BUSINESS": "✅ Negocio legítimo - Operaciones verificadas como correctas",
+                            "SEASONAL": "📅 Estacionalidad - Variaciones estacionales normales",
+                            "ONE_TIME": "🎯 Evento puntual - Situación extraordinaria no recurrente"
+                        }
+                        rejection_reason = st.selectbox(
+                            "Causa del falso positivo",
+                            options=list(fp_reasons.keys()),
+                            format_func=lambda x: fp_reasons[x],
+                            key=f"fp_reason_{selected_nif}",
+                            label_visibility="collapsed"
+                        )
+                        fraud_type = None
+                        
+                    else:  # watchlist
+                        st.info("👁️ **Watchlist:** Esta empresa quedará marcada para seguimiento. Si en el futuro confirmas fraude o FP, el modelo aprenderá de esa decisión.")
                         fraud_type = None
                         rejection_reason = None
-                
-                # ===== FILA 2: Validación de Alertas Individuales =====
-                flag_details = get_flag_details()
-                active_flags = [col for col, det in flag_details.items() 
-                               if col in empresa_data and empresa_data.get(col) == 1]
-                
-                if active_flags:
-                    st.markdown("**📋 ¿Qué alertas fueron útiles para tu decisión?**")
                     
-                    # Crear checkboxes en grid para cada flag activo
-                    flag_cols = st.columns(min(len(active_flags), 4))
-                    flag_validation = {}
-                    
-                    for i, flag in enumerate(active_flags):
-                        with flag_cols[i % 4]:
-                            flag_name = flag.replace('flag_', '').replace('_', ' ').title()
-                            flag_validation[flag] = st.checkbox(
-                                f"✓ {flag_name}", 
-                                value=True,  # Por defecto marcado
-                                key=f"fv_{selected_nif}_{flag}"
-                            )
-                
-                # ===== FILA 3: Confianza y Envío =====
-                col_conf, col_submit = st.columns([2, 1])
-                
-                with col_conf:
-                    confidence = st.select_slider(
-                        "**Confianza:**",
-                        options=[1, 2, 3, 4, 5],
-                        value=4,
-                        format_func=lambda x: ["🤔 Baja", "😕", "😐 Media", "😊", "💪 Alta"][x-1],
-                        key=f"c_{selected_nif}"
+                    # === PASO 3: CONFIANZA ===
+                    st.markdown("##### 3️⃣ ¿Qué tan seguro estás de tu decisión?")
+                    confidence = st.slider(
+                        "Nivel de confianza",
+                        min_value=1, max_value=5, value=4,
+                        format="%d",
+                        key=f"confidence_{selected_nif}",
+                        help="1=Muy inseguro (solo intuición), 5=Totalmente seguro (evidencia clara)",
+                        label_visibility="collapsed"
                     )
+                    conf_labels = {1: "🤔 Solo intuición", 2: "😕 Algo de duda", 3: "😐 Moderadamente seguro", 4: "😊 Bastante seguro", 5: "💪 100% seguro"}
+                    st.caption(conf_labels[confidence])
+                    
+                    # === ENVIAR ===
+                    st.markdown("---")
+                    
+                    col_send, col_info = st.columns([1, 2])
+                    
+                    with col_send:
+                        if st.button("📤 ENVIAR FEEDBACK", key=f"submit_{selected_nif}", type="primary", use_container_width=True):
+                            try:
+                                verdict_map = {'fraud': 1, 'fp': 0, 'watch': 2}
+                                verdict_val = verdict_map[current_verdict]
+                                
+                                # Obtener flags activos (cacheado)
+                                flag_details = get_flag_details()
+                                active_flags = [col for col, det in flag_details.items() 
+                                               if col in empresa_data and empresa_data.get(col) == 1]
+                                
+                                store = get_feedback_store()
+                                feedback = FeedbackRecord(
+                                    nif=selected_nif,
+                                    analyst_verdict=verdict_val,
+                                    fraud_score_original=float(empresa_data.get('fraud_score_normalized', 0)),
+                                    feature_vector={
+                                        'ventas_netas': float(empresa_data.get('ventas_netas', 0)),
+                                        'cobertura_ventas': float(empresa_data.get('cobertura_ventas', 0))
+                                    },
+                                    rejection_reason_code=rejection_reason,
+                                    fraud_typology_code=fraud_type,
+                                    analyst_confidence=confidence,
+                                    cnae_sector=str(empresa_data.get('sector', '')),
+                                    ventas_netas=float(empresa_data.get('ventas_netas', 0)),
+                                    flags_active=active_flags
+                                )
+                                store.log_feedback(feedback)
+                                
+                                st.session_state.feedback_submitted[selected_nif] = True
+                                # Limpiar estado temporal
+                                if f'verdict_{selected_nif}' in st.session_state:
+                                    del st.session_state[f'verdict_{selected_nif}']
+                                
+                                st.success(f"✅ Feedback guardado correctamente")
+                                st.rerun()
+                                
+                            except Exception as e:
+                                st.error(f"Error al guardar: {e}")
+                    
+                    with col_info:
+                        verdict_names = {'fraud': '✅ Fraude', 'fp': '❌ Falso Positivo', 'watch': '👁️ Watchlist'}
+                        detail = fraud_type if fraud_type else (rejection_reason if rejection_reason else "N/A")
+                        st.info(f"**Resumen:** {verdict_names[current_verdict]} | Detalle: {detail} | Confianza: {confidence}/5")
                 
-                with col_submit:
-                    st.write("")  # Espaciado
-                    if st.button("📤 Enviar", key=f"sub_{selected_nif}", type="primary", use_container_width=True):
-                        try:
-                            # Determinar veredicto
-                            if "Fraude" in verdict_option and "Falso" not in verdict_option:
-                                verdict_val = 1
-                            elif "Falso Positivo" in verdict_option:
-                                verdict_val = 0
-                            else:
-                                verdict_val = 2
-                            
-                            # Crear feature_validation_map
-                            feature_map = {f: (1 if flag_validation.get(f, True) else -1) 
-                                          for f in active_flags} if active_flags else {}
-                            
-                            # Guardar feedback
-                            store = get_feedback_store()
-                            feedback = FeedbackRecord(
-                                nif=selected_nif,
-                                analyst_verdict=verdict_val,
-                                fraud_score_original=float(empresa_data.get('fraud_score_normalized', 0)),
-                                feature_vector={
-                                    'ventas_netas': float(empresa_data.get('ventas_netas', 0)),
-                                    'cobertura_ventas': float(empresa_data.get('cobertura_ventas', 0)),
-                                    'feature_validation_map': feature_map
-                                },
-                                rejection_reason_code=rejection_reason,
-                                fraud_typology_code=fraud_type,
-                                analyst_confidence=confidence,
-                                cnae_sector=str(empresa_data.get('sector', '')),
-                                ventas_netas=float(empresa_data.get('ventas_netas', 0)),
-                                flags_active=active_flags
-                            )
-                            store.log_feedback(feedback)
-                            
-                            # Marcar como enviado
-                            st.session_state.feedback_submitted[selected_nif] = True
-                            
-                            # Mostrar resumen
-                            verdict_text = {0: "FALSO POSITIVO", 1: "FRAUDE", 2: "WATCHLIST"}
-                            useful_flags = sum(1 for v in flag_validation.values() if v) if active_flags else 0
-                            st.success(f"✅ **{selected_nif}** → {verdict_text[verdict_val]} | Alertas útiles: {useful_flags}/{len(active_flags)}")
-                            st.rerun()
-                            
-                        except Exception as e:
-                            st.error(f"Error: {e}")
+                else:
+                    st.caption("👆 Selecciona un veredicto para continuar")
             
-            # ===== Estadísticas (colapsadas por defecto) =====
-            with st.expander("📊 Estadísticas", expanded=False):
+            # === ESTADÍSTICAS COLAPSADAS ===
+            with st.expander("📊 Ver estadísticas del sistema", expanded=False):
                 try:
                     store = get_feedback_store()
                     counts = store.get_sample_count()
                     
-                    cols = st.columns(4)
-                    cols[0].metric("Total", counts['total'])
-                    cols[1].metric("Fraudes", counts['confirmed_fraud'])
-                    cols[2].metric("FPs", counts['false_positives'])
-                    cols[3].metric("Watchlist", counts.get('watchlist', 0))
+                    st.markdown(f"""
+                    | Métrica | Valor |
+                    |---------|-------|
+                    | Total feedback | **{counts['total']}** |
+                    | Fraudes confirmados | {counts['confirmed_fraud']} |
+                    | Falsos positivos | {counts['false_positives']} |
+                    | En watchlist | {counts.get('watchlist', 0)} |
+                    """)
                     
                     is_ready, reason = store.is_ready_for_training()
-                    st.caption(f"{'✅' if is_ready else '⏳'} {reason}")
+                    if is_ready:
+                        st.success(f"✅ {reason}")
+                    else:
+                        st.info(f"⏳ {reason}")
                 except Exception:
                     st.caption("Sin datos de feedback aún")
         else:
