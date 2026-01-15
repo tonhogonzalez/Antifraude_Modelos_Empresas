@@ -769,25 +769,37 @@ CASILLA_MAPPING = {
 }
 
 
-@st.cache_data
+@st.cache_data(ttl=3600, show_spinner="Cargando datos...")
 def load_real_data():
-    """Carga datos reales desde los archivos CSV si existen."""
+    """Carga datos reales, priorizando Parquet (más rápido) sobre CSV."""
     base_path = Path(__file__).parent if '__file__' in dir() else Path('.')
     
-    empresas_path = base_path / 'data_empresas.csv'
-    eav_path = base_path / 'data_eav.csv'
-    m347_path = base_path / 'data_m347.csv'
+    # Priorizar archivos Parquet (3-5x más rápido que CSV)
+    empresas_parquet = base_path / 'data_empresas.parquet'
+    eav_parquet = base_path / 'data_eav.parquet'
+    m347_parquet = base_path / 'data_m347.parquet'
+    
+    # Fallback a CSV si Parquet no existe
+    empresas_path = empresas_parquet if empresas_parquet.exists() else base_path / 'data_empresas.csv'
+    eav_path = eav_parquet if eav_parquet.exists() else base_path / 'data_eav.csv'
+    m347_path = m347_parquet if m347_parquet.exists() else base_path / 'data_m347.csv'
     
     # Verificar que existen los archivos
     if not all(p.exists() for p in [empresas_path, eav_path, m347_path]):
         return None
     
     try:
-        # Cargar empresas
-        df_empresas = pd.read_csv(empresas_path)
+        # Cargar empresas (Parquet o CSV)
+        if str(empresas_path).endswith('.parquet'):
+            df_empresas = pd.read_parquet(empresas_path)
+        else:
+            df_empresas = pd.read_csv(empresas_path)
         
         # Cargar datos EAV y pivotar
-        df_eav = pd.read_csv(eav_path)
+        if str(eav_path).endswith('.parquet'):
+            df_eav = pd.read_parquet(eav_path)
+        else:
+            df_eav = pd.read_csv(eav_path)
         
         # Filtrar solo las casillas que necesitamos
         df_eav_filtered = df_eav[df_eav['casilla'].isin(CASILLA_MAPPING.keys())].copy()
@@ -806,8 +818,11 @@ def load_real_data():
         # Merge con datos de empresas
         df = df_empresas.merge(df_pivot, on='nif', how='left')
         
-        # Cargar M347
-        df_m347 = pd.read_csv(m347_path)
+        # Cargar M347 (Parquet o CSV)
+        if str(m347_path).endswith('.parquet'):
+            df_m347 = pd.read_parquet(m347_path)
+        else:
+            df_m347 = pd.read_csv(m347_path)
         
         # Agregar M347 por NIF declarante
         m347_agg = df_m347.groupby('nif_declarante').agg({
@@ -925,8 +940,9 @@ def generate_dummy_data(n_companies: int = 500, fraud_rate: float = 0.10) -> pd.
     return pd.DataFrame(data)
 
 
+@st.cache_data(show_spinner="Calculando features forenses...")
 def calculate_forensic_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Calcula features forenses."""
+    """Calcula features forenses. Cacheado para mejor rendimiento."""
     df = df.copy()
     
     # Cobertura de ventas
@@ -977,8 +993,9 @@ def calculate_forensic_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+@st.cache_data(show_spinner="Calculando distancia Mahalanobis...")
 def calculate_mahalanobis_by_sector(df: pd.DataFrame) -> pd.DataFrame:
-    """Calcula distancia Mahalanobis por sector."""
+    """Calcula distancia Mahalanobis por sector. Cacheado para mejor rendimiento."""
     df = df.copy()
     feature_cols = ['margen_neto', 'rotacion_activos', 'ratio_endeudamiento']
     df['mahalanobis_distance'] = np.nan

@@ -6,6 +6,7 @@ scipy>=1.11.0
 plotly>=5.18.0
 networkx>=3.0.0
 pyvis>=0.3.0
+pyarrow>=14.0.0  # For fast Parquet file support
 
 # Continuous Learning Module (optional but recommended)
 xgboost>=2.0.0
