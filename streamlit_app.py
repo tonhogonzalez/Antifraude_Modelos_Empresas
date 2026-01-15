@@ -3547,20 +3547,12 @@ if st.session_state.active_tab == 1:
                     
                     html_flags += f"""
                     <div class="flag-card {severity}">
-                        <div class="flag-icon-box">
-                            {flag['icono']}
-                        </div>
+                        <div class="flag-icon-box">{flag['icono']}</div>
                         <div class="flag-content">
-                            <div class="flag-title">
-                                {flag['nombre']}
-                                <span class="flag-badge">{severity_label}</span>
-                            </div>
-                            <div class="flag-desc">
-                                {flag['descripcion']}
-                            </div>
+                            <div class="flag-title">{flag['nombre']}<span class="flag-badge">{severity_label}</span></div>
+                            <div class="flag-desc">{flag['descripcion']}</div>
                         </div>
-                    </div>
-                    """
+                    </div>"""
                 html_flags += '</div>'
                 st.markdown(html_flags, unsafe_allow_html=True)
             else:
