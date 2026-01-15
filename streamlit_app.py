@@ -2612,178 +2612,26 @@ if st.session_state.active_tab == 3:
         st.warning("⚠️ Ejecuta: `pip install xgboost`")
 
 
-    
 
 
-    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); 
-                border-radius: 12px; padding: 1rem; text-align: center;">
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">2️⃣</div>
-        <div style="font-weight: 600; color: #fff;">ANÁLISIS</div>
-        <div style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;">
-            El analista revisa las alertas y toma decisiones
-        </div>
-    </div>
-    <div style="background: rgba(56, 239, 125, 0.1); border: 1px solid rgba(56, 239, 125, 0.3); 
-                border-radius: 12px; padding: 1rem; text-align: center;">
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">3️⃣</div>
-        <div style="font-weight: 600; color: #fff;">FEEDBACK</div>
-        <div style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;">
-            Las decisiones se almacenan para entrenamiento futuro
-        </div>
-    </div>
-    <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); 
-                border-radius: 12px; padding: 1rem; text-align: center;">
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">4️⃣</div>
-        <div style="font-weight: 600; color: #fff;">RE-RANKING</div>
-        <div style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;">
-            Un modelo supervisado ajusta los scores basándose en el histórico
-        </div>
-    </div>
-</div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- Módulos del Sistema ---
-    st.markdown("#### 🔧 Módulos del Sistema")
-    
-    # Módulo 1: FeedbackStore
-    with st.expander("📦 **FeedbackStore** - Almacén de Decisiones", expanded=True):
-        st.markdown("""
-**¿Qué es?**  
-Almacena todas las decisiones sobre alertas. Cada vez que marcas una empresa como "Fraude" o "Falso Positivo", se guarda.
 
-**Campos guardados:** `nif`, `analyst_verdict`, `fraud_score_original`, `fecha_analisis`, `cnae_sector`, `flags_active`
 
-**Ubicación:** `data/feedback_store.parquet`
 
-**Uso:**  
-1. Ve a **🔎 Análisis** → Selecciona empresa
-2. Clic en ✅ **Confirmar Fraude** o ❌ **Falso Positivo**
-        """)
-    
-    # Módulo 2: HybridFraudReRanker
-    with st.expander("🤖 **ReRanker** - Calibrador Supervisado"):
-        st.markdown("""
-**¿Qué es?**  
-Capa de IA que se entrena con tus decisiones. Predice: *"¿El analista confirmaría esto como fraude?"*
 
-**Funcionamiento:**
-- Si Isolation Forest dice **"Alto Riesgo"** PERO ReRanker predice **"95% FP"** → Bajar score
 
-**Requisitos:** Mínimo 100 muestras (30 por clase) para entrenar.
 
-**Guardrails:**
-- ⛔ Máximo 20% de supresión por batch
-- ⏱️ 14 días obligatorios en Shadow Mode
-        """)
-        st.info("💡 **Shadow Mode**: Calcula ajustes pero NO los aplica. Solo para validación.")
-    
-    # Módulo 3: AdaptiveThresholdManager
-    with st.expander("📊 **ThresholdManager** - Ajuste de Umbrales"):
-        st.markdown("""
-**¿Qué es?**  
-Analiza el rendimiento de cada regla y sugiere ajustes cuando hay muchos FP.
 
-**Reglas gestionadas:**
-| Regla | Umbral | Rango |
-|-------|--------|-------|
-| Empresa Pantalla | 50x | 20x-100x |
-| Incoherencia Logística | 1% | 0.1%-10% |
-| Hidden Debt | 2x | 1.5x-4x |
-| Números Redondos | 30% | 15%-50% |
 
-**Guardrails:** Límites min/max, cooldown 7 días, aprobación manual.
-        """)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- Pipeline ---
-    st.markdown("#### 🚀 Pipeline de Reentrenamiento")
-    
-    st.markdown("""
-<div style="background: rgba(30, 30, 50, 0.5); border: 1px solid rgba(102, 126, 234, 0.3); 
-            border-radius: 12px; padding: 1rem; margin: 1rem 0;">
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
-            1. Cargar Feedback
-        </div>
-        <div style="background: rgba(102, 126, 234, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
-            2. Validar Cold Start
-        </div>
-        <div style="background: rgba(56, 239, 125, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
-            3. Entrenar XGBoost
-        </div>
-        <div style="background: rgba(245, 158, 11, 0.2); padding: 0.5rem; border-radius: 8px; text-align: center; font-size: 0.8rem;">
-            4. Promocionar
-        </div>
-    </div>
-</div>
-    """, unsafe_allow_html=True)
-    
-    st.code("""
-# Ejecutar pipeline
-python pipelines/retrain_pipeline.py --dry-run  # Simulación
-python pipelines/retrain_pipeline.py --auto-promote  # Producción
-    """, language="bash")
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- Fases ---
-    st.markdown("#### 📅 Fases de Implementación")
-    
-    col_f1, col_f2, col_f3 = st.columns(3)
-    
-    with col_f1:
-        st.success("**FASE 1: Infraestructura** ✅")
-        st.caption("FeedbackStore, botones UI, panel estadísticas")
-    
-    with col_f2:
-        st.warning("**FASE 2: Shadow Mode** ⏳")
-        st.caption("Acumular 100+ feedback, validar 14 días")
-    
-    with col_f3:
-        st.info("**FASE 3: Producción** 🔜")
-        st.caption("Activar ReRanker, escalar gradualmente")
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- Estado Actual ---
-    st.markdown("#### 📊 Estado Actual del Sistema")
-    
-    if CONTINUOUS_LEARNING_AVAILABLE:
-        try:
-            store = get_feedback_store()
-            counts = store.get_sample_count()
-            is_ready, reason = store.is_ready_for_training()
-            config = get_config()
-            
-            col_s1, col_s2, col_s3, col_s4 = st.columns(4)
-            col_s1.metric("📝 Total Feedback", counts['total'])
-            col_s2.metric("✅ Fraudes", counts['confirmed_fraud'])
-            col_s3.metric("❌ Falsos Positivos", counts['false_positives'])
-            progress = min(counts['total'] / config.min_samples_for_training * 100, 100)
-            col_s4.metric("📈 Progreso", f"{progress:.0f}%")
-            
-            st.progress(min(counts['total'] / config.min_samples_for_training, 1.0))
-            
-            if is_ready:
-                st.success(f"✅ {reason}")
-            else:
-                st.info(f"⏳ {reason}")
-                
-        except Exception as e:
-            st.info("ℹ️ Empieza a proporcionar feedback en la pestaña 🔎 Análisis")
-    else:
-        st.warning("⚠️ Módulo no disponible. Ejecuta: `pip install xgboost`")
-    
-    # Footer
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown("""
-<div style="text-align: center; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-    <div style="color: #667eea; font-weight: 600;">🧠 Continuous Learning powered by XGBoost</div>
-</div>
-    """, unsafe_allow_html=True)
+
+
+
+
+
+
+
+
+
+
 
 
 # =============================================================================
