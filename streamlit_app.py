@@ -2790,11 +2790,11 @@ if st.session_state.active_tab == 0:
         """, unsafe_allow_html=True)
     
     with col_top10:
-        st.markdown("#### 🚨 Top 10 Empresas de Mayor Riesgo")
+        st.markdown("#### 🚨 Top 20 Empresas de Mayor Riesgo")
         
-        # Obtener top 10 por fraud_score_normalized
-        top10 = df.nlargest(10, 'fraud_score_normalized')[['nif', 'sector', 'fraud_score_normalized', 'riesgo', 'ventas_netas']].copy()
-        top10['rank'] = range(1, 11)
+        # Obtener top 20 por fraud_score_normalized
+        top_risk = df.nlargest(20, 'fraud_score_normalized')[['nif', 'sector', 'fraud_score_normalized', 'riesgo', 'ventas_netas']].copy()
+        top_risk['rank'] = range(1, 21)
         
         # Crear flags activos
         flag_details = get_flag_details()
@@ -2808,11 +2808,11 @@ if st.session_state.active_tab == 0:
                     icons.append(flag_details[col]['icono'])
             return " ".join(icons[:4])  # Max 4 icons
         
-        top10['flags'] = top10['nif'].apply(get_active_flags)
-        top10['sector_short'] = top10['sector'].str[:20] + '...'
+        top_risk['flags'] = top_risk['nif'].apply(get_active_flags)
+        top_risk['sector_short'] = top_risk['sector'].str[:20] + '...'
         
         # Reordenar y renombrar para mostrar
-        display_df = top10[['rank', 'nif', 'sector_short', 'fraud_score_normalized', 'riesgo', 'flags']].copy()
+        display_df = top_risk[['rank', 'nif', 'sector_short', 'fraud_score_normalized', 'riesgo', 'flags']].copy()
         display_df.columns = ['#', 'NIF', 'Sector', 'Score', 'Riesgo', 'Alertas']
         
         # Usar st.dataframe con column_config para mejor visualización
@@ -2834,16 +2834,16 @@ if st.session_state.active_tab == 0:
             },
             hide_index=True,
             use_container_width=True,
-            height=350
+            height=450
         )
         
         # Quick Jump: Selector para ir directamente al detalle
         st.markdown("---")
         quick_jump_nif = st.selectbox(
             "⚡ Quick Jump: Ver detalle de empresa",
-            options=top10['nif'].tolist(),
-            format_func=lambda x: f"{x} - Score: {top10[top10['nif']==x]['fraud_score_normalized'].values[0]:.2f}",
-            key="quick_jump_top10"
+            options=top_risk['nif'].tolist(),
+            format_func=lambda x: f"{x} - Score: {top_risk[top_risk['nif']==x]['fraud_score_normalized'].values[0]:.2f}",
+            key="quick_jump_top20"
         )
         
         if st.button("🔍 Ver Análisis Detallado", use_container_width=True):
@@ -2987,57 +2987,7 @@ if st.session_state.active_tab == 0:
         )
         st.plotly_chart(fig_heatmap, use_container_width=True)
     
-    # Tabla de empresas sospechosas
-    st.markdown("### 🔴 Top 20 Empresas de Mayor Riesgo")
-    
-    flag_details = get_flag_details()
-    flag_cols = [col for col in flag_details.keys() if col in df.columns]
-    
-    # Obtener las 20 empresas más sospechosas (menor score = más anómalo)
-    top_indices = df.nsmallest(20, 'fraud_score').index
-    
-    for idx in top_indices:
-        row = df.loc[idx]
-        
-        # Identificar flags activos
-        active_flags_list = []
-        for col in flag_cols:
-            if row.get(col, 0) == 1:
-                active_flags_list.append(flag_details[col])
-        
-        icons = " ".join([f['icono'] for f in active_flags_list])
-        
-        # Diseño de tarjeta expandible
-        with st.expander(f"🚨 {row['nif']} - {row['sector']} | Score: {row['fraud_score_normalized']:.3f} | {icons}"):
-            # 1. Dashboard mini de métricas
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Ventas Netas", f"€{row['ventas_netas']:,.0f}")
-            m2.metric("Resultado Neto", f"€{row.get('resultado_neto', 0):,.0f}")
-            m3.metric("Deuda Bancaria", f"€{row.get('deuda_bancaria', 0):,.0f}")
-            
-            risk_color = "red" if row['riesgo'] == 'Alto' else "orange"
-            m4.markdown(f"**Nivel de Riesgo:** :{risk_color}[{row['riesgo']}]")
-            
-            st.divider()
-            
-            # 2. Detalle de ALertas
-            st.markdown("#### 🕵️‍♂️ Análisis Forense de Alertas")
-            
-            if active_flags_list:
-                for flag in active_flags_list:
-                    # Contenedor visual para cada alerta
-                    st.markdown(f"""
-                        <div style="background-color: rgba(255, 75, 75, 0.1); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #ff4b4b;">
-                            <div style="font-weight: bold; font-size: 1.1em;">{flag['icono']} {flag['nombre']}</div>
-                            <div style="margin-top: 5px;">{flag['descripcion']}</div>
-                            <div style="font-family: monospace; font-size: 0.9em; color: #ff8c8c; margin-top: 5px;">
-                                📐 Lógica de Cálculo: {flag['umbral']}
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.info("⚠️ Esta empresa ha sido marcada por el modelo de IA (Isolation Forest) por patrón anómalo general, aunque no ha disparado reglas heurísticas específicas.")
-                st.markdown(f"**Motivo IA:** Distancia espacial anómala en las variables transformadas (Score: {row['fraud_score']:.4f})")
+
 
 
 # =============================================================================
