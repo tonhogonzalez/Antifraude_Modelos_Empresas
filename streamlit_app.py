@@ -2839,17 +2839,58 @@ if st.session_state.active_tab == 0:
         
         # Quick Jump: Selector para ir directamente al detalle
         st.markdown("---")
-        quick_jump_nif = st.selectbox(
-            "⚡ Quick Jump: Ver detalle de empresa",
-            options=top_risk['nif'].tolist(),
-            format_func=lambda x: f"{x} - Score: {top_risk[top_risk['nif']==x]['fraud_score_normalized'].values[0]:.2f}",
-            key="quick_jump_top20"
-        )
         
-        if st.button("🔍 Ver Análisis Detallado", use_container_width=True):
-            st.session_state.selected_company_nif = quick_jump_nif
-            st.session_state.active_tab = 1
-            st.rerun()
+        col_qj1, col_qj2 = st.columns([2, 1])
+        with col_qj1:
+            quick_jump_nif = st.selectbox(
+                "⚡ Ver Detalle de Alertas para:",
+                options=top_risk['nif'].tolist(),
+                format_func=lambda x: f"{x} - Score: {top_risk[top_risk['nif']==x]['fraud_score_normalized'].values[0]:.2f}",
+                key="quick_jump_top20"
+            )
+        
+        with col_qj2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🔍 Ver Análisis Completo", use_container_width=True):
+                st.session_state.selected_company_nif = quick_jump_nif
+                st.session_state.active_tab = 1
+                st.rerun()
+                
+        # --- VISTA DETALLADA DE ALERTAS (MASTER-DETAIL) ---
+        if quick_jump_nif:
+            # Recuperar datos de la empresa seleccionada
+            sel_row = df[df['nif'] == quick_jump_nif].iloc[0]
+            
+            # Identificar alertas
+            active_flags_detailed = []
+            for col in flag_cols:
+                if sel_row.get(col, 0) == 1:
+                    active_flags_detailed.append(flag_details[col])
+            
+            st.markdown(f"""
+                <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px;">
+                    <h5 style="margin-top:0;">🕵️‍♂️ Análisis de Alertas: <span style="color: #f64f59;">{quick_jump_nif}</span></h5>
+                    <div style="font-size: 0.9em; color: #aaa; margin-bottom: 15px;">
+                        Sector: {sel_row['sector']} | Ventas: €{sel_row['ventas_netas']:,.0f} | Score: {sel_row['fraud_score_normalized']:.2f}
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            if active_flags_detailed:
+                cols_flags = st.columns(2)
+                for i, flag in enumerate(active_flags_detailed):
+                    with cols_flags[i % 2]:
+                        st.markdown(f"""
+                            <div style="background-color: rgba(255, 75, 75, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #ff4b4b;">
+                                <div style="font-weight: bold; color: #ffdede;">{flag['icono']} {flag['nombre']}</div>
+                                <div style="font-size: 0.85rem; margin-top: 4px; color: #ddd;">{flag['descripcion']}</div>
+                                <div style="font-family: monospace; font-size: 0.75rem; color: #ff8c8c; margin-top: 6px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px;">
+                                    📐 {flag['umbral']}
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+            else:
+                 st.info(f"⚠️ {quick_jump_nif} marcada por anomalía estadística general (Isolation Forest) sin reglas específicas activas.")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
