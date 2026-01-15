@@ -59,8 +59,11 @@ if SPARK_AVAILABLE:
         StructField("fecha_analisis", TimestampType(), False),
         StructField("model_version", StringType(), False),
         StructField("analyst_id", StringType(), True),
-        StructField("analyst_verdict", IntegerType(), False),  # 0=FP, 1=Fraude
+        StructField("analyst_verdict", IntegerType(), False),  # 0=FP, 1=Fraude, 2=Watchlist
         StructField("reason_code", StringType(), True),
+        StructField("rejection_reason_code", StringType(), True),  # Causa raíz de FP
+        StructField("fraud_typology_code", StringType(), True),    # Tipo de fraude
+        StructField("analyst_confidence", IntegerType(), True),    # 1-5 confianza
         StructField("fraud_score_original", DoubleType(), False),
         StructField("feature_vector_hash", StringType(), False),
         StructField("cnae_sector", StringType(), True),
@@ -72,18 +75,57 @@ else:
     FEEDBACK_SCHEMA = None  # Fallback para entornos sin Spark
 
 
+# =============================================================================
+# CONSTANTES DE CÓDIGOS
+# =============================================================================
+
+# Códigos de rechazo para Falsos Positivos
+REJECTION_REASON_CODES = {
+    'SECTOR_NORMAL': 'Comportamiento normal para el sector',
+    'DATA_ERROR': 'Error en los datos de origen',
+    'LEGITIMATE_BUSINESS': 'Operación legítima explicada',
+    'SEASONAL': 'Patrón estacional (Navidad, verano, etc.)',
+    'ONE_TIME': 'Evento puntual no repetible',
+    'OTHER': 'Otra razón (ver comentarios)'
+}
+
+# Tipologías de fraude
+FRAUD_TYPOLOGY_CODES = {
+    'CARRUSEL': 'Fraude carrusel IVA',
+    'PANTALLA': 'Empresa pantalla / Instrumental',
+    'FACTURAS_FALSAS': 'Facturación ficticia',
+    'CONTABILIDAD': 'Manipulación contable',
+    'DEUDA_OCULTA': 'Ocultación de pasivos',
+    'INSOLVENCIA_PUNIBLE': 'Insolvencia punible',
+    'OTHER': 'Otro tipo de fraude'
+}
+
+# Valores de veredicto
+VERDICT_FALSE_POSITIVE = 0
+VERDICT_FRAUD = 1
+VERDICT_WATCHLIST = 2  # Zona gris
+
+
 @dataclass
 class FeedbackRecord:
     """
     Registro de feedback de un analista sobre una alerta.
+    
+    analyst_verdict values:
+        0 = Falso Positivo
+        1 = Fraude Confirmado  
+        2 = Watchlist (Zona Gris)
     """
     nif: str
-    analyst_verdict: int  # 0=Falso Positivo, 1=Fraude Confirmado
+    analyst_verdict: int  # 0=FP, 1=Fraude, 2=Watchlist
     fraud_score_original: float
     feature_vector: Dict[str, float]  # Features al momento de la alerta
     
     # Opcionales
     reason_code: str = None
+    rejection_reason_code: str = None  # Obligatorio si verdict=0
+    fraud_typology_code: str = None    # Obligatorio si verdict=1
+    analyst_confidence: int = 3        # 1-5 (default: medio)
     analyst_id: str = None
     cnae_sector: str = None
     ventas_netas: float = None
@@ -96,6 +138,9 @@ class FeedbackRecord:
             self.fecha_alerta = datetime.now()
         if self.flags_active is None:
             self.flags_active = []
+        # Validar confianza
+        if self.analyst_confidence is not None:
+            self.analyst_confidence = max(1, min(5, self.analyst_confidence))
     
     def to_dict(self) -> Dict:
         """Convierte el registro a diccionario para inserción."""
@@ -108,6 +153,9 @@ class FeedbackRecord:
             "analyst_id": self.analyst_id or "anonymous",
             "analyst_verdict": self.analyst_verdict,
             "reason_code": self.reason_code,
+            "rejection_reason_code": self.rejection_reason_code,
+            "fraud_typology_code": self.fraud_typology_code,
+            "analyst_confidence": self.analyst_confidence,
             "fraud_score_original": self.fraud_score_original,
             "feature_vector_hash": self._hash_features(),
             "cnae_sector": self.cnae_sector,
@@ -128,15 +176,33 @@ class FeedbackRecord:
 
 class FeedbackStorePandas:
     """
-    Implementación de FeedbackStore usando Pandas y CSV/Parquet.
+    Implementación de FeedbackStore usando Pandas y Parquet.
     Para uso en entornos sin Spark (Streamlit local, testing).
+    
+    Persistencia: Usa ruta absoluta para garantizar que los datos
+    se mantengan entre sesiones de Streamlit.
     """
+    
+    # Columnas del schema
+    SCHEMA_COLUMNS = [
+        "feedback_id", "nif", "fecha_alerta", "fecha_analisis",
+        "model_version", "analyst_id", "analyst_verdict", "reason_code",
+        "rejection_reason_code", "fraud_typology_code", "analyst_confidence",
+        "fraud_score_original", "feature_vector_hash", "cnae_sector",
+        "ventas_netas", "flags_active", "created_at"
+    ]
     
     def __init__(
         self,
-        storage_path: str = "data/feedback_store.parquet",
+        storage_path: str = None,
         config: ContinuousLearningConfig = None
     ):
+        # Usar ruta absoluta relativa al módulo para persistencia
+        if storage_path is None:
+            module_dir = os.path.dirname(os.path.abspath(__file__))
+            project_dir = os.path.dirname(module_dir)
+            storage_path = os.path.join(project_dir, "data", "feedback_store.parquet")
+        
         self.storage_path = storage_path
         self.config = config or get_config()
         self.audit_logger = get_audit_logger()
@@ -144,18 +210,33 @@ class FeedbackStorePandas:
     
     def _ensure_storage_exists(self) -> None:
         """Crea el archivo de storage si no existe."""
-        os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
+        storage_dir = os.path.dirname(self.storage_path)
+        if storage_dir:
+            os.makedirs(storage_dir, exist_ok=True)
         
         if not os.path.exists(self.storage_path):
-            # Crear DataFrame vacío con el schema
-            empty_df = pd.DataFrame(columns=[
-                "feedback_id", "nif", "fecha_alerta", "fecha_analisis",
-                "model_version", "analyst_id", "analyst_verdict", "reason_code",
-                "fraud_score_original", "feature_vector_hash", "cnae_sector",
-                "ventas_netas", "flags_active", "created_at"
-            ])
+            # Crear DataFrame vacío con el schema completo
+            empty_df = pd.DataFrame(columns=self.SCHEMA_COLUMNS)
             empty_df.to_parquet(self.storage_path, index=False)
             logger.info(f"Creado FeedbackStore vacío en {self.storage_path}")
+        else:
+            # Verificar y migrar schema si faltan columnas
+            self._migrate_schema_if_needed()
+    
+    def _migrate_schema_if_needed(self) -> None:
+        """Migra el schema añadiendo columnas nuevas si faltan."""
+        try:
+            df = pd.read_parquet(self.storage_path)
+            missing_cols = set(self.SCHEMA_COLUMNS) - set(df.columns)
+            
+            if missing_cols:
+                logger.info(f"Migrando schema: añadiendo columnas {missing_cols}")
+                for col in missing_cols:
+                    df[col] = None
+                df.to_parquet(self.storage_path, index=False)
+                logger.info("Migración de schema completada")
+        except Exception as e:
+            logger.warning(f"No se pudo migrar schema: {e}")
     
     def log_feedback(self, feedback: FeedbackRecord) -> str:
         """
@@ -187,12 +268,16 @@ class FeedbackStorePandas:
         logger.info(f"Feedback registrado: {record['feedback_id']} para NIF {feedback.nif}")
         
         # Audit log
+        verdict_labels = {0: "Falso Positivo", 1: "Fraude", 2: "Watchlist"}
         self.audit_logger.log_event(
             event_type="feedback_logged",
             details={
                 "feedback_id": record["feedback_id"],
                 "nif": feedback.nif,
-                "verdict": "Fraude" if feedback.analyst_verdict == 1 else "Falso Positivo"
+                "verdict": verdict_labels.get(feedback.analyst_verdict, "Desconocido"),
+                "rejection_reason": feedback.rejection_reason_code,
+                "fraud_typology": feedback.fraud_typology_code,
+                "confidence": feedback.analyst_confidence
             }
         )
         
@@ -204,13 +289,23 @@ class FeedbackStorePandas:
             logger.error(f"NIF inválido: {feedback.nif}")
             return False
         
-        if feedback.analyst_verdict not in [0, 1]:
+        # Aceptar 0=FP, 1=Fraude, 2=Watchlist
+        if feedback.analyst_verdict not in [VERDICT_FALSE_POSITIVE, VERDICT_FRAUD, VERDICT_WATCHLIST]:
             logger.error(f"Veredicto inválido: {feedback.analyst_verdict}")
             return False
         
         if not isinstance(feedback.fraud_score_original, (int, float)):
             logger.error("fraud_score_original debe ser numérico")
             return False
+        
+        # Validar campos condicionales
+        if feedback.analyst_verdict == VERDICT_FALSE_POSITIVE:
+            if not feedback.rejection_reason_code:
+                logger.warning("FP sin rejection_reason_code - recomendado")
+        
+        if feedback.analyst_verdict == VERDICT_FRAUD:
+            if not feedback.fraud_typology_code:
+                logger.warning("Fraude sin fraud_typology_code - recomendado")
         
         return True
     
@@ -349,12 +444,132 @@ class FeedbackStorePandas:
         return (True, f"Listo para entrenamiento: {total} muestras ({fp_count} FP, {fraud_count} TP)")
     
     def get_sample_count(self) -> Dict[str, int]:
-        """Retorna conteo de muestras por clase."""
+        """Retorna conteo de muestras por clase incluyendo Watchlist."""
         df = self.get_training_data()
+        if len(df) == 0:
+            return {
+                "total": 0,
+                "false_positives": 0,
+                "confirmed_fraud": 0,
+                "watchlist": 0
+            }
         return {
             "total": len(df),
-            "false_positives": int((df["analyst_verdict"] == 0).sum()) if len(df) > 0 else 0,
-            "confirmed_fraud": int((df["analyst_verdict"] == 1).sum()) if len(df) > 0 else 0
+            "false_positives": int((df["analyst_verdict"] == VERDICT_FALSE_POSITIVE).sum()),
+            "confirmed_fraud": int((df["analyst_verdict"] == VERDICT_FRAUD).sum()),
+            "watchlist": int((df["analyst_verdict"] == VERDICT_WATCHLIST).sum())
+        }
+    
+    def get_watchlist_nifs(self, max_age_days: int = 180) -> List[str]:
+        """
+        Obtiene lista de NIFs en Watchlist (zona gris).
+        
+        Args:
+            max_age_days: Antigüedad máxima del feedback para considerar
+            
+        Returns:
+            Lista de NIFs que están en watchlist
+        """
+        min_date = datetime.now() - timedelta(days=max_age_days)
+        df = self.get_training_data(min_date=min_date)
+        
+        if len(df) == 0:
+            return []
+        
+        # Filtrar solo watchlist (verdict = 2)
+        watchlist_df = df[df["analyst_verdict"] == VERDICT_WATCHLIST]
+        
+        return watchlist_df["nif"].unique().tolist()
+    
+    def analyze_rejection_reasons(self, window_days: int = 30) -> Dict:
+        """
+        Analiza las causas de rechazo (falsos positivos) para sugerir
+        ajustes de umbrales.
+        
+        Returns:
+            Diccionario con estadísticas por razón de rechazo y sector
+        """
+        min_date = datetime.now() - timedelta(days=window_days)
+        df = self.get_training_data(min_date=min_date)
+        
+        if len(df) == 0:
+            return {"total_rejections": 0, "by_reason": {}, "by_sector": {}}
+        
+        # Solo falsos positivos
+        fp_df = df[df["analyst_verdict"] == VERDICT_FALSE_POSITIVE]
+        
+        if len(fp_df) == 0:
+            return {"total_rejections": 0, "by_reason": {}, "by_sector": {}}
+        
+        # Estadísticas por razón
+        by_reason = {}
+        if "rejection_reason_code" in fp_df.columns:
+            reason_counts = fp_df["rejection_reason_code"].value_counts()
+            total_fp = len(fp_df)
+            for reason, count in reason_counts.items():
+                if reason and reason != "":
+                    by_reason[reason] = {
+                        "count": int(count),
+                        "percentage": count / total_fp * 100
+                    }
+        
+        # Estadísticas por sector + razón
+        by_sector = {}
+        if "cnae_sector" in fp_df.columns and "rejection_reason_code" in fp_df.columns:
+            for sector in fp_df["cnae_sector"].dropna().unique():
+                sector_df = fp_df[fp_df["cnae_sector"] == sector]
+                sector_reasons = sector_df["rejection_reason_code"].value_counts()
+                sector_total = len(sector_df)
+                
+                # Si >50% son SECTOR_NORMAL, sugerir relajar umbral
+                sector_normal_pct = sector_reasons.get("SECTOR_NORMAL", 0) / sector_total if sector_total > 0 else 0
+                
+                by_sector[sector] = {
+                    "total_fp": int(sector_total),
+                    "sector_normal_pct": sector_normal_pct * 100,
+                    "suggest_relax_threshold": sector_normal_pct > 0.5,
+                    "reasons": {k: int(v) for k, v in sector_reasons.items() if k}
+                }
+        
+        return {
+            "total_rejections": len(fp_df),
+            "by_reason": by_reason,
+            "by_sector": by_sector,
+            "window_days": window_days
+        }
+    
+    def get_fraud_typology_stats(self, window_days: int = 90) -> Dict:
+        """
+        Estadísticas de tipologías de fraude confirmadas.
+        
+        Returns:
+            Diccionario con conteo por tipología
+        """
+        min_date = datetime.now() - timedelta(days=window_days)
+        df = self.get_training_data(min_date=min_date)
+        
+        if len(df) == 0:
+            return {"total_frauds": 0, "by_typology": {}}
+        
+        # Solo fraudes confirmados
+        fraud_df = df[df["analyst_verdict"] == VERDICT_FRAUD]
+        
+        if len(fraud_df) == 0:
+            return {"total_frauds": 0, "by_typology": {}}
+        
+        by_typology = {}
+        if "fraud_typology_code" in fraud_df.columns:
+            for typology, count in fraud_df["fraud_typology_code"].value_counts().items():
+                if typology:
+                    by_typology[typology] = {
+                        "count": int(count),
+                        "description": FRAUD_TYPOLOGY_CODES.get(typology, typology)
+                    }
+        
+        return {
+            "total_frauds": len(fraud_df),
+            "by_typology": by_typology,
+            "window_days": window_days
         }
 
 

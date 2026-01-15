@@ -26,7 +26,13 @@ from .feature_flags import (
 from .feedback_store import (
     FeedbackStorePandas,
     FeedbackRecord,
-    get_feedback_store
+    get_feedback_store,
+    # New constants for Level 2 feedback
+    REJECTION_REASON_CODES,
+    FRAUD_TYPOLOGY_CODES,
+    VERDICT_FALSE_POSITIVE,
+    VERDICT_FRAUD,
+    VERDICT_WATCHLIST
 )
 
 from .hybrid_reranker import (
@@ -57,6 +63,11 @@ __all__ = [
     "FeedbackStorePandas",
     "FeedbackRecord",
     "get_feedback_store",
+    "REJECTION_REASON_CODES",
+    "FRAUD_TYPOLOGY_CODES",
+    "VERDICT_FALSE_POSITIVE",
+    "VERDICT_FRAUD",
+    "VERDICT_WATCHLIST",
     # ReRanker
     "HybridFraudReRanker",
     "ReRankerMetrics",
