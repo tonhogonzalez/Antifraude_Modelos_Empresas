@@ -26,6 +26,10 @@ try:
         FeedbackStorePandas, FeedbackRecord, get_feedback_store,
         ContinuousLearningConfig, FeatureFlags, get_config, get_flags
     )
+    from continuous_learning.feedback_store import (
+        REJECTION_REASON_CODES, FRAUD_TYPOLOGY_CODES,
+        VERDICT_FALSE_POSITIVE, VERDICT_FRAUD, VERDICT_WATCHLIST
+    )
     CONTINUOUS_LEARNING_AVAILABLE = True
 except ImportError:
     CONTINUOUS_LEARNING_AVAILABLE = False
@@ -1313,6 +1317,13 @@ st.markdown(f"""
 
 st.sidebar.header("⚙️ Configuración del Análisis")
 
+# Initialize feedback store once per session (for performance)
+if 'feedback_store' not in st.session_state and CONTINUOUS_LEARNING_AVAILABLE:
+    try:
+        st.session_state.feedback_store = get_feedback_store()
+    except Exception as e:
+        st.session_state.feedback_store = None
+
 st.sidebar.markdown("---")
 
 # Selector de fuente de datos
@@ -1369,28 +1380,46 @@ st.sidebar.markdown("---")
 if CONTINUOUS_LEARNING_AVAILABLE:
     with st.sidebar.expander("🧠 Continuous Learning", expanded=False):
         try:
-            store = get_feedback_store()
+            # Use cached store from session_state for better performance
+            if 'feedback_store' in st.session_state and st.session_state.feedback_store is not None:
+                store = st.session_state.feedback_store
+            else:
+                store = get_feedback_store()
+                st.session_state.feedback_store = store
+            
+            # Get fresh counts (no caching for real-time updates)
             counts = store.get_sample_count()
             is_ready, reason = store.is_ready_for_training()
             
-            # Indicador de estado
+            # Status indicator
             if is_ready:
                 st.success("✅ Listo para reentrenar")
             else:
                 st.info("⏳ Acumulando datos...")
             
-            # Métricas
+            # Metrics
             col_cl1, col_cl2 = st.columns(2)
             col_cl1.metric("Feedback", counts['total'])
-            col_cl2.metric("FP Rate", f"{counts['false_positives']}/{counts['total']}" if counts['total'] > 0 else "N/A")
             
-            # Barra de progreso hacia entrenamiento
+            # Calculate FP rate
+            total = counts['total']
+            fp_count = counts['false_positives']
+            col_cl2.metric("FP Rate", f"{fp_count}/{total}" if total > 0 else "0/0")
+            
+            # Progress bar towards training
             config = get_config()
             progress = min(counts['total'] / config.min_samples_for_training, 1.0)
             st.progress(progress, text=f"{counts['total']}/{config.min_samples_for_training} para entrenar")
             
+            # Show breakdown
+            if counts['total'] > 0:
+                with st.expander("📊 Detalles", expanded=False):
+                    st.caption(f"✅ Fraudes confirmados: {counts['confirmed_fraud']}")
+                    st.caption(f"❌ Falsos positivos: {counts['false_positives']}")
+                    st.caption(f"⚠️ En watchlist: {counts['watchlist']}")
+            
         except Exception as e:
-            st.caption(f"Sin datos: {e}")
+            st.caption(f"⚠️ Sin datos de feedback: {str(e)}")
 
 st.sidebar.markdown("### 📽️ Presentación")
 
@@ -1521,6 +1550,226 @@ with col_nav5:
         st.rerun()
 
 st.markdown("---")
+
+# =============================================================================
+# TAB 1: ANÁLISIS POR EMPRESA CON FEEDBACK
+# =============================================================================
+if st.session_state.active_tab == 1:
+    st.markdown("## 🔎 Análisis Detallado por Empresa")
+    st.markdown("---")
+    
+    # Company selector
+    if 'df_results' in st.session_state and st.session_state.df_results is not None:
+        df = st.session_state.df_results
+        
+        # Filter to show only high-risk companies
+        high_risk_df = df[df['anomaly_label'] == -1].copy()
+        high_risk_df = high_risk_df.sort_values('fraud_score', ascending=False)
+        
+        if len(high_risk_df) > 0:
+            # Company selection dropdown
+            st.markdown("### 📋 Seleccionar Empresa para Análisis")
+            
+            # Create display names for dropdown
+            company_options = {}
+            for idx, row in high_risk_df.head(50).iterrows():
+                nif = row['nif']
+                score = row['fraud_score']
+                display_name = f"{nif} (Score: {score:.2f})"
+                company_options[display_name] = nif
+            
+            selected_display = st.selectbox(
+                "Empresa",
+                options=list(company_options.keys()),
+                help="Selecciona una empresa de alto riesgo para analizar"
+            )
+            
+            selected_nif = company_options[selected_display]
+            st.session_state.selected_company_nif = selected_nif
+            
+            # Get company data
+            company_data = df[df['nif'] == selected_nif].iloc[0]
+            
+            st.markdown("---")
+            
+            # Display company information
+            st.markdown(f"### 🏢 Empresa: **{selected_nif}**")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Fraud Score", f"{company_data['fraud_score']:.2f}")
+            with col2:
+                st.metric("Anomaly Score", f"{company_data.get('anomaly_score', 0):.2f}")
+            with col3:
+                sector = company_data.get('cnae_sector', 'N/A')
+                st.metric("Sector CNAE", sector)
+            
+            # Financial metrics
+            st.markdown("#### 💰 Métricas Financieras")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                ventas = company_data.get('ventas_netas', 0)
+                st.metric("Ventas Netas", f"€{ventas:,.0f}")
+            with col2:
+                activos = company_data.get('activo_total', 0)
+                st.metric("Activo Total", f"€{activos:,.0f}")
+            with col3:
+                patrimonio = company_data.get('patrimonio_neto', 0)
+                st.metric("Patrimonio Neto", f"€{patrimonio:,.0f}")
+            with col4:
+                resultado = company_data.get('resultado_neto', 0)
+                st.metric("Resultado Neto", f"€{resultado:,.0f}")
+            
+            # Active flags
+            st.markdown("#### 🚩 Flags Activos")
+            flag_details = get_flag_details()
+            active_flags = []
+            
+            for flag_key in flag_details.keys():
+                if company_data.get(flag_key, False):
+                    active_flags.append(flag_key)
+            
+            if active_flags:
+                cols = st.columns(min(len(active_flags), 3))
+                for idx, flag_key in enumerate(active_flags):
+                    flag_info = flag_details[flag_key]
+                    col_idx = idx % 3
+                    with cols[col_idx]:
+                        st.warning(f"{flag_info['icono']} **{flag_info['nombre']}**\n\n{flag_info['descripcion']}")
+            else:
+                st.info("No hay flags activos para esta empresa")
+            
+            st.markdown("---")
+            
+            # =================================================================
+            # FEEDBACK FORM - OPTIMIZED WITH st.form()
+            # =================================================================
+            if CONTINUOUS_LEARNING_AVAILABLE and st.session_state.feedback_store is not None:
+                st.markdown("### 🎯 Feedback del Analista")
+                st.markdown("*Proporciona tu veredicto sobre esta empresa. El sistema aprenderá de tus decisiones.*")
+                
+                # Check if feedback already exists for this company
+                existing_feedback = st.session_state.feedback_store.get_last_feedback(selected_nif)
+                if existing_feedback:
+                    verdict_labels = {0: "Falso Positivo", 1: "Fraude Confirmado", 2: "Watchlist"}
+                    prev_verdict = verdict_labels.get(existing_feedback.get('analyst_verdict'), "Desconocido")
+                    st.info(f"ℹ️ Ya existe feedback previo para esta empresa: **{prev_verdict}**")
+                
+                # Create form to batch all inputs and prevent reruns
+                with st.form(key=f"feedback_form_{selected_nif}", clear_on_submit=False):
+                    st.markdown("#### ¿Cuál es tu veredicto sobre esta empresa?")
+                    
+                    # Verdict selection with columns
+                    col1, col2, col3 = st.columns(3)
+                    
+                    verdict_choice = None
+                    with col1:
+                        if st.form_submit_button("🚨 FRAUDE CONFIRMADO", use_container_width=True, type="secondary"):
+                            verdict_choice = VERDICT_FRAUD
+                    with col2:
+                        if st.form_submit_button("✅ FALSO POSITIVO", use_container_width=True, type="secondary"):
+                            verdict_choice = VERDICT_FALSE_POSITIVE
+                    with col3:
+                        if st.form_submit_button("⚠️ WATCHLIST", use_container_width=True, type="secondary"):
+                            verdict_choice = VERDICT_WATCHLIST
+                    
+                    st.markdown("---")
+                    
+                    # Confidence slider
+                    confidence = st.slider(
+                        "¿Qué tan seguro estás de tu decisión?",
+                        min_value=1,
+                        max_value=5,
+                        value=3,
+                        help="1 = Muy inseguro, 5 = Completamente seguro"
+                    )
+                    
+                    # Conditional fields based on verdict
+                    rejection_reason = st.selectbox(
+                        "Razón del falso positivo (si aplica)",
+                        options=[""] + list(REJECTION_REASON_CODES.keys()),
+                        format_func=lambda x: REJECTION_REASON_CODES.get(x, "-- Seleccionar --") if x else "-- Seleccionar --"
+                    )
+                    
+                    fraud_typology = st.selectbox(
+                        "Tipología de fraude (si aplica)",
+                        options=[""] + list(FRAUD_TYPOLOGY_CODES.keys()),
+                        format_func=lambda x: FRAUD_TYPOLOGY_CODES.get(x, "-- Seleccionar --") if x else "-- Seleccionar --"
+                    )
+                    
+                    # Main submit button
+                    submitted = st.form_submit_button("📤 ENVIAR FEEDBACK", type="primary", use_container_width=True)
+                    
+                    # Process feedback submission
+                    if submitted or verdict_choice is not None:
+                        # Use verdict_choice if button was clicked, otherwise error
+                        if verdict_choice is None:
+                            st.error("⚠️ Por favor selecciona un veredicto (Fraude, Falso Positivo o Watchlist)")
+                        else:
+                            # Validate conditional fields
+                            if verdict_choice == VERDICT_FALSE_POSITIVE and not rejection_reason:
+                                st.warning("⚠️ Se recomienda especificar la razón del falso positivo")
+                            
+                            if verdict_choice == VERDICT_FRAUD and not fraud_typology:
+                                st.warning("⚠️ Se recomienda especificar la tipología de fraude")
+                            
+                            # Extract feature vector from company data
+                            feature_vector = {
+                                'ventas_netas': float(company_data.get('ventas_netas', 0)),
+                                'activo_total': float(company_data.get('activo_total', 0)),
+                                'patrimonio_neto': float(company_data.get('patrimonio_neto', 0)),
+                                'resultado_neto': float(company_data.get('resultado_neto', 0)),
+                                'fraud_score': float(company_data.get('fraud_score', 0)),
+                                'anomaly_score': float(company_data.get('anomaly_score', 0))
+                            }
+                            
+                            # Create feedback record
+                            feedback = FeedbackRecord(
+                                nif=selected_nif,
+                                analyst_verdict=verdict_choice,
+                                fraud_score_original=float(company_data['fraud_score']),
+                                feature_vector=feature_vector,
+                                analyst_confidence=confidence,
+                                rejection_reason_code=rejection_reason if rejection_reason else None,
+                                fraud_typology_code=fraud_typology if fraud_typology else None,
+                                cnae_sector=company_data.get('cnae_sector'),
+                                ventas_netas=float(company_data.get('ventas_netas', 0)),
+                                flags_active=active_flags
+                            )
+                            
+                            # Save feedback with error handling
+                            try:
+                                with st.spinner("💾 Guardando feedback..."):
+                                    feedback_id = st.session_state.feedback_store.log_feedback(feedback)
+                                
+                                verdict_labels = {
+                                    VERDICT_FALSE_POSITIVE: "Falso Positivo",
+                                    VERDICT_FRAUD: "Fraude Confirmado",
+                                    VERDICT_WATCHLIST: "Watchlist"
+                                }
+                                
+                                st.success(f"✅ Feedback registrado correctamente: **{verdict_labels[verdict_choice]}**")
+                                st.caption(f"ID: {feedback_id[:8]}...")
+                                
+                                # Force sidebar refresh by triggering a rerun
+                                import time
+                                time.sleep(0.5)  # Brief pause for user to see success message
+                                st.rerun()
+                                
+                            except Exception as e:
+                                st.error(f"❌ Error al guardar feedback: {str(e)}")
+                                st.exception(e)
+            
+            else:
+                st.warning("⚠️ El módulo de Continuous Learning no está disponible. No se puede registrar feedback.")
+        
+        else:
+            st.info("ℹ️ No se detectaron empresas de alto riesgo en el análisis actual.")
+            st.markdown("Ejecuta un nuevo análisis desde la barra lateral para generar datos.")
+    
+    else:
+        st.warning("⚠️ No hay datos de análisis disponibles.")
+        st.markdown("Por favor, ejecuta un análisis desde la barra lateral primero.")
 
 # =============================================================================
 # TAB 5: AYUDA Y PRESENTACIÓN DE LA SOLUCIÓN
