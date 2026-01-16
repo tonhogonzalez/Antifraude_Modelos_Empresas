@@ -1428,9 +1428,12 @@ st.sidebar.markdown("---")
 if 'df_results' in st.session_state and st.session_state.df_results is not None:
     df = st.session_state.df_results
     
-    # Show ALL companies sorted by fraud_score
+    # Show ALL companies sorted by fraud_score_normalized (0-1 range)
     available_companies = df.copy()
-    available_companies = available_companies.sort_values('fraud_score', ascending=False)
+    
+    # Use fraud_score_normalized if available, otherwise fraud_score
+    score_column = 'fraud_score_normalized' if 'fraud_score_normalized' in df.columns else 'fraud_score'
+    available_companies = available_companies.sort_values(score_column, ascending=False)
     
     if len(available_companies) > 0:
         st.sidebar.markdown("### 🏢 Selección de Empresa")
@@ -1445,7 +1448,7 @@ if 'df_results' in st.session_state and st.session_state.df_results is not None:
         
         for idx, row in top_companies.iterrows():
             nif = row['nif']
-            score = row['fraud_score']
+            score = row[score_column]
             
             # Add risk level indicator
             if score > 0.7:
@@ -1482,7 +1485,10 @@ if 'df_results' in st.session_state and st.session_state.df_results is not None:
         selected_nif = company_options[selected_display]
         st.session_state.selected_company_nif = selected_nif
         
-        st.sidebar.caption(f"📊 Mostrando {max_companies} de {len(available_companies)} empresas")
+        # Show score range for debugging
+        max_score = available_companies[score_column].max()
+        min_score = available_companies[score_column].min()
+        st.sidebar.caption(f"📊 Scores: {min_score:.2f} - {max_score:.2f} | Mostrando {max_companies} de {len(available_companies)}")
     else:
         st.sidebar.warning("⚠️ No hay empresas disponibles")
 else:
