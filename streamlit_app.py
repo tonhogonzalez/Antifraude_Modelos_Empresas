@@ -1806,51 +1806,51 @@ if st.session_state.active_tab == 1:
                         
                         if validation_passed:
                             # Extract feature vector from company data
-                        feature_vector = {
-                            'ventas_netas': float(company_data.get('ventas_netas', 0)),
-                            'activo_total': float(company_data.get('activo_total', 0)),
-                            'patrimonio_neto': float(company_data.get('patrimonio_neto', 0)),
-                            'resultado_neto': float(company_data.get('resultado_neto', 0)),
-                            'fraud_score': float(company_data.get('fraud_score', 0)),
-                            'anomaly_score': float(company_data.get('anomaly_score', 0))
-                        }
-                        
-                        # Create feedback record
-                        feedback = FeedbackRecord(
-                            nif=selected_nif,
-                            analyst_verdict=verdict_choice,
-                            fraud_score_original=float(company_data['fraud_score']),
-                            feature_vector=feature_vector,
-                            analyst_confidence=confidence,
-                            rejection_reason_code=rejection_reason if rejection_reason else None,
-                            fraud_typology_code=fraud_typology if fraud_typology else None,
-                            cnae_sector=company_data.get('cnae_sector'),
-                            ventas_netas=float(company_data.get('ventas_netas', 0)),
-                            flags_active=active_flags
-                        )
-                        
-                        # Save feedback with error handling
-                        try:
-                            with st.spinner("💾 Guardando feedback..."):
-                                feedback_id = st.session_state.feedback_store.log_feedback(feedback)
-                            
-                            verdict_labels = {
-                                VERDICT_FALSE_POSITIVE: "Falso Positivo",
-                                VERDICT_FRAUD: "Fraude Confirmado",
-                                VERDICT_WATCHLIST: "Watchlist"
+                            feature_vector = {
+                                'ventas_netas': float(company_data.get('ventas_netas', 0)),
+                                'activo_total': float(company_data.get('activo_total', 0)),
+                                'patrimonio_neto': float(company_data.get('patrimonio_neto', 0)),
+                                'resultado_neto': float(company_data.get('resultado_neto', 0)),
+                                'fraud_score': float(company_data.get('fraud_score', 0)),
+                                'anomaly_score': float(company_data.get('anomaly_score', 0))
                             }
                             
-                            st.success(f"✅ Feedback registrado correctamente: **{verdict_labels[verdict_choice]}**")
-                            st.caption(f"ID: {feedback_id[:8]}...")
+                            # Create feedback record
+                            feedback = FeedbackRecord(
+                                nif=selected_nif,
+                                analyst_verdict=verdict_choice,
+                                fraud_score_original=float(company_data['fraud_score']),
+                                feature_vector=feature_vector,
+                                analyst_confidence=confidence,
+                                rejection_reason_code=rejection_reason if rejection_reason else None,
+                                fraud_typology_code=fraud_typology if fraud_typology else None,
+                                cnae_sector=company_data.get('cnae_sector'),
+                                ventas_netas=float(company_data.get('ventas_netas', 0)),
+                                flags_active=active_flags
+                            )
                             
-                            # Force sidebar refresh by triggering a rerun
-                            import time
-                            time.sleep(0.5)  # Brief pause for user to see success message
-                            st.rerun()
-                            
-                        except Exception as e:
-                            st.error(f"❌ Error al guardar feedback: {str(e)}")
-                            st.exception(e)
+                            # Save feedback with error handling
+                            try:
+                                with st.spinner("💾 Guardando feedback..."):
+                                    feedback_id = st.session_state.feedback_store.log_feedback(feedback)
+                                
+                                verdict_labels = {
+                                    VERDICT_FALSE_POSITIVE: "Falso Positivo",
+                                    VERDICT_FRAUD: "Fraude Confirmado",
+                                    VERDICT_WATCHLIST: "Watchlist"
+                                }
+                                
+                                st.success(f"✅ Feedback registrado correctamente: **{verdict_labels[verdict_choice]}**")
+                                st.caption(f"ID: {feedback_id[:8]}...")
+                                
+                                # Force sidebar refresh by triggering a rerun
+                                import time
+                                time.sleep(0.5)  # Brief pause for user to see success message
+                                st.rerun()
+                                
+                            except Exception as e:
+                                st.error(f"❌ Error al guardar feedback: {str(e)}")
+                                st.exception(e)
             
             else:
                 st.warning("⚠️ El módulo de Continuous Learning no está disponible. No se puede registrar feedback.")
