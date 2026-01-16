@@ -11,7 +11,8 @@ import pandas as pd
 import base64
 import numpy as np
 from sklearn.ensemble import IsolationForest
-from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import RobustScaler, StandardScaler
+from sklearn.decomposition import PCA
 from scipy.spatial.distance import mahalanobis
 import plotly.express as px
 import plotly.graph_objects as go
@@ -1300,6 +1301,156 @@ def get_flag_details():
     }
 
 
+def create_sectorial_scatter(df, selected_nif, sector):
+    """
+    Crea scatter plot 2D con PCA para comparación sectorial
+    
+    Args:
+        df: DataFrame con todas las empresas
+        selected_nif: NIF de la empresa seleccionada
+        sector: Sector CNAE de la empresa
+    
+    Returns:
+        fig: Plotly figure object o None si no hay suficientes datos
+    """
+    
+    # 1. Filtrar empresas del mismo sector
+    sector_df = df[df['cnae_sector'] == sector].copy()
+    
+    if len(sector_df) < 5:
+        # No hay suficientes empresas para comparar
+        return None
+    
+    # 2. Seleccionar variables financieras
+    features = [
+        'ventas_netas',
+        'activo_total', 
+        'patrimonio_neto',
+        'resultado_neto',
+        'gastos_personal'
+    ]
+    
+    # Filtrar empresas con datos completos
+    sector_df = sector_df.dropna(subset=features)
+    
+    if len(sector_df) < 5:
+        return None
+    
+    # 3. Normalizar datos
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(sector_df[features])
+    
+    # 4. Aplicar PCA (2 componentes)
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(X_scaled)
+    
+    # Añadir componentes al DataFrame
+    sector_df['PC1'] = X_pca[:, 0]
+    sector_df['PC2'] = X_pca[:, 1]
+    
+    # 5. Separar empresa seleccionada del resto
+    selected_company = sector_df[sector_df['nif'] == selected_nif]
+    other_companies = sector_df[sector_df['nif'] != selected_nif]
+    
+    # 6. Categorizar por riesgo
+    def get_risk_category(score):
+        if score > 0.7:
+            return 'Alto', '#ef4444'  # Rojo
+        elif score > 0.4:
+            return 'Medio', '#f59e0b'  # Amarillo
+        else:
+            return 'Bajo', '#10b981'  # Verde
+    
+    # 7. Crear figura
+    fig = go.Figure()
+    
+    # Plot empresas por categoría de riesgo
+    for risk_level, color in [('Bajo', '#10b981'), ('Medio', '#f59e0b'), ('Alto', '#ef4444')]:
+        mask = other_companies['fraud_score'].apply(
+            lambda x: get_risk_category(x)[0] == risk_level
+        )
+        subset = other_companies[mask]
+        
+        if len(subset) > 0:
+            fig.add_trace(go.Scatter(
+                x=subset['PC1'],
+                y=subset['PC2'],
+                mode='markers',
+                name=f'Riesgo {risk_level}',
+                marker=dict(
+                    size=8,
+                    color=color,
+                    opacity=0.6,
+                    line=dict(width=0.5, color='white')
+                ),
+                hovertemplate=(
+                    '<b>%{customdata[0]}</b><br>' +
+                    'Score: %{customdata[1]:.2f}<br>' +
+                    'Ventas: €%{customdata[2]:,.0f}<br>' +
+                    '<extra></extra>'
+                ),
+                customdata=subset[['nif', 'fraud_score', 'ventas_netas']].values
+            ))
+    
+    # Destacar empresa seleccionada
+    if len(selected_company) > 0:
+        selected_score = selected_company['fraud_score'].iloc[0]
+        fig.add_trace(go.Scatter(
+            x=selected_company['PC1'],
+            y=selected_company['PC2'],
+            mode='markers',
+            name='Empresa Seleccionada',
+            marker=dict(
+                size=20,
+                color=get_risk_category(selected_score)[1],
+                symbol='star',
+                line=dict(width=2, color='white')
+            ),
+            hovertemplate=(
+                '<b>EMPRESA SELECCIONADA</b><br>' +
+                'NIF: %{customdata[0]}<br>' +
+                'Score: %{customdata[1]:.2f}<br>' +
+                '<extra></extra>'
+            ),
+            customdata=selected_company[['nif', 'fraud_score']].values
+        ))
+    
+    # 8. Layout profesional
+    variance_pc1 = pca.explained_variance_ratio_[0] * 100
+    variance_pc2 = pca.explained_variance_ratio_[1] * 100
+    
+    fig.update_layout(
+        title=dict(
+            text=f'Posicionamiento Sectorial: {sector}',
+            font=dict(size=16, color='white')
+        ),
+        xaxis=dict(
+            title=f'PC1 - Tamaño/Escala ({variance_pc1:.1f}% varianza)',
+            gridcolor='rgba(255,255,255,0.1)',
+            zerolinecolor='rgba(255,255,255,0.2)',
+            color='white'
+        ),
+        yaxis=dict(
+            title=f'PC2 - Rentabilidad/Eficiencia ({variance_pc2:.1f}% varianza)',
+            gridcolor='rgba(255,255,255,0.1)',
+            zerolinecolor='rgba(255,255,255,0.2)',
+            color='white'
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        hovermode='closest',
+        legend=dict(
+            bgcolor='rgba(0,0,0,0.5)',
+            bordercolor='rgba(255,255,255,0.2)',
+            borderwidth=1,
+            font=dict(color='white')
+        ),
+        height=500
+    )
+    
+    return fig
+
+
 # =============================================================================
 # INTERFAZ PRINCIPAL
 # =============================================================================
@@ -1767,8 +1918,28 @@ if st.session_state.active_tab == 1:
                     sector = company_data.get('cnae_sector', 'N/A')
                     st.info(f"**Sector CNAE:** {sector}")
                     
-                    # Placeholder for future Mahalanobis distance chart
-                    st.caption("📈 Gráfico de dispersión sectorial (próximamente)")
+                    
+                    # Gráfico de dispersión sectorial con PCA
+                    if sector != 'N/A':
+                        fig_sector = create_sectorial_scatter(df, selected_nif, sector)
+                        
+                        if fig_sector is not None:
+                            st.plotly_chart(fig_sector, use_container_width=True)
+                            
+                            # Interpretación automática del percentil
+                            sector_companies = df[df['cnae_sector'] == sector]
+                            percentile = (sector_companies['fraud_score'] < company_data['fraud_score']).mean() * 100
+                            
+                            if percentile > 90:
+                                st.warning(f"⚠️ Esta empresa está en el **percentil {percentile:.0f}** de riesgo en su sector (top 10% más riesgoso)")
+                            elif percentile > 75:
+                                st.info(f"📊 Esta empresa está en el **percentil {percentile:.0f}** de riesgo en su sector (por encima del promedio)")
+                            else:
+                                st.success(f"✅ Esta empresa está en el **percentil {percentile:.0f}** de riesgo en su sector (dentro del rango normal)")
+                        else:
+                            st.caption("📊 No hay suficientes empresas del sector para comparación (mínimo 5 requeridas)")
+                    else:
+                        st.caption("📊 Sector no disponible para comparación")
                 
                 # TAB 2: FLAGS ACTIVOS (antes era TAB 3)
                 with tab2:
