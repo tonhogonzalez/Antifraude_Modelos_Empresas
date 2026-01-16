@@ -1731,7 +1731,7 @@ if st.session_state.active_tab == 1:
             # COLUMNA IZQUIERDA (65%): EL EXPEDIENTE - TABS PARA ORGANIZAR EVIDENCIA
             # =====================================================================
             with col_left:
-                tab1, tab2, tab3 = st.tabs(["📊 Comparativa Sectorial", "🕸️ Grafo de Relaciones", "🚩 Flags Activos"])
+                tab1, tab2 = st.tabs(["📊 Comparativa Sectorial", "🚩 Flags Activos"])
                 
                 # TAB 1: COMPARATIVA SECTORIAL
                 with tab1:
@@ -1756,16 +1756,8 @@ if st.session_state.active_tab == 1:
                     # Placeholder for future Mahalanobis distance chart
                     st.caption("📈 Gráfico de dispersión sectorial (próximamente)")
                 
-                # TAB 2: GRAFO DE RELACIONES
+                # TAB 2: FLAGS ACTIVOS (antes era TAB 3)
                 with tab2:
-                    st.markdown("### Red de Operaciones M347")
-                    
-                    # Network graph placeholder
-                    st.caption("🕸️ Visualización de grafo de relaciones (próximamente)")
-                    st.info("Aquí se mostrará el grafo interactivo de proveedores y clientes basado en el modelo M347")
-                
-                # TAB 3: FLAGS ACTIVOS
-                with tab3:
                     st.markdown("### Alertas y Reglas Activadas")
                     
                     # Get active flags
