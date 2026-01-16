@@ -1441,6 +1441,8 @@ if 'df_results' in st.session_state and st.session_state.df_results is not None:
         
         # Create display names with risk categorization
         company_options = {}
+        company_list = []  # Ordered list for index
+        
         for idx, row in top_companies.iterrows():
             nif = row['nif']
             score = row['fraud_score']
@@ -1458,19 +1460,33 @@ if 'df_results' in st.session_state and st.session_state.df_results is not None:
             
             display_name = f"{risk_emoji} {nif} | {score:.2f}"
             company_options[display_name] = nif
+            company_list.append(display_name)
+        
+        # Determine default index
+        default_index = 0
+        if 'selected_company_nif' in st.session_state and st.session_state.selected_company_nif:
+            # Try to find current selection in list
+            for i, display_name in enumerate(company_list):
+                if company_options[display_name] == st.session_state.selected_company_nif:
+                    default_index = i
+                    break
         
         selected_display = st.sidebar.selectbox(
             "Empresa",
-            options=list(company_options.keys()),
+            options=company_list,
+            index=default_index,
             help=f"Top {max_companies} empresas por score de fraude",
-            key="sidebar_company_selector",
-            label_visibility="collapsed"
+            key="sidebar_company_selector"
         )
         
         selected_nif = company_options[selected_display]
         st.session_state.selected_company_nif = selected_nif
         
         st.sidebar.caption(f"📊 Mostrando {max_companies} de {len(available_companies)} empresas")
+    else:
+        st.sidebar.warning("⚠️ No hay empresas disponibles")
+else:
+    st.sidebar.info("ℹ️ Ejecuta un análisis para ver empresas")
 
 st.sidebar.markdown("---")
 
