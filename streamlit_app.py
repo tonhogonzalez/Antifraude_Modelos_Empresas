@@ -1691,7 +1691,6 @@ if st.session_state.active_tab == 1:
     # ZONA 1: CONTEXTO GLOBAL - TÍTULO ÚNICO (Selector está en sidebar)
     # =========================================================================
     st.title("🔎 Análisis Detallado de Operaciones")
-    st.markdown("---")
     
     # Check if company is selected from sidebar
     if 'selected_company_nif' in st.session_state and st.session_state.selected_company_nif is not None:
