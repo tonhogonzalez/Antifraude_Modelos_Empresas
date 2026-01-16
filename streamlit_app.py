@@ -1321,14 +1321,27 @@ def create_sectorial_scatter(df, selected_nif, sector):
         # No hay suficientes empresas para comparar
         return None
     
-    # 2. Seleccionar variables financieras
-    features = [
-        'ventas_netas',
-        'activo_total', 
-        'patrimonio_neto',
-        'resultado_neto',
-        'gastos_personal'
-    ]
+    # 2. Seleccionar variables financieras (con nombres alternativos)
+    # Intentar múltiples nombres posibles para cada campo
+    feature_mapping = {
+        'ventas': ['ventas_netas', 'cifra_negocios', 'ventas'],
+        'activos': ['activo_total', 'activos', 'total_activo'],
+        'patrimonio': ['patrimonio_neto', 'patrimonio', 'fondos_propios'],
+        'resultado': ['resultado_neto', 'resultado', 'beneficio_neto'],
+        'gastos': ['gastos_personal', 'gastos_empleados', 'coste_personal']
+    }
+    
+    # Detectar qué campos están disponibles
+    features = []
+    for key, possible_names in feature_mapping.items():
+        for name in possible_names:
+            if name in sector_df.columns:
+                features.append(name)
+                break
+    
+    if len(features) < 3:
+        # No hay suficientes variables financieras
+        return None
     
     # Filtrar empresas con datos completos
     sector_df = sector_df.dropna(subset=features)
@@ -1372,6 +1385,9 @@ def create_sectorial_scatter(df, selected_nif, sector):
         subset = other_companies[mask]
         
         if len(subset) > 0:
+            # Usar el primer feature disponible para el tooltip
+            value_field = features[0] if len(features) > 0 else 'fraud_score'
+            
             fig.add_trace(go.Scatter(
                 x=subset['PC1'],
                 y=subset['PC2'],
@@ -1386,10 +1402,10 @@ def create_sectorial_scatter(df, selected_nif, sector):
                 hovertemplate=(
                     '<b>%{customdata[0]}</b><br>' +
                     'Score: %{customdata[1]:.2f}<br>' +
-                    'Ventas: €%{customdata[2]:,.0f}<br>' +
+                    f'{value_field}: €%{{customdata[2]:,.0f}}<br>' +
                     '<extra></extra>'
                 ),
-                customdata=subset[['nif', 'fraud_score', 'ventas_netas']].values
+                customdata=subset[['nif', 'fraud_score', value_field]].values
             ))
     
     # Destacar empresa seleccionada
