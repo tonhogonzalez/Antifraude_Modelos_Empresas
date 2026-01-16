@@ -1600,33 +1600,31 @@ with col_nav5:
 st.markdown("---")
 
 # =============================================================================
-# TAB 1: ANÁLISIS POR EMPRESA CON FEEDBACK
+# TAB 1: ANÁLISIS DETALLADO POR EMPRESA - COCKPIT DASHBOARD
 # =============================================================================
 if st.session_state.active_tab == 1:
-    st.markdown("## 🔎 Análisis Detallado por Empresa")
+    
+    # =========================================================================
+    # ZONA 1: CONTEXTO GLOBAL (Sticky Header) - UN SOLO TÍTULO, UN SOLO SELECTOR
+    # =========================================================================
+    st.title("🔎 Análisis Detallado de Operaciones")
     st.markdown("---")
     
-    # Company selector
+    # Company selector - ÚNICO Y GLOBAL
     if 'df_results' in st.session_state and st.session_state.df_results is not None:
         df = st.session_state.df_results
         
-        # OPTIMIZED: Show ALL companies sorted by fraud_score (not just anomalies)
-        # This ensures we see high, medium, and low scores
+        # OPTIMIZED: Show ALL companies sorted by fraud_score
         available_companies = df.copy()
         available_companies = available_companies.sort_values('fraud_score', ascending=False)
         
         if len(available_companies) > 0:
-            # Company selection dropdown
-            st.markdown("### 📋 Seleccionar Empresa para Análisis")
-            
-            # Performance optimization: Limit to top 200 companies (balanced between variety and performance)
+            # Performance optimization: Limit to top 200 companies
             max_companies = min(200, len(available_companies))
             top_companies = available_companies.head(max_companies)
             
-            # Create display names with risk categorization for better UX
+            # Create display names with risk categorization
             company_options = {}
-            
-            # Categorize scores for visual clarity
             for idx, row in top_companies.iterrows():
                 nif = row['nif']
                 score = row['fraud_score']
@@ -1646,281 +1644,233 @@ if st.session_state.active_tab == 1:
                 company_options[display_name] = nif
             
             selected_display = st.selectbox(
-                "Empresa",
+                "Seleccionar Empresa",
                 options=list(company_options.keys()),
-                help=f"Mostrando las {max_companies} empresas ordenadas por score de fraude (de mayor a menor)"
+                help=f"Mostrando las {max_companies} empresas ordenadas por score de fraude (de mayor a menor)",
+                key="cockpit_company_selector"
             )
             
             selected_nif = company_options[selected_display]
             st.session_state.selected_company_nif = selected_nif
             
-            # Get company data
+            # Get company data - CARGA UNA SOLA VEZ
             company_data = df[df['nif'] == selected_nif].iloc[0]
             
             st.markdown("---")
             
-            # Display company information
-            st.markdown(f"### 🏢 Empresa: **{selected_nif}**")
-            
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Fraud Score", f"{company_data['fraud_score']:.2f}")
-            with col2:
-                st.metric("Anomaly Score", f"{company_data.get('anomaly_score', 0):.2f}")
-            with col3:
-                sector = company_data.get('cnae_sector', 'N/A')
-                st.metric("Sector CNAE", sector)
-            
-            # Financial metrics
-            st.markdown("#### 💰 Métricas Financieras")
+            # =========================================================================
+            # ZONA 2: SITUACIÓN (KPIs) - VISIÓN RÁPIDA DE ALTO NIVEL
+            # =========================================================================
             col1, col2, col3, col4 = st.columns(4)
+            
             with col1:
-                ventas = company_data.get('ventas_netas', 0)
-                st.metric("Ventas Netas", f"€{ventas:,.0f}")
+                fraud_score = company_data['fraud_score']
+                # Delta color based on threshold
+                delta_color = "inverse" if fraud_score > 0.7 else "normal"
+                st.metric(
+                    "Score de Anomalía", 
+                    f"{fraud_score:.2f}",
+                    delta=f"{fraud_score - 0.5:.2f}" if fraud_score > 0.5 else None,
+                    delta_color=delta_color
+                )
+            
             with col2:
-                activos = company_data.get('activo_total', 0)
-                st.metric("Activo Total", f"€{activos:,.0f}")
+                ventas = company_data.get('ventas_netas', 0)
+                st.metric("Ventas Totales", f"€{ventas:,.0f}")
+            
             with col3:
-                patrimonio = company_data.get('patrimonio_neto', 0)
-                st.metric("Patrimonio Neto", f"€{patrimonio:,.0f}")
-            with col4:
                 resultado = company_data.get('resultado_neto', 0)
-                st.metric("Resultado Neto", f"€{resultado:,.0f}")
+                st.metric("Beneficio Neto", f"€{resultado:,.0f}")
             
-            # Active flags
-            st.markdown("#### 🚩 Flags Activos")
-            flag_details = get_flag_details()
-            active_flags = []
-            
-            for flag_key in flag_details.keys():
-                if company_data.get(flag_key, False):
-                    active_flags.append(flag_key)
-            
-            if active_flags:
-                cols = st.columns(min(len(active_flags), 3))
-                for idx, flag_key in enumerate(active_flags):
-                    flag_info = flag_details[flag_key]
-                    col_idx = idx % 3
-                    with cols[col_idx]:
-                        st.warning(f"{flag_info['icono']} **{flag_info['nombre']}**\n\n{flag_info['descripcion']}")
-            else:
-                st.info("No hay flags activos para esta empresa")
+            with col4:
+                # Calculate total debt
+                deuda_lp = company_data.get('deuda_largo_plazo', 0)
+                deuda_cp = company_data.get('deuda_corto_plazo', 0)
+                deuda_total = deuda_lp + deuda_cp
+                st.metric("Deuda Total", f"€{deuda_total:,.0f}")
             
             st.markdown("---")
             
-            # =================================================================
-            # FEEDBACK FORM - OPTIMIZED WITH st.form()
-            # =================================================================
-            if CONTINUOUS_LEARNING_AVAILABLE and st.session_state.feedback_store is not None:
-                st.markdown("### 🎯 Feedback del Analista")
-                st.markdown("*Tu veredicto entrena al modelo de IA. Ayúdanos a mejorar la precisión del sistema.*")
+            # =========================================================================
+            # ZONA 3: EVIDENCIA Y ACCIÓN - LAYOUT DIVIDIDO 65/35
+            # =========================================================================
+            col_left, col_right = st.columns([0.65, 0.35], gap="medium")
+            
+            # =====================================================================
+            # COLUMNA IZQUIERDA (65%): EL EXPEDIENTE - TABS PARA ORGANIZAR EVIDENCIA
+            # =====================================================================
+            with col_left:
+                tab1, tab2, tab3 = st.tabs(["📊 Comparativa Sectorial", "🕸️ Grafo de Relaciones", "🚩 Flags Activos"])
                 
-                # Check if feedback already exists for this company
-                existing_feedback = st.session_state.feedback_store.get_last_feedback(selected_nif)
-                if existing_feedback:
-                    verdict_labels = {0: "Falso Positivo", 1: "Fraude Confirmado", 2: "Watchlist"}
-                    prev_verdict = verdict_labels.get(existing_feedback.get('analyst_verdict'), "Desconocido")
-                    st.info(f"ℹ️ Ya existe feedback previo para esta empresa: **{prev_verdict}**. Puedes actualizarlo enviando uno nuevo.")
+                # TAB 1: COMPARATIVA SECTORIAL
+                with tab1:
+                    st.markdown("### Análisis Comparativo")
+                    
+                    # Financial metrics comparison
+                    col_a, col_b, col_c = st.columns(3)
+                    with col_a:
+                        activos = company_data.get('activo_total', 0)
+                        st.metric("Activo Total", f"€{activos:,.0f}")
+                    with col_b:
+                        patrimonio = company_data.get('patrimonio_neto', 0)
+                        st.metric("Patrimonio Neto", f"€{patrimonio:,.0f}")
+                    with col_c:
+                        anomaly_score = company_data.get('anomaly_score', 0)
+                        st.metric("Anomaly Score", f"{anomaly_score:.2f}")
+                    
+                    # Sector information
+                    sector = company_data.get('cnae_sector', 'N/A')
+                    st.info(f"**Sector CNAE:** {sector}")
+                    
+                    # Placeholder for future Mahalanobis distance chart
+                    st.caption("📈 Gráfico de dispersión sectorial (próximamente)")
                 
-                # Create form to batch all inputs and prevent reruns
-                with st.form(key=f"feedback_form_{selected_nif}", clear_on_submit=False):
-                    st.markdown("#### 📋 Paso 1: Selecciona tu veredicto")
+                # TAB 2: GRAFO DE RELACIONES
+                with tab2:
+                    st.markdown("### Red de Operaciones M347")
                     
-                    # Verdict selection with radio buttons and descriptions
-                    st.markdown("""
-                    <style>
-                    .verdict-help {
-                        font-size: 0.85rem;
-                        color: #888;
-                        margin-top: 0.5rem;
-                        padding: 0.5rem;
-                        background: rgba(255,255,255,0.05);
-                        border-radius: 6px;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
+                    # Network graph placeholder
+                    st.caption("🕸️ Visualización de grafo de relaciones (próximamente)")
+                    st.info("Aquí se mostrará el grafo interactivo de proveedores y clientes basado en el modelo M347")
+                
+                # TAB 3: FLAGS ACTIVOS
+                with tab3:
+                    st.markdown("### Alertas y Reglas Activadas")
                     
-                    verdict_options = {
-                        "🚨 FRAUDE CONFIRMADO": VERDICT_FRAUD,
-                        "✅ FALSO POSITIVO": VERDICT_FALSE_POSITIVE,
-                        "⚠️ WATCHLIST": VERDICT_WATCHLIST
-                    }
+                    # Get active flags
+                    flag_details = get_flag_details()
+                    active_flags = []
                     
-                    verdict_label = st.radio(
-                        "Selecciona tu veredicto:",
-                        options=list(verdict_options.keys()),
-                        horizontal=True,
-                        help="Elige la opción que mejor describe tu análisis de esta empresa"
-                    )
+                    for flag_key in flag_details.keys():
+                        if company_data.get(flag_key, False):
+                            active_flags.append(flag_key)
                     
-                    verdict_choice = verdict_options[verdict_label]
+                    if active_flags:
+                        for flag_key in active_flags:
+                            flag_info = flag_details[flag_key]
+                            st.warning(f"{flag_info['icono']} **{flag_info['nombre']}**\n\n{flag_info['descripcion']}")
+                    else:
+                        st.success("✅ No hay flags activos para esta empresa")
+            
+            # =====================================================================
+            # COLUMNA DERECHA (35%): PANEL DE DECISIÓN - STICKY ACTION PANEL
+            # =====================================================================
+            with col_right:
+                st.markdown("### 👮 Veredicto del Analista")
+                
+                # Check if feedback already exists
+                if CONTINUOUS_LEARNING_AVAILABLE and st.session_state.feedback_store is not None:
+                    existing_feedback = st.session_state.feedback_store.get_last_feedback(selected_nif)
+                    if existing_feedback:
+                        verdict_labels = {0: "Falso Positivo", 1: "Fraude Confirmado", 2: "Watchlist"}
+                        prev_verdict = verdict_labels.get(existing_feedback.get('analyst_verdict'), "Desconocido")
+                        st.info(f"ℹ️ Feedback previo: **{prev_verdict}**")
                     
-                    # Show explanation based on selected verdict
-                    if verdict_choice == VERDICT_FRAUD:
-                        st.info("""
-                        **🚨 FRAUDE CONFIRMADO**: Selecciona esta opción cuando:
-                        - Has verificado que la empresa está cometiendo fraude fiscal
-                        - Existen evidencias claras de manipulación o evasión
-                        - **Impacto**: El modelo aprenderá que empresas con este perfil SON fraude y aumentará su score en futuros análisis
-                        """)
-                    elif verdict_choice == VERDICT_FALSE_POSITIVE:
-                        st.success("""
-                        **✅ FALSO POSITIVO**: Selecciona esta opción cuando:
-                        - La alerta es incorrecta y la empresa es legítima
-                        - Las anomalías tienen una explicación válida
-                        - **Impacto**: El modelo aprenderá que empresas con este perfil NO son fraude y reducirá su score en futuros análisis
-                        """)
-                    else:  # WATCHLIST
-                        st.warning("""
-                        **⚠️ WATCHLIST**: Selecciona esta opción cuando:
-                        - Hay indicios sospechosos pero no evidencia concluyente
-                        - Necesitas más tiempo o información para decidir
-                        - **Impacto**: La empresa queda marcada para seguimiento. No entrena el modelo hasta que confirmes fraude o falso positivo
-                        """)
-                    
-                    st.markdown("---")
-                    
-                    # Conditional fields based on verdict - ONLY SHOW RELEVANT FIELD
-                    if verdict_choice == VERDICT_FRAUD:
-                        st.markdown("#### 🔍 Paso 2: Especifica el tipo de fraude")
-                        fraud_typology = st.selectbox(
-                            "¿Qué tipo de fraude detectaste?",
-                            options=[""] + list(FRAUD_TYPOLOGY_CODES.keys()),
-                            format_func=lambda x: FRAUD_TYPOLOGY_CODES.get(x, "-- Seleccionar tipo de fraude --") if x else "-- Seleccionar tipo de fraude --",
-                            help="Esto ayuda al modelo a identificar patrones específicos de fraude"
+                    # Compact feedback form in container
+                    with st.container():
+                        # Paso 1: Veredicto (Radio horizontal)
+                        verdict_options = {
+                            "🚨 Fraude": VERDICT_FRAUD,
+                            "✅ Falso Positivo": VERDICT_FALSE_POSITIVE,
+                            "⚠️ Watchlist": VERDICT_WATCHLIST
+                        }
+                        
+                        verdict_label = st.radio(
+                            "Decisión",
+                            options=list(verdict_options.keys()),
+                            horizontal=True,
+                            key=f"verdict_{selected_nif}"
                         )
-                        rejection_reason = None  # Not applicable for fraud
                         
-                        # Show examples
-                        if fraud_typology:
-                            examples = {
-                                'CARRUSEL': "Ej: Triangulación de facturas entre empresas para evadir IVA",
-                                'PANTALLA': "Ej: Empresa sin empleados ni activos pero con alta facturación",
-                                'FACTURAS_FALSAS': "Ej: Servicios inexistentes facturados a otras empresas",
-                                'CONTABILIDAD': "Ej: Inflación artificial de beneficios o ocultación de deudas",
-                                'DEUDA_OCULTA': "Ej: Gastos financieros muy altos sin deuda declarada"
-                            }
-                            if fraud_typology in examples:
-                                st.caption(f"💡 {examples[fraud_typology]}")
-                    
-                    elif verdict_choice == VERDICT_FALSE_POSITIVE:
-                        st.markdown("#### ✅ Paso 2: Explica por qué es falso positivo")
-                        rejection_reason = st.selectbox(
-                            "¿Cuál es la razón del falso positivo?",
-                            options=[""] + list(REJECTION_REASON_CODES.keys()),
-                            format_func=lambda x: REJECTION_REASON_CODES.get(x, "-- Seleccionar razón --") if x else "-- Seleccionar razón --",
-                            help="Esto ayuda al modelo a evitar alertas similares en el futuro"
-                        )
-                        fraud_typology = None  # Not applicable for false positive
+                        verdict_choice = verdict_options[verdict_label]
                         
-                        # Show examples
-                        if rejection_reason:
-                            examples = {
-                                'SECTOR_NORMAL': "Ej: En el sector construcción es normal tener gastos de personal bajos en ciertos períodos",
-                                'DATA_ERROR': "Ej: Los datos del M347 estaban incompletos o desactualizados",
-                                'LEGITIMATE_BUSINESS': "Ej: La empresa tiene un modelo de negocio atípico pero legítimo (dropshipping, etc.)",
-                                'SEASONAL': "Ej: Empresa turística con picos de facturación en verano",
-                                'ONE_TIME': "Ej: Venta extraordinaria de activos que no se repetirá"
-                            }
-                            if rejection_reason in examples:
-                                st.caption(f"💡 {examples[rejection_reason]}")
-                    
-                    else:  # WATCHLIST
-                        st.markdown("#### ⚠️ Paso 2: Información adicional")
-                        st.info("No es necesario especificar detalles adicionales para Watchlist. La empresa quedará marcada para revisión futura.")
-                        rejection_reason = None
-                        fraud_typology = None
-                    
-                    st.markdown("---")
-                    
-                    # Confidence slider
-                    st.markdown("#### 🎯 Paso 3: Nivel de confianza")
-                    confidence = st.slider(
-                        "¿Qué tan seguro estás de tu decisión?",
-                        min_value=1,
-                        max_value=5,
-                        value=3,
-                        help="1 = Muy inseguro (solo intuición) | 5 = Completamente seguro (evidencia sólida)"
-                    )
-                    
-                    # Show confidence interpretation
-                    confidence_labels = {
-                        1: "🤔 **Muy inseguro** - Solo tienes una intuición, sin evidencia clara",
-                        2: "😕 **Algo inseguro** - Tienes algunas dudas sobre tu decisión",
-                        3: "😐 **Moderadamente seguro** - Confianza razonable basada en los datos",
-                        4: "😊 **Bastante seguro** - Alta confianza con evidencia sólida",
-                        5: "💪 **Completamente seguro** - Certeza absoluta, evidencia irrefutable"
-                    }
-                    st.caption(confidence_labels[confidence])
-                    
-                    st.markdown("---")
-                    
-                    # Single submit button
-                    submitted = st.form_submit_button("📤 ENVIAR FEEDBACK", type="primary", use_container_width=True)
-                    
-                    # Process feedback submission
-                    if submitted:
-                        # Validate conditional fields
-                        validation_passed = True
-                        
-                        if verdict_choice == VERDICT_FALSE_POSITIVE and not rejection_reason:
-                            st.error("❌ Por favor selecciona la razón del falso positivo para ayudar al modelo a mejorar")
-                            validation_passed = False
-                        
-                        if verdict_choice == VERDICT_FRAUD and not fraud_typology:
-                            st.error("❌ Por favor especifica el tipo de fraude detectado")
-                            validation_passed = False
-                        
-                        if validation_passed:
-                            # Extract feature vector from company data
-                            feature_vector = {
-                                'ventas_netas': float(company_data.get('ventas_netas', 0)),
-                                'activo_total': float(company_data.get('activo_total', 0)),
-                                'patrimonio_neto': float(company_data.get('patrimonio_neto', 0)),
-                                'resultado_neto': float(company_data.get('resultado_neto', 0)),
-                                'fraud_score': float(company_data.get('fraud_score', 0)),
-                                'anomaly_score': float(company_data.get('anomaly_score', 0))
-                            }
-                            
-                            # Create feedback record
-                            feedback = FeedbackRecord(
-                                nif=selected_nif,
-                                analyst_verdict=verdict_choice,
-                                fraud_score_original=float(company_data['fraud_score']),
-                                feature_vector=feature_vector,
-                                analyst_confidence=confidence,
-                                rejection_reason_code=rejection_reason if rejection_reason else None,
-                                fraud_typology_code=fraud_typology if fraud_typology else None,
-                                cnae_sector=company_data.get('cnae_sector'),
-                                ventas_netas=float(company_data.get('ventas_netas', 0)),
-                                flags_active=active_flags
+                        # Paso 2: Detalles condicionales
+                        if verdict_choice == VERDICT_FRAUD:
+                            fraud_typology = st.selectbox(
+                                "Tipología",
+                                options=[""] + list(FRAUD_TYPOLOGY_CODES.keys()),
+                                format_func=lambda x: FRAUD_TYPOLOGY_CODES.get(x, "-- Seleccionar --") if x else "-- Seleccionar --",
+                                key=f"fraud_type_{selected_nif}"
                             )
+                            rejection_reason = None
+                        elif verdict_choice == VERDICT_FALSE_POSITIVE:
+                            rejection_reason = st.selectbox(
+                                "Causa Raíz",
+                                options=[""] + list(REJECTION_REASON_CODES.keys()),
+                                format_func=lambda x: REJECTION_REASON_CODES.get(x, "-- Seleccionar --") if x else "-- Seleccionar --",
+                                key=f"fp_reason_{selected_nif}"
+                            )
+                            fraud_typology = None
+                        else:  # WATCHLIST
+                            fraud_typology = None
+                            rejection_reason = None
+                            st.caption("⚠️ Empresa marcada para seguimiento")
+                        
+                        # Paso 3: Confianza
+                        confidence = st.slider(
+                            "Confianza (%)",
+                            min_value=0,
+                            max_value=100,
+                            value=50,
+                            key=f"confidence_{selected_nif}"
+                        )
+                        
+                        # Convert to 1-5 scale for backend
+                        confidence_1_5 = int((confidence / 100) * 4) + 1
+                        
+                        # Action button
+                        if st.button("REGISTRAR DECISIÓN", type="primary", use_container_width=True, key=f"submit_{selected_nif}"):
+                            # Validation
+                            validation_passed = True
                             
-                            # Save feedback with error handling
-                            try:
-                                with st.spinner("💾 Guardando feedback..."):
-                                    feedback_id = st.session_state.feedback_store.log_feedback(feedback)
-                                
-                                verdict_labels = {
-                                    VERDICT_FALSE_POSITIVE: "Falso Positivo",
-                                    VERDICT_FRAUD: "Fraude Confirmado",
-                                    VERDICT_WATCHLIST: "Watchlist"
+                            if verdict_choice == VERDICT_FRAUD and not fraud_typology:
+                                st.error("❌ Especifica el tipo de fraude")
+                                validation_passed = False
+                            
+                            if verdict_choice == VERDICT_FALSE_POSITIVE and not rejection_reason:
+                                st.error("❌ Especifica la razón del FP")
+                                validation_passed = False
+                            
+                            if validation_passed:
+                                # Extract feature vector
+                                feature_vector = {
+                                    'ventas_netas': float(company_data.get('ventas_netas', 0)),
+                                    'activo_total': float(company_data.get('activo_total', 0)),
+                                    'patrimonio_neto': float(company_data.get('patrimonio_neto', 0)),
+                                    'resultado_neto': float(company_data.get('resultado_neto', 0)),
+                                    'fraud_score': float(company_data.get('fraud_score', 0)),
+                                    'anomaly_score': float(company_data.get('anomaly_score', 0))
                                 }
                                 
-                                st.success(f"✅ Feedback registrado correctamente: **{verdict_labels[verdict_choice]}**")
-                                st.caption(f"ID: {feedback_id[:8]}...")
+                                # Create feedback record
+                                feedback = FeedbackRecord(
+                                    nif=selected_nif,
+                                    analyst_verdict=verdict_choice,
+                                    fraud_score_original=float(company_data['fraud_score']),
+                                    feature_vector=feature_vector,
+                                    analyst_confidence=confidence_1_5,
+                                    rejection_reason_code=rejection_reason if rejection_reason else None,
+                                    fraud_typology_code=fraud_typology if fraud_typology else None,
+                                    cnae_sector=company_data.get('cnae_sector'),
+                                    ventas_netas=float(company_data.get('ventas_netas', 0)),
+                                    flags_active=active_flags
+                                )
                                 
-                                # Force sidebar refresh by triggering a rerun
-                                import time
-                                time.sleep(0.5)  # Brief pause for user to see success message
-                                st.rerun()
-                                
-                            except Exception as e:
-                                st.error(f"❌ Error al guardar feedback: {str(e)}")
-                                st.exception(e)
-            
-            else:
-                st.warning("⚠️ El módulo de Continuous Learning no está disponible. No se puede registrar feedback.")
+                                # Save feedback
+                                try:
+                                    feedback_id = st.session_state.feedback_store.log_feedback(feedback)
+                                    st.success("✅ Decisión registrada")
+                                    st.caption(f"ID: {feedback_id[:8]}...")
+                                    
+                                    # Refresh sidebar
+                                    import time
+                                    time.sleep(0.5)
+                                    st.rerun()
+                                    
+                                except Exception as e:
+                                    st.error(f"❌ Error: {str(e)}")
+                else:
+                    st.warning("⚠️ Continuous Learning no disponible")
         
         else:
             st.info("ℹ️ No hay empresas disponibles en el análisis actual.")
@@ -1929,6 +1879,7 @@ if st.session_state.active_tab == 1:
     else:
         st.warning("⚠️ No hay datos de análisis disponibles.")
         st.markdown("Por favor, ejecuta un análisis desde la barra lateral primero.")
+
 
 # =============================================================================
 # TAB 5: AYUDA Y PRESENTACIÓN DE LA SOLUCIÓN
