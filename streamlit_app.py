@@ -949,7 +949,76 @@ CASILLA_MAPPING = {
 }
 
 
-@st.cache_data(ttl=3600, show_spinner="Cargando datos...")
+# =============================================================================
+# HELPER FUNCTIONS - VALIDATION & ERROR HANDLING
+# =============================================================================
+
+def validate_dataframe(df, required_columns):
+    """
+    Valida estructura de DataFrame
+    
+    Args:
+        df: DataFrame a validar
+        required_columns: Lista de columnas requeridas
+    
+    Returns:
+        tuple: (is_valid, missing_columns, error_message)
+    """
+    if df is None or df.empty:
+        return False, [], "DataFrame está vacío o es None"
+    
+    missing = [col for col in required_columns if col not in df.columns]
+    
+    if missing:
+        return False, missing, f"Columnas faltantes: {', '.join(missing)}"
+    
+    return True, [], None
+
+
+def safe_get_company_data(df, nif, default=None):
+    """
+    Obtiene datos de empresa con manejo de errores
+    
+    Args:
+        df: DataFrame con empresas
+        nif: NIF a buscar
+        default: Valor por defecto si no se encuentra
+    
+    Returns:
+        dict o default
+    """
+    try:
+        if df is None or df.empty:
+            return default
+        
+        matches = df[df['nif'] == nif]
+        
+        if len(matches) == 0:
+            st.warning(f"⚠️ Empresa {nif} no encontrada")
+            return default
+        
+        return matches.iloc[0].to_dict()
+    
+    except Exception as e:
+        st.error(f"❌ Error al obtener datos de {nif}: {str(e)}")
+        return default
+
+
+def safe_division(numerator, denominator, default=0):
+    """División segura evitando división por cero"""
+    try:
+        if denominator == 0 or pd.isna(denominator) or pd.isna(numerator):
+            return default
+        return numerator / denominator
+    except:
+        return default
+
+
+# =============================================================================
+# DATA LOADING FUNCTIONS
+# =============================================================================
+
+@st.cache_data(ttl=3600, show_spinner="📂 Cargando datos reales...")
 def load_real_data():
     """Carga datos reales, priorizando Parquet (más rápido) sobre CSV."""
     base_path = Path(__file__).parent if '__file__' in dir() else Path('.')
@@ -1053,6 +1122,15 @@ def load_real_data():
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
         
+        # Validar estructura de datos
+        required_cols = ['nif', 'sector', 'ventas_netas', 'activo_total']
+        is_valid, missing, error = validate_dataframe(df, required_cols)
+        
+        if not is_valid:
+            st.error(f"⚠️ Error en estructura de datos: {error}")
+            st.info("💡 Verifica que los archivos CSV/Parquet tengan las columnas requeridas")
+            return None
+        
         return df
         
     except Exception as e:
@@ -1125,17 +1203,23 @@ def calculate_forensic_features(df: pd.DataFrame) -> pd.DataFrame:
     """Calcula features forenses. Cacheado para mejor rendimiento."""
     df = df.copy()
     
-    # Cobertura de ventas
-    df['cobertura_ventas'] = df['total_m347'] / df['ventas_netas']
+    # Cobertura de ventas (safe division)
+    df['cobertura_ventas'] = np.where(
+        df['ventas_netas'] > 0,
+        df['total_m347'] / df['ventas_netas'],
+        0
+    )
     
     # Incoherencia logística
     df['flag_incoherencia_logistica'] = (
         (df['total_m349'] > 0) & (df['gastos_transporte'] < 1000)
     ).astype(int)
     
-    # Accruals ratio
-    df['accruals_ratio'] = (
-        (df['resultado_neto'] - df['flujo_caja_operativo']) / df['activo_total']
+    # Accruals ratio (safe division)
+    df['accruals_ratio'] = np.where(
+        df['activo_total'] > 0,
+        (df['resultado_neto'] - df['flujo_caja_operativo']) / df['activo_total'],
+        0
     )
     
     # Hidden debt
@@ -1159,10 +1243,22 @@ def calculate_forensic_features(df: pd.DataFrame) -> pd.DataFrame:
     # Números redondos
     df['flag_numeros_redondos'] = (df['pct_numeros_redondos'] > 0.30).astype(int)
     
-    # Ratios financieros
-    df['margen_neto'] = df['resultado_neto'] / df['ventas_netas']
-    df['rotacion_activos'] = df['ventas_netas'] / df['activo_total']
-    df['ratio_endeudamiento'] = df['deuda_bancaria'] / df['activo_total']
+    # Ratios financieros (safe divisions)
+    df['margen_neto'] = np.where(
+        df['ventas_netas'] > 0,
+        df['resultado_neto'] / df['ventas_netas'],
+        0
+    )
+    df['rotacion_activos'] = np.where(
+        df['activo_total'] > 0,
+        df['ventas_netas'] / df['activo_total'],
+        0
+    )
+    df['ratio_endeudamiento'] = np.where(
+        df['activo_total'] > 0,
+        df['deuda_bancaria'] / df['activo_total'],
+        0
+    )
     
     # Cobertura M347 sospechosa
     df['flag_cobertura_baja'] = (df['cobertura_ventas'] < 0.75).astype(int)
@@ -1301,6 +1397,7 @@ def get_flag_details():
     }
 
 
+@st.cache_data(ttl=600, show_spinner="📊 Generando gráfico sectorial...")
 def create_sectorial_scatter(df, selected_nif, sector):
     """
     Crea scatter plot 2D con PCA para comparación sectorial
