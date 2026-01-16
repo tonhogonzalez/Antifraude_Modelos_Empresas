@@ -69,6 +69,54 @@ components.html(
 # CSS personalizado premium
 st.markdown("""
 <style>
+    /* ========================================= */
+    /* HIDE STREAMLIT SHARE BUTTON AND TOOLBAR */
+    /* ========================================= */
+    
+    /* Hide the share button */
+    button[title="Share"] {
+        display: none !important;
+    }
+    
+    /* Hide the entire toolbar/menu */
+    #MainMenu {
+        visibility: hidden !important;
+    }
+    
+    /* Hide Streamlit footer */
+    footer {
+        visibility: hidden !important;
+    }
+    
+    /* Hide "Made with Streamlit" */
+    .viewerBadge_container__1QSob {
+        display: none !important;
+    }
+    
+    /* Hide deploy button */
+    .styles_viewerBadge__1yB5_ {
+        display: none !important;
+    }
+    
+    /* Hide hamburger menu */
+    header[data-testid="stHeader"] {
+        background-color: transparent !important;
+    }
+    
+    header[data-testid="stHeader"] > div:first-child {
+        display: none !important;
+    }
+    
+    /* Adjust main content to use full space */
+    .main .block-container {
+        max-width: 100% !important;
+        padding-top: 1rem !important;
+    }
+    
+    /* ========================================= */
+    /* ORIGINAL STYLES */
+    /* ========================================= */
+    
     /* Reset y base */
     .block-container {
         padding-top: 1rem;
