@@ -1646,20 +1646,33 @@ if st.session_state.active_tab == 1:
             # =================================================================
             if CONTINUOUS_LEARNING_AVAILABLE and st.session_state.feedback_store is not None:
                 st.markdown("### 🎯 Feedback del Analista")
-                st.markdown("*Proporciona tu veredicto sobre esta empresa. El sistema aprenderá de tus decisiones.*")
+                st.markdown("*Tu veredicto entrena al modelo de IA. Ayúdanos a mejorar la precisión del sistema.*")
                 
                 # Check if feedback already exists for this company
                 existing_feedback = st.session_state.feedback_store.get_last_feedback(selected_nif)
                 if existing_feedback:
                     verdict_labels = {0: "Falso Positivo", 1: "Fraude Confirmado", 2: "Watchlist"}
                     prev_verdict = verdict_labels.get(existing_feedback.get('analyst_verdict'), "Desconocido")
-                    st.info(f"ℹ️ Ya existe feedback previo para esta empresa: **{prev_verdict}**")
+                    st.info(f"ℹ️ Ya existe feedback previo para esta empresa: **{prev_verdict}**. Puedes actualizarlo enviando uno nuevo.")
                 
                 # Create form to batch all inputs and prevent reruns
                 with st.form(key=f"feedback_form_{selected_nif}", clear_on_submit=False):
-                    st.markdown("#### ¿Cuál es tu veredicto sobre esta empresa?")
+                    st.markdown("#### 📋 Paso 1: Selecciona tu veredicto")
                     
-                    # Verdict selection with radio buttons
+                    # Verdict selection with radio buttons and descriptions
+                    st.markdown("""
+                    <style>
+                    .verdict-help {
+                        font-size: 0.85rem;
+                        color: #888;
+                        margin-top: 0.5rem;
+                        padding: 0.5rem;
+                        background: rgba(255,255,255,0.05);
+                        border-radius: 6px;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
                     verdict_options = {
                         "🚨 FRAUDE CONFIRMADO": VERDICT_FRAUD,
                         "✅ FALSO POSITIVO": VERDICT_FALSE_POSITIVE,
@@ -1670,34 +1683,110 @@ if st.session_state.active_tab == 1:
                         "Selecciona tu veredicto:",
                         options=list(verdict_options.keys()),
                         horizontal=True,
-                        label_visibility="collapsed"
+                        help="Elige la opción que mejor describe tu análisis de esta empresa"
                     )
                     
                     verdict_choice = verdict_options[verdict_label]
                     
+                    # Show explanation based on selected verdict
+                    if verdict_choice == VERDICT_FRAUD:
+                        st.info("""
+                        **🚨 FRAUDE CONFIRMADO**: Selecciona esta opción cuando:
+                        - Has verificado que la empresa está cometiendo fraude fiscal
+                        - Existen evidencias claras de manipulación o evasión
+                        - **Impacto**: El modelo aprenderá que empresas con este perfil SON fraude y aumentará su score en futuros análisis
+                        """)
+                    elif verdict_choice == VERDICT_FALSE_POSITIVE:
+                        st.success("""
+                        **✅ FALSO POSITIVO**: Selecciona esta opción cuando:
+                        - La alerta es incorrecta y la empresa es legítima
+                        - Las anomalías tienen una explicación válida
+                        - **Impacto**: El modelo aprenderá que empresas con este perfil NO son fraude y reducirá su score en futuros análisis
+                        """)
+                    else:  # WATCHLIST
+                        st.warning("""
+                        **⚠️ WATCHLIST**: Selecciona esta opción cuando:
+                        - Hay indicios sospechosos pero no evidencia concluyente
+                        - Necesitas más tiempo o información para decidir
+                        - **Impacto**: La empresa queda marcada para seguimiento. No entrena el modelo hasta que confirmes fraude o falso positivo
+                        """)
+                    
+                    st.markdown("---")
+                    
+                    # Conditional fields based on verdict - ONLY SHOW RELEVANT FIELD
+                    if verdict_choice == VERDICT_FRAUD:
+                        st.markdown("#### 🔍 Paso 2: Especifica el tipo de fraude")
+                        fraud_typology = st.selectbox(
+                            "¿Qué tipo de fraude detectaste?",
+                            options=[""] + list(FRAUD_TYPOLOGY_CODES.keys()),
+                            format_func=lambda x: FRAUD_TYPOLOGY_CODES.get(x, "-- Seleccionar tipo de fraude --") if x else "-- Seleccionar tipo de fraude --",
+                            help="Esto ayuda al modelo a identificar patrones específicos de fraude"
+                        )
+                        rejection_reason = None  # Not applicable for fraud
+                        
+                        # Show examples
+                        if fraud_typology:
+                            examples = {
+                                'CARRUSEL': "Ej: Triangulación de facturas entre empresas para evadir IVA",
+                                'PANTALLA': "Ej: Empresa sin empleados ni activos pero con alta facturación",
+                                'FACTURAS_FALSAS': "Ej: Servicios inexistentes facturados a otras empresas",
+                                'CONTABILIDAD': "Ej: Inflación artificial de beneficios o ocultación de deudas",
+                                'DEUDA_OCULTA': "Ej: Gastos financieros muy altos sin deuda declarada"
+                            }
+                            if fraud_typology in examples:
+                                st.caption(f"💡 {examples[fraud_typology]}")
+                    
+                    elif verdict_choice == VERDICT_FALSE_POSITIVE:
+                        st.markdown("#### ✅ Paso 2: Explica por qué es falso positivo")
+                        rejection_reason = st.selectbox(
+                            "¿Cuál es la razón del falso positivo?",
+                            options=[""] + list(REJECTION_REASON_CODES.keys()),
+                            format_func=lambda x: REJECTION_REASON_CODES.get(x, "-- Seleccionar razón --") if x else "-- Seleccionar razón --",
+                            help="Esto ayuda al modelo a evitar alertas similares en el futuro"
+                        )
+                        fraud_typology = None  # Not applicable for false positive
+                        
+                        # Show examples
+                        if rejection_reason:
+                            examples = {
+                                'SECTOR_NORMAL': "Ej: En el sector construcción es normal tener gastos de personal bajos en ciertos períodos",
+                                'DATA_ERROR': "Ej: Los datos del M347 estaban incompletos o desactualizados",
+                                'LEGITIMATE_BUSINESS': "Ej: La empresa tiene un modelo de negocio atípico pero legítimo (dropshipping, etc.)",
+                                'SEASONAL': "Ej: Empresa turística con picos de facturación en verano",
+                                'ONE_TIME': "Ej: Venta extraordinaria de activos que no se repetirá"
+                            }
+                            if rejection_reason in examples:
+                                st.caption(f"💡 {examples[rejection_reason]}")
+                    
+                    else:  # WATCHLIST
+                        st.markdown("#### ⚠️ Paso 2: Información adicional")
+                        st.info("No es necesario especificar detalles adicionales para Watchlist. La empresa quedará marcada para revisión futura.")
+                        rejection_reason = None
+                        fraud_typology = None
+                    
                     st.markdown("---")
                     
                     # Confidence slider
+                    st.markdown("#### 🎯 Paso 3: Nivel de confianza")
                     confidence = st.slider(
                         "¿Qué tan seguro estás de tu decisión?",
                         min_value=1,
                         max_value=5,
                         value=3,
-                        help="1 = Muy inseguro, 5 = Completamente seguro"
+                        help="1 = Muy inseguro (solo intuición) | 5 = Completamente seguro (evidencia sólida)"
                     )
                     
-                    # Conditional fields based on verdict
-                    rejection_reason = st.selectbox(
-                        "Razón del falso positivo (si aplica)",
-                        options=[""] + list(REJECTION_REASON_CODES.keys()),
-                        format_func=lambda x: REJECTION_REASON_CODES.get(x, "-- Seleccionar --") if x else "-- Seleccionar --"
-                    )
+                    # Show confidence interpretation
+                    confidence_labels = {
+                        1: "🤔 **Muy inseguro** - Solo tienes una intuición, sin evidencia clara",
+                        2: "😕 **Algo inseguro** - Tienes algunas dudas sobre tu decisión",
+                        3: "😐 **Moderadamente seguro** - Confianza razonable basada en los datos",
+                        4: "😊 **Bastante seguro** - Alta confianza con evidencia sólida",
+                        5: "💪 **Completamente seguro** - Certeza absoluta, evidencia irrefutable"
+                    }
+                    st.caption(confidence_labels[confidence])
                     
-                    fraud_typology = st.selectbox(
-                        "Tipología de fraude (si aplica)",
-                        options=[""] + list(FRAUD_TYPOLOGY_CODES.keys()),
-                        format_func=lambda x: FRAUD_TYPOLOGY_CODES.get(x, "-- Seleccionar --") if x else "-- Seleccionar --"
-                    )
+                    st.markdown("---")
                     
                     # Single submit button
                     submitted = st.form_submit_button("📤 ENVIAR FEEDBACK", type="primary", use_container_width=True)
@@ -1705,13 +1794,18 @@ if st.session_state.active_tab == 1:
                     # Process feedback submission
                     if submitted:
                         # Validate conditional fields
+                        validation_passed = True
+                        
                         if verdict_choice == VERDICT_FALSE_POSITIVE and not rejection_reason:
-                            st.warning("⚠️ Se recomienda especificar la razón del falso positivo")
+                            st.error("❌ Por favor selecciona la razón del falso positivo para ayudar al modelo a mejorar")
+                            validation_passed = False
                         
                         if verdict_choice == VERDICT_FRAUD and not fraud_typology:
-                            st.warning("⚠️ Se recomienda especificar la tipología de fraude")
+                            st.error("❌ Por favor especifica el tipo de fraude detectado")
+                            validation_passed = False
                         
-                        # Extract feature vector from company data
+                        if validation_passed:
+                            # Extract feature vector from company data
                         feature_vector = {
                             'ventas_netas': float(company_data.get('ventas_netas', 0)),
                             'activo_total': float(company_data.get('activo_total', 0)),
