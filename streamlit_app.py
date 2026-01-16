@@ -1422,6 +1422,58 @@ if st.sidebar.button("🚀 Ejecutar Análisis", type="primary", use_container_wi
 
 st.sidebar.markdown("---")
 
+# =============================================================================
+# SELECTOR DE EMPRESA - ÚNICO Y EN SIDEBAR
+# =============================================================================
+if 'df_results' in st.session_state and st.session_state.df_results is not None:
+    df = st.session_state.df_results
+    
+    # Show ALL companies sorted by fraud_score
+    available_companies = df.copy()
+    available_companies = available_companies.sort_values('fraud_score', ascending=False)
+    
+    if len(available_companies) > 0:
+        st.sidebar.markdown("### 🏢 Selección de Empresa")
+        
+        # Performance optimization: Limit to top 200 companies
+        max_companies = min(200, len(available_companies))
+        top_companies = available_companies.head(max_companies)
+        
+        # Create display names with risk categorization
+        company_options = {}
+        for idx, row in top_companies.iterrows():
+            nif = row['nif']
+            score = row['fraud_score']
+            
+            # Add risk level indicator
+            if score > 0.7:
+                risk_emoji = "🔴"
+                risk_label = "ALTO"
+            elif score > 0.4:
+                risk_emoji = "🟡"
+                risk_label = "MEDIO"
+            else:
+                risk_emoji = "🟢"
+                risk_label = "BAJO"
+            
+            display_name = f"{risk_emoji} {nif} | {score:.2f}"
+            company_options[display_name] = nif
+        
+        selected_display = st.sidebar.selectbox(
+            "Empresa",
+            options=list(company_options.keys()),
+            help=f"Top {max_companies} empresas por score de fraude",
+            key="sidebar_company_selector",
+            label_visibility="collapsed"
+        )
+        
+        selected_nif = company_options[selected_display]
+        st.session_state.selected_company_nif = selected_nif
+        
+        st.sidebar.caption(f"📊 Mostrando {max_companies} de {len(available_companies)} empresas")
+
+st.sidebar.markdown("---")
+
 # Botón para ver presentación
 
 # Continuous Learning Status
@@ -1605,53 +1657,16 @@ st.markdown("---")
 if st.session_state.active_tab == 1:
     
     # =========================================================================
-    # ZONA 1: CONTEXTO GLOBAL (Sticky Header) - UN SOLO TÍTULO, UN SOLO SELECTOR
+    # ZONA 1: CONTEXTO GLOBAL - TÍTULO ÚNICO (Selector está en sidebar)
     # =========================================================================
     st.title("🔎 Análisis Detallado de Operaciones")
     st.markdown("---")
     
-    # Company selector - ÚNICO Y GLOBAL
-    if 'df_results' in st.session_state and st.session_state.df_results is not None:
-        df = st.session_state.df_results
-        
-        # OPTIMIZED: Show ALL companies sorted by fraud_score
-        available_companies = df.copy()
-        available_companies = available_companies.sort_values('fraud_score', ascending=False)
-        
-        if len(available_companies) > 0:
-            # Performance optimization: Limit to top 200 companies
-            max_companies = min(200, len(available_companies))
-            top_companies = available_companies.head(max_companies)
-            
-            # Create display names with risk categorization
-            company_options = {}
-            for idx, row in top_companies.iterrows():
-                nif = row['nif']
-                score = row['fraud_score']
-                
-                # Add risk level indicator
-                if score > 0.7:
-                    risk_emoji = "🔴"
-                    risk_label = "ALTO"
-                elif score > 0.4:
-                    risk_emoji = "🟡"
-                    risk_label = "MEDIO"
-                else:
-                    risk_emoji = "🟢"
-                    risk_label = "BAJO"
-                
-                display_name = f"{risk_emoji} {nif} | Score: {score:.2f} ({risk_label})"
-                company_options[display_name] = nif
-            
-            selected_display = st.selectbox(
-                "Seleccionar Empresa",
-                options=list(company_options.keys()),
-                help=f"Mostrando las {max_companies} empresas ordenadas por score de fraude (de mayor a menor)",
-                key="cockpit_company_selector"
-            )
-            
-            selected_nif = company_options[selected_display]
-            st.session_state.selected_company_nif = selected_nif
+    # Check if company is selected from sidebar
+    if 'selected_company_nif' in st.session_state and st.session_state.selected_company_nif is not None:
+        if 'df_results' in st.session_state and st.session_state.df_results is not None:
+            df = st.session_state.df_results
+            selected_nif = st.session_state.selected_company_nif
             
             # Get company data - CARGA UNA SOLA VEZ
             company_data = df[df['nif'] == selected_nif].iloc[0]
@@ -1871,14 +1886,12 @@ if st.session_state.active_tab == 1:
                                     st.error(f"❌ Error: {str(e)}")
                 else:
                     st.warning("⚠️ Continuous Learning no disponible")
-        
         else:
-            st.info("ℹ️ No hay empresas disponibles en el análisis actual.")
-            st.markdown("Ejecuta un nuevo análisis desde la barra lateral para generar datos.")
-    
+            st.info("ℹ️ No hay datos de análisis disponibles.")
+            st.markdown("Por favor, ejecuta un análisis desde la barra lateral primero.")
     else:
-        st.warning("⚠️ No hay datos de análisis disponibles.")
-        st.markdown("Por favor, ejecuta un análisis desde la barra lateral primero.")
+        st.info("ℹ️ Selecciona una empresa desde la barra lateral para ver el análisis detallado.")
+
 
 
 # =============================================================================
