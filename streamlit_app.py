@@ -1315,7 +1315,7 @@ def create_sectorial_scatter(df, selected_nif, sector):
     """
     
     # 1. Filtrar empresas del mismo sector
-    sector_df = df[df['cnae_sector'] == sector].copy()
+    sector_df = df[df['sector'] == sector].copy()
     
     if len(sector_df) < 5:
         # No hay suficientes empresas para comparar
@@ -1915,8 +1915,8 @@ if st.session_state.active_tab == 1:
                         st.metric("Anomaly Score", f"{anomaly_score:.2f}")
                     
                     # Sector information
-                    sector = company_data.get('cnae_sector', 'N/A')
-                    st.info(f"**Sector CNAE:** {sector}")
+                    sector = company_data.get('sector', 'N/A')
+                    st.info(f"**Sector:** {sector}")
                     
                     
                     # Gráfico de dispersión sectorial con PCA
@@ -1927,7 +1927,7 @@ if st.session_state.active_tab == 1:
                             st.plotly_chart(fig_sector, use_container_width=True)
                             
                             # Interpretación automática del percentil
-                            sector_companies = df[df['cnae_sector'] == sector]
+                            sector_companies = df[df['sector'] == sector]
                             percentile = (sector_companies['fraud_score'] < company_data['fraud_score']).mean() * 100
                             
                             if percentile > 90:
