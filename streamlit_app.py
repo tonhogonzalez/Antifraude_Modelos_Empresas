@@ -3751,49 +3751,25 @@ if st.session_state.active_tab == 0:
 
 if st.session_state.active_tab == 1:
     st.markdown("### 🔎 Análisis Detallado por Empresa")
-    st.markdown("Seleccione una empresa para ver el detalle completo de las detecciones.")
+    st.markdown("Empresa seleccionada desde la barra lateral.")
     
-    # Selector de empresa
-    col_select1, col_select2 = st.columns([2, 1])
-    
-    with col_select1:
-        # Crear lista de empresas ordenadas por riesgo
-        df_sorted = df.sort_values('fraud_score_normalized', ascending=False)
-        empresa_options = [f"{row['nif']} - {row['sector']} ({row['riesgo']})" 
-                          for _, row in df_sorted.iterrows()]
-        
-        # Determinar índice inicial basado en Quick Jump
-        default_idx = 0
-        if st.session_state.selected_company_nif:
-            matching = [i for i, opt in enumerate(empresa_options) 
-                       if opt.startswith(st.session_state.selected_company_nif)]
-            if matching:
-                default_idx = matching[0]
-            # Limpiar después de usar
-            st.session_state.selected_company_nif = None
-        
-        selected_empresa = st.selectbox(
-            "🏢 Seleccionar Empresa",
-            options=empresa_options,
-            index=default_idx,
-            help="Las empresas están ordenadas por nivel de riesgo (mayor a menor)",
-            key="empresa_selector_tab2"
-        )
-    
-    with col_select2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        show_only_high_risk = st.checkbox("Mostrar solo alto riesgo", value=False)
-    
-    if selected_empresa:
-        selected_nif = selected_empresa.split(" - ")[0]
+    # Use company selected from sidebar
+    if 'selected_company_nif' in st.session_state and st.session_state.selected_company_nif:
+        selected_nif = st.session_state.selected_company_nif
         empresa_data = df[df['nif'] == selected_nif].iloc[0]
         
         # Tarjeta principal de la empresa (Diseño Profesional Full-Width)
-        risk_class = {
-            'Alto': 'risk-high',
-            'Medio': 'risk-medium', 
-            'Bajo': 'risk-low'
-        }.get(empresa_data['riesgo'], 'risk-low')
+        # Determine risk level from fraud_score
+        fraud_score = empresa_data.get('fraud_score', 0)
+        if fraud_score > 0.7:
+            riesgo = 'Alto'
+            risk_class = 'risk-high'
+        elif fraud_score > 0.4:
+            riesgo = 'Medio'
+            risk_class = 'risk-medium'
+        else:
+            riesgo = 'Bajo'
+            risk_class = 'risk-low'
         
         # Mapeo de iconos por sector
         sector_lower = str(empresa_data['sector']).lower()
@@ -3845,7 +3821,7 @@ if st.session_state.active_tab == 1:
                     </div>
                     <div style="text-align: right; min-width: 150px;">
                         <span class="risk-badge {risk_class}" style="font-size: 1rem; padding: 0.5rem 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                            {empresa_data['riesgo'].upper()}
+                            {riesgo.upper()}
                         </span>
                         <div style="margin-top: 8px; font-size: 0.8rem; color: #aaa;">
                             Nivel de Alerta
