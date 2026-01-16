@@ -1659,19 +1659,21 @@ if st.session_state.active_tab == 1:
                 with st.form(key=f"feedback_form_{selected_nif}", clear_on_submit=False):
                     st.markdown("#### ¿Cuál es tu veredicto sobre esta empresa?")
                     
-                    # Verdict selection with columns
-                    col1, col2, col3 = st.columns(3)
+                    # Verdict selection with radio buttons
+                    verdict_options = {
+                        "🚨 FRAUDE CONFIRMADO": VERDICT_FRAUD,
+                        "✅ FALSO POSITIVO": VERDICT_FALSE_POSITIVE,
+                        "⚠️ WATCHLIST": VERDICT_WATCHLIST
+                    }
                     
-                    verdict_choice = None
-                    with col1:
-                        if st.form_submit_button("🚨 FRAUDE CONFIRMADO", use_container_width=True, type="secondary"):
-                            verdict_choice = VERDICT_FRAUD
-                    with col2:
-                        if st.form_submit_button("✅ FALSO POSITIVO", use_container_width=True, type="secondary"):
-                            verdict_choice = VERDICT_FALSE_POSITIVE
-                    with col3:
-                        if st.form_submit_button("⚠️ WATCHLIST", use_container_width=True, type="secondary"):
-                            verdict_choice = VERDICT_WATCHLIST
+                    verdict_label = st.radio(
+                        "Selecciona tu veredicto:",
+                        options=list(verdict_options.keys()),
+                        horizontal=True,
+                        label_visibility="collapsed"
+                    )
+                    
+                    verdict_choice = verdict_options[verdict_label]
                     
                     st.markdown("---")
                     
@@ -1697,68 +1699,64 @@ if st.session_state.active_tab == 1:
                         format_func=lambda x: FRAUD_TYPOLOGY_CODES.get(x, "-- Seleccionar --") if x else "-- Seleccionar --"
                     )
                     
-                    # Main submit button
+                    # Single submit button
                     submitted = st.form_submit_button("📤 ENVIAR FEEDBACK", type="primary", use_container_width=True)
                     
                     # Process feedback submission
-                    if submitted or verdict_choice is not None:
-                        # Use verdict_choice if button was clicked, otherwise error
-                        if verdict_choice is None:
-                            st.error("⚠️ Por favor selecciona un veredicto (Fraude, Falso Positivo o Watchlist)")
-                        else:
-                            # Validate conditional fields
-                            if verdict_choice == VERDICT_FALSE_POSITIVE and not rejection_reason:
-                                st.warning("⚠️ Se recomienda especificar la razón del falso positivo")
+                    if submitted:
+                        # Validate conditional fields
+                        if verdict_choice == VERDICT_FALSE_POSITIVE and not rejection_reason:
+                            st.warning("⚠️ Se recomienda especificar la razón del falso positivo")
+                        
+                        if verdict_choice == VERDICT_FRAUD and not fraud_typology:
+                            st.warning("⚠️ Se recomienda especificar la tipología de fraude")
+                        
+                        # Extract feature vector from company data
+                        feature_vector = {
+                            'ventas_netas': float(company_data.get('ventas_netas', 0)),
+                            'activo_total': float(company_data.get('activo_total', 0)),
+                            'patrimonio_neto': float(company_data.get('patrimonio_neto', 0)),
+                            'resultado_neto': float(company_data.get('resultado_neto', 0)),
+                            'fraud_score': float(company_data.get('fraud_score', 0)),
+                            'anomaly_score': float(company_data.get('anomaly_score', 0))
+                        }
+                        
+                        # Create feedback record
+                        feedback = FeedbackRecord(
+                            nif=selected_nif,
+                            analyst_verdict=verdict_choice,
+                            fraud_score_original=float(company_data['fraud_score']),
+                            feature_vector=feature_vector,
+                            analyst_confidence=confidence,
+                            rejection_reason_code=rejection_reason if rejection_reason else None,
+                            fraud_typology_code=fraud_typology if fraud_typology else None,
+                            cnae_sector=company_data.get('cnae_sector'),
+                            ventas_netas=float(company_data.get('ventas_netas', 0)),
+                            flags_active=active_flags
+                        )
+                        
+                        # Save feedback with error handling
+                        try:
+                            with st.spinner("💾 Guardando feedback..."):
+                                feedback_id = st.session_state.feedback_store.log_feedback(feedback)
                             
-                            if verdict_choice == VERDICT_FRAUD and not fraud_typology:
-                                st.warning("⚠️ Se recomienda especificar la tipología de fraude")
-                            
-                            # Extract feature vector from company data
-                            feature_vector = {
-                                'ventas_netas': float(company_data.get('ventas_netas', 0)),
-                                'activo_total': float(company_data.get('activo_total', 0)),
-                                'patrimonio_neto': float(company_data.get('patrimonio_neto', 0)),
-                                'resultado_neto': float(company_data.get('resultado_neto', 0)),
-                                'fraud_score': float(company_data.get('fraud_score', 0)),
-                                'anomaly_score': float(company_data.get('anomaly_score', 0))
+                            verdict_labels = {
+                                VERDICT_FALSE_POSITIVE: "Falso Positivo",
+                                VERDICT_FRAUD: "Fraude Confirmado",
+                                VERDICT_WATCHLIST: "Watchlist"
                             }
                             
-                            # Create feedback record
-                            feedback = FeedbackRecord(
-                                nif=selected_nif,
-                                analyst_verdict=verdict_choice,
-                                fraud_score_original=float(company_data['fraud_score']),
-                                feature_vector=feature_vector,
-                                analyst_confidence=confidence,
-                                rejection_reason_code=rejection_reason if rejection_reason else None,
-                                fraud_typology_code=fraud_typology if fraud_typology else None,
-                                cnae_sector=company_data.get('cnae_sector'),
-                                ventas_netas=float(company_data.get('ventas_netas', 0)),
-                                flags_active=active_flags
-                            )
+                            st.success(f"✅ Feedback registrado correctamente: **{verdict_labels[verdict_choice]}**")
+                            st.caption(f"ID: {feedback_id[:8]}...")
                             
-                            # Save feedback with error handling
-                            try:
-                                with st.spinner("💾 Guardando feedback..."):
-                                    feedback_id = st.session_state.feedback_store.log_feedback(feedback)
-                                
-                                verdict_labels = {
-                                    VERDICT_FALSE_POSITIVE: "Falso Positivo",
-                                    VERDICT_FRAUD: "Fraude Confirmado",
-                                    VERDICT_WATCHLIST: "Watchlist"
-                                }
-                                
-                                st.success(f"✅ Feedback registrado correctamente: **{verdict_labels[verdict_choice]}**")
-                                st.caption(f"ID: {feedback_id[:8]}...")
-                                
-                                # Force sidebar refresh by triggering a rerun
-                                import time
-                                time.sleep(0.5)  # Brief pause for user to see success message
-                                st.rerun()
-                                
-                            except Exception as e:
-                                st.error(f"❌ Error al guardar feedback: {str(e)}")
-                                st.exception(e)
+                            # Force sidebar refresh by triggering a rerun
+                            import time
+                            time.sleep(0.5)  # Brief pause for user to see success message
+                            st.rerun()
+                            
+                        except Exception as e:
+                            st.error(f"❌ Error al guardar feedback: {str(e)}")
+                            st.exception(e)
             
             else:
                 st.warning("⚠️ El módulo de Continuous Learning no está disponible. No se puede registrar feedback.")
