@@ -1610,26 +1610,45 @@ if st.session_state.active_tab == 1:
     if 'df_results' in st.session_state and st.session_state.df_results is not None:
         df = st.session_state.df_results
         
-        # Filter to show only high-risk companies
-        high_risk_df = df[df['anomaly_label'] == -1].copy()
-        high_risk_df = high_risk_df.sort_values('fraud_score', ascending=False)
+        # OPTIMIZED: Show ALL companies sorted by fraud_score (not just anomalies)
+        # This ensures we see high, medium, and low scores
+        available_companies = df.copy()
+        available_companies = available_companies.sort_values('fraud_score', ascending=False)
         
-        if len(high_risk_df) > 0:
+        if len(available_companies) > 0:
             # Company selection dropdown
             st.markdown("### 📋 Seleccionar Empresa para Análisis")
             
-            # Create display names for dropdown
+            # Performance optimization: Limit to top 200 companies (balanced between variety and performance)
+            max_companies = min(200, len(available_companies))
+            top_companies = available_companies.head(max_companies)
+            
+            # Create display names with risk categorization for better UX
             company_options = {}
-            for idx, row in high_risk_df.head(50).iterrows():
+            
+            # Categorize scores for visual clarity
+            for idx, row in top_companies.iterrows():
                 nif = row['nif']
                 score = row['fraud_score']
-                display_name = f"{nif} (Score: {score:.2f})"
+                
+                # Add risk level indicator
+                if score > 0.7:
+                    risk_emoji = "🔴"
+                    risk_label = "ALTO"
+                elif score > 0.4:
+                    risk_emoji = "🟡"
+                    risk_label = "MEDIO"
+                else:
+                    risk_emoji = "🟢"
+                    risk_label = "BAJO"
+                
+                display_name = f"{risk_emoji} {nif} | Score: {score:.2f} ({risk_label})"
                 company_options[display_name] = nif
             
             selected_display = st.selectbox(
                 "Empresa",
                 options=list(company_options.keys()),
-                help="Selecciona una empresa de alto riesgo para analizar"
+                help=f"Mostrando las {max_companies} empresas ordenadas por score de fraude (de mayor a menor)"
             )
             
             selected_nif = company_options[selected_display]
@@ -1904,7 +1923,7 @@ if st.session_state.active_tab == 1:
                 st.warning("⚠️ El módulo de Continuous Learning no está disponible. No se puede registrar feedback.")
         
         else:
-            st.info("ℹ️ No se detectaron empresas de alto riesgo en el análisis actual.")
+            st.info("ℹ️ No hay empresas disponibles en el análisis actual.")
             st.markdown("Ejecuta un nuevo análisis desde la barra lateral para generar datos.")
     
     else:
