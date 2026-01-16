@@ -41,11 +41,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Fix browser translation prompt
+# Fix browser translation prompt - Set language to Spanish and disable translation
 components.html(
     """
     <script>
+        // Set the document language to Spanish
         window.parent.document.documentElement.lang = 'es';
+        // Disable browser translation prompts
+        window.parent.document.documentElement.setAttribute('translate', 'no');
+        // Add meta tag for Google Chrome
+        var meta = window.parent.document.createElement('meta');
+        meta.name = 'google';
+        meta.content = 'notranslate';
+        if (!window.parent.document.querySelector('meta[name="google"]')) {
+            window.parent.document.head.appendChild(meta);
+        }
     </script>
     """,
     height=0,
