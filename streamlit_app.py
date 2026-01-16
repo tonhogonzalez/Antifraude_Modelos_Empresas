@@ -1483,7 +1483,16 @@ if 'df_results' in st.session_state and st.session_state.df_results is not None:
         )
         
         selected_nif = company_options[selected_display]
-        st.session_state.selected_company_nif = selected_nif
+        
+        # Auto-navigate to Analysis tab when company changes
+        if 'selected_company_nif' not in st.session_state or st.session_state.selected_company_nif != selected_nif:
+            st.session_state.selected_company_nif = selected_nif
+            # Switch to Tab 1 (Análisis) to show company details
+            if st.session_state.active_tab != 1:
+                st.session_state.active_tab = 1
+                st.rerun()
+        else:
+            st.session_state.selected_company_nif = selected_nif
         
         # Show score range for debugging
         max_score = available_companies[score_column].max()
