@@ -1911,9 +1911,9 @@ if 'active_tab' not in st.session_state:
 if 'selected_company_nif' not in st.session_state:
     st.session_state.selected_company_nif = None
 
-# Crear navegación con botones - 7 BOTONES (Consolidado)
+# Crear navegación con botones - 8 BOTONES (Consolidado)
 col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
-col_nav5, col_nav6, col_nav7 = st.columns(3)
+col_nav5, col_nav6, col_nav7, col_nav8 = st.columns(4)
 
 with col_nav1:
     if st.button("📊 Dashboard", use_container_width=True, 
@@ -1955,6 +1955,12 @@ with col_nav7:
     if st.button("🧬 Gobierno IA", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 6 else "secondary"):
         st.session_state.active_tab = 6
+        st.rerun()
+
+with col_nav8:
+    if st.button("❓ Ayuda", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 8 else "secondary"):
+        st.session_state.active_tab = 8
         st.rerun()
 
 st.markdown("---")
