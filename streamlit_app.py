@@ -5163,6 +5163,8 @@ if st.session_state.active_tab == 8:
                 use_container_width=True,
                 height=400
             )
+        else:
+            st.info("ℹ️ No hay información de sector (CNAE) disponible en los datos actuales. El análisis por sector requiere datos con clasificación sectorial.")
     else:
         st.warning("Ejecuta un análisis desde el Dashboard principal para ver los patrones detallados.")
 

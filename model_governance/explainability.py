@@ -112,6 +112,16 @@ class GlobalExplainer:
         """
         sector_stats = {}
         
+        # Check if sector column exists, if not try common alternatives
+        if sector_column not in df.columns:
+            # Try common sector column names
+            possible_columns = ['sector', 'cnae', 'cnae_code', 'industry', 'sector_code']
+            sector_column = next((col for col in possible_columns if col in df.columns), None)
+            
+            # If still no sector column found, return empty dict
+            if sector_column is None:
+                return {}
+        
         for sector in df[sector_column].unique():
             sector_df = df[df[sector_column] == sector]
             
