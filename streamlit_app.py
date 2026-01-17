@@ -2524,7 +2524,7 @@ if st.session_state.active_tab == 5:
 # =============================================================================
 # TAB 5: AYUDA Y PRESENTACIÓN DE LA SOLUCIÓN
 # =============================================================================
-if st.session_state.active_tab == 4:
+if st.session_state.active_tab == 6:
     
     # TOC de Navegación Rápida
     st.markdown("<br>", unsafe_allow_html=True)
@@ -3643,7 +3643,7 @@ el nombre real de la empresa hasta que se genera la alerta final de seguridad.
 # TAB 4: SISTEMA DE APRENDIZAJE CONTINUO (IA LEARNING)
 # =============================================================================
 
-if st.session_state.active_tab == 3:
+if st.session_state.active_tab == 2:
     
     # CSS personalizado para esta pestaña
     st.markdown("""
@@ -4568,7 +4568,7 @@ if st.session_state.active_tab == 1:
 # TAB 3: EXPORTAR RESULTADOS
 # =============================================================================
 
-if st.session_state.active_tab == 2:
+if st.session_state.active_tab == 4:
     st.markdown("### 📥 Exportar Resultados del Análisis")
     
     # Calcular métricas para el resumen
