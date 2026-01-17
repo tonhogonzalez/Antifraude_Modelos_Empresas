@@ -1970,11 +1970,6 @@ st.markdown("---")
 # =============================================================================
 if st.session_state.active_tab == 1:
     
-    # =========================================================================
-    # ZONA 1: CONTEXTO GLOBAL - TÍTULO ÚNICO (Selector está en sidebar)
-    # =========================================================================
-    st.title("🔎 Análisis Detallado de Operaciones")
-    
     # Check if company is selected from sidebar
     if 'selected_company_nif' in st.session_state and st.session_state.selected_company_nif is not None:
         if 'df_results' in st.session_state and st.session_state.df_results is not None:
@@ -1984,7 +1979,42 @@ if st.session_state.active_tab == 1:
             # Get company data - CARGA UNA SOLA VEZ
             company_data = df[df['nif'] == selected_nif].iloc[0]
             
+            # Get company name if available
+            company_name = company_data.get('nombre_empresa', company_data.get('razon_social', None))
+            
+            # =========================================================================
+            # ZONA 1: CONTEXTO GLOBAL - TÍTULO CON EMPRESA SELECCIONADA
+            # =========================================================================
+            if company_name:
+                st.markdown(f"""
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <h1 style="margin: 0; font-size: 2rem;">🔎 Análisis Detallado de Operaciones</h1>
+                    <div style="display: flex; align-items: center; gap: 1rem; background: #0f172a; padding: 0.75rem 1.25rem; border-radius: 12px; border: 1px solid #1e293b;">
+                        <div>
+                            <div style="color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Empresa</div>
+                            <div style="color: #f8fafc; font-size: 1rem; font-weight: 700;">{company_name}</div>
+                        </div>
+                        <div style="width: 1px; height: 35px; background: #334155;"></div>
+                        <div>
+                            <div style="color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">NIF/CIF</div>
+                            <div style="color: #3b82f6; font-size: 1rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;">{selected_nif}</div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <h1 style="margin: 0; font-size: 2rem;">🔎 Análisis Detallado de Operaciones</h1>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; background: #0f172a; padding: 0.75rem 1.25rem; border-radius: 12px; border: 1px solid #1e293b;">
+                        <div style="color: #64748b; font-size: 0.8rem; font-weight: 600;">NIF/CIF:</div>
+                        <div style="color: #3b82f6; font-size: 1.1rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;">{selected_nif}</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
             st.markdown("---")
+
             
             # =========================================================================
             # ZONA 2: SITUACIÓN (KPIs) - VISIÓN RÁPIDA DE ALTO NIVEL
