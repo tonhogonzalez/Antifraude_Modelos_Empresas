@@ -436,24 +436,58 @@ def create_interactive_network_html(center_nif, center_risk, center_score, activ
     
     center_script = """
     <script type="text/javascript">
+        // Robust graph centering with multiple fallbacks
+        var fitAttempts = 0;
+        var maxFitAttempts = 5;
+        
         function forceFit() {
-            if (typeof network !== 'undefined') {
-                network.fit({
-                    animation: {
-                        duration: 1000,
-                        easingFunction: "easeInOutQuad"
-                    }
-                });
+            if (typeof network !== 'undefined' && network !== null) {
+                try {
+                    // First stop physics to stabilize
+                    network.stabilize(50);
+                    
+                    // Then fit with animation
+                    network.fit({
+                        animation: {
+                            duration: 800,
+                            easingFunction: "easeOutQuad"
+                        }
+                    });
+                    console.log("Graph centered successfully, attempt: " + (fitAttempts + 1));
+                } catch(e) {
+                    console.log("Fit error: " + e);
+                }
             }
+            fitAttempts++;
         }
-        setTimeout(forceFit, 100);
-        if (typeof network !== 'undefined') {
-            network.once("stabilizationIterationsDone", forceFit);
-            network.once("afterDrawing", forceFit);
+        
+        // Strategy 1: After stabilization is done
+        if (typeof network !== 'undefined' && network !== null) {
+            network.on("stabilizationIterationsDone", function() {
+                console.log("Stabilization complete");
+                setTimeout(forceFit, 200);
+            });
+            
+            // Strategy 2: After physics stabilizes
+            network.on("stabilized", function() {
+                console.log("Physics stabilized");
+                setTimeout(forceFit, 100);
+            });
         }
-        setTimeout(forceFit, 2000);
+        
+        // Strategy 3: Multiple timed attempts as fallback
+        setTimeout(forceFit, 300);
+        setTimeout(forceFit, 800);
+        setTimeout(forceFit, 1500);
+        setTimeout(forceFit, 3000);
+        
+        // Strategy 4: On window load
+        window.addEventListener('load', function() {
+            setTimeout(forceFit, 500);
+        });
     </script>
     """
+
     
     html_content = html_content.replace('<body>', f'<body>{legend_html}')
     html_content = html_content.replace('</body>', f'{center_script}</body>')
