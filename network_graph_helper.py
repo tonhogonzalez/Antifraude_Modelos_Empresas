@@ -109,30 +109,34 @@ def create_interactive_network_html(center_nif, center_risk, center_score, activ
         "physics": {
             "enabled": true,
             "barnesHut": {
-                "gravitationalConstant": -3000,
-                "centralGravity": 0.3,
-                "springLength": 150,
-                "springConstant": 0.04,
-                "damping": 0.09
+                "gravitationalConstant": -2000,
+                "centralGravity": 0.5,
+                "springLength": 120,
+                "springConstant": 0.05,
+                "damping": 0.15
             },
             "stabilization": {
                 "enabled": true,
-                "iterations": 100
-            }
+                "iterations": 50,
+                "fit": true
+            },
+            "maxVelocity": 50,
+            "minVelocity": 0.75
         },
         "interaction": {
             "dragNodes": true,
             "dragView": true,
             "zoomView": true,
             "hover": true,
-            "tooltipDelay": 100,
+            "tooltipDelay": 200,
             "navigationButtons": false,
             "keyboard": {
-                "enabled": true
+                "enabled": false
             }
         }
     }
     """)
+
     
     # ═══════════════════════════════════════════════════════════════════
     # AGREGAR NODO CENTRAL (EMPRESA OBJETIVO)
@@ -436,46 +440,55 @@ def create_interactive_network_html(center_nif, center_risk, center_score, activ
     
     center_script = """
     <script type="text/javascript">
-        // Robust graph centering with interaction preserved
-        var hasFitted = false;
+        // PERFORMANCE FIX: Disable physics after initial layout
+        var isStabilized = false;
         
-        function forceFit() {
-            if (typeof network !== 'undefined' && network !== null && !hasFitted) {
-                try {
-                    // Fit to viewport with animation
-                    network.fit({
-                        animation: {
-                            duration: 600,
-                            easingFunction: "easeOutQuad"
-                        }
-                    });
-                    hasFitted = true;
-                    console.log("Graph centered successfully");
-                    
-                    // Ensure physics is enabled for interaction after fit
-                    setTimeout(function() {
-                        network.setOptions({ physics: { enabled: true } });
-                    }, 700);
-                    
-                } catch(e) {
-                    console.log("Fit error: " + e);
-                }
+        function disablePhysics() {
+            if (typeof network !== 'undefined' && network !== null) {
+                network.setOptions({ physics: { enabled: false } });
+                console.log("Physics disabled for performance");
             }
         }
         
-        // Wait for stabilization to complete before fitting
+        function centerGraph() {
+            if (typeof network !== 'undefined' && network !== null) {
+                network.fit({
+                    animation: { duration: 400, easingFunction: "easeOutQuad" }
+                });
+            }
+        }
+        
+        // After stabilization: center and STOP physics
         if (typeof network !== 'undefined' && network !== null) {
             network.once("stabilizationIterationsDone", function() {
-                console.log("Stabilization complete");
-                forceFit();
+                isStabilized = true;
+                centerGraph();
+                // CRITICAL: Disable physics to stop CPU usage
+                setTimeout(disablePhysics, 500);
+            });
+            
+            // Re-enable physics ONLY when dragging, then disable again
+            network.on("dragStart", function() {
+                if (isStabilized) {
+                    network.setOptions({ physics: { enabled: true } });
+                }
+            });
+            network.on("dragEnd", function() {
+                setTimeout(disablePhysics, 300);
             });
         }
         
-        // Fallback timers
-        setTimeout(forceFit, 500);
-        setTimeout(forceFit, 1500);
+        // Fallback: if no stabilization event, center anyway
+        setTimeout(function() {
+            if (!isStabilized) {
+                centerGraph();
+                disablePhysics();
+                isStabilized = true;
+            }
+        }, 1000);
     </script>
     """
+
 
 
     
