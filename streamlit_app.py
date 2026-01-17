@@ -2215,96 +2215,211 @@ if st.session_state.active_tab == 5:
     
     st.info("Esta sección detalla el desglose técnico de los algoritmos utilizados, clasificados por su función dentro del pipeline.")
 
+    # CSS Específico para esta pestaña (Scoped)
+    st.markdown("""
+    <style>
+        /* Card Base Styles */
+        .algo-card {
+            background: #0f172a; /* slate-900 */
+            border: 1px solid #1e293b; /* slate-800 */
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .algo-card:hover {
+            border-color: rgba(59, 130, 246, 0.5); /* brand-500/50 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        /* Headers */
+        .algo-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #1e293b; /* slate-800 */
+        }
+        .algo-icon {
+            font-size: 2rem;
+            background: rgba(59, 130, 246, 0.1); /* brand-500/10 */
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .algo-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #f8fafc; /* slate-50 */
+            line-height: 1.2;
+        }
+        .algo-subtitle {
+            font-size: 0.875rem;
+            color: #94a3b8; /* slate-400 */
+            margin-top: 0.25rem;
+        }
+        
+        /* Content Text */
+        .algo-content p {
+            color: #cbd5e1; /* slate-300 */
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        /* Inner Tech Cards (Arguments) */
+        .tech-card {
+            background: rgba(30, 41, 59, 0.5); /* slate-800/50 */
+            border: 1px solid #334155; /* slate-700 */
+            border-left-width: 4px; /* Callout style */
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        /* Specific Colors for Tech Cards */        
+        .tech-card.blue { border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+        .tech-card.amber { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+        .tech-card.purple { border-left-color: #8b5cf6; background: rgba(139, 92, 246, 0.05); }
+        .tech-card.pink { border-left-color: #ec4899; background: rgba(236, 72, 153, 0.05); }
+        .tech-card.emerald { border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+        
+        .tech-card-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .blue .tech-card-title { color: #60a5fa; }
+        .amber .tech-card-title { color: #fbbf24; }
+        .purple .tech-card-title { color: #a78bfa; }
+        .pink .tech-card-title { color: #f472b6; }
+        .emerald .tech-card-title { color: #34d399; }
+        
+        .tech-card ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: #94a3b8; /* slate-400 */
+            font-size: 0.9rem;
+        }
+        .tech-card li { margin-bottom: 0.4rem; }
+        .tech-card li:last-child { margin-bottom: 0; }
+        .tech-card strong { color: #e2e8f0; /* slate-200 */ }
+        
+        /* Grid Layout for details */
+        .highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
     # 1. Detección de Anomalías
     st.markdown("""
-    <div class="algo-card">
-        <div class="algo-header">
-            <div class="algo-icon">🔬</div>
-            <div>
-                <div class="algo-title">1. Detección de Anomalías (No Supervisado)</div>
-                <div class="algo-subtitle">Motor "Cisnes Negros"</div>
-            </div>
-        </div>
-        <div class="algo-content">
-            <p>Es el motor principal para descubrir fraudes desconocidos sin necesidad de un histórico previo.</p>
-            <div class="argument-card" style="border-left: 3px solid #667eea; background: rgba(102, 126, 234, 0.05);">
-                <div class="argument-title">Isolation Forest (Bosque de Aislamiento)</div>
-                <ul style="margin-bottom: 0;">
-                    <li><strong>Uso:</strong> Analiza el vector de características financieras (ratios de liquidez, solvencia, rentabilidad) del Modelo 200.</li>
-                    <li><strong>Lógica:</strong> No busca "fraude", busca "rareza". Asume que las anomalías son pocas y diferentes, por lo que son más fáciles de aislar (requieren menos cortes en un árbol de decisión aleatorio) que los datos normales.</li>
-                    <li><strong>Implementación:</strong> <code>sklearn.ensemble.IsolationForest</code> o su versión distribuida en Spark.</li>
-                </ul>
-            </div>
+<div class="algo-card animate-in fade-in duration-700">
+    <div class="algo-header">
+        <div class="algo-icon">🔬</div>
+        <div>
+            <div class="algo-title">1. Detección de Anomalías (No Supervisado)</div>
+            <div class="algo-subtitle">Motor "Cisnes Negros"</div>
         </div>
     </div>
+    <div class="algo-content">
+        <p>Es el motor principal para descubrir fraudes desconocidos sin necesidad de un histórico previo.</p>
+        <div class="tech-card blue">
+            <div class="tech-card-title">Isolation Forest (Bosque de Aislamiento)</div>
+            <ul>
+                <li><strong>Uso:</strong> Analiza el vector de características financieras (ratios de liquidez, solvencia, rentabilidad) del Modelo 200.</li>
+                <li><strong>Lógica:</strong> No busca "fraude", busca "rareza". Asume que las anomalías son pocas y diferentes, por lo que son más fáciles de aislar (requieren menos cortes en un árbol de decisión aleatorio) que los datos normales.</li>
+                <li><strong>Implementación:</strong> <code>sklearn.ensemble.IsolationForest</code> o su versión distribuida en Spark.</li>
+            </ul>
+        </div>
+    </div>
+</div>
     """, unsafe_allow_html=True)
 
     # 2. Forense Estadístico
     st.markdown("""
-    <div class="algo-card">
-        <div class="algo-header">
-            <div class="algo-icon">📊</div>
-            <div>
-                <div class="algo-title">2. Forense Estadístico (Integridad del Dato)</div>
-                <div class="algo-subtitle">Algoritmos Deterministas</div>
-            </div>
-        </div>
-        <div class="algo-content">
-            <p>Algoritmos para detectar manipulación humana en los datos contables.</p>
-            
-            <div class="argument-card" style="border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
-                <div class="argument-title" style="color: #f59e0b;">Ley de Benford (Divergencia Kullback-Leibler)</div>
-                <ul style="margin: 0;">
-                    <li><strong>Uso:</strong> Escanea los importes de facturas en el Modelo 347 y bases imponibles en el Modelo 200.</li>
-                    <li><strong>Lógica:</strong> Calcula la distancia matemática (Divergencia KL) entre la frecuencia real del primer dígito de las cifras de la empresa y la distribución logarítmica teórica de Benford. Detecta datos inventados manualmente.</li>
-                </ul>
-            </div>
-
-            <div class="argument-card" style="border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.05); margin-top: 1rem;">
-                <div class="argument-title" style="color: #f59e0b;">Distancia de Mahalanobis</div>
-                <ul style="margin: 0;">
-                    <li><strong>Uso:</strong> Benchmarking Sectorial en la clase <code>SectoralBenchmarker</code>.</li>
-                    <li><strong>Lógica:</strong> Mide la distancia de una empresa respecto al centroide de su sector (CNAE), considerando la correlación entre variables. A diferencia de la distancia Euclidiana, entiende que en ciertos sectores es normal tener alta correlación entre Deuda y Activos, evitando falsos positivos en modelos de negocio apalancados.</li>
-                </ul>
-            </div>
+<div class="algo-card animate-in fade-in duration-700" style="animation-delay: 100ms;">
+    <div class="algo-header">
+        <div class="algo-icon" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">📊</div>
+        <div>
+            <div class="algo-title">2. Forense Estadístico (Integridad del Dato)</div>
+            <div class="algo-subtitle">Algoritmos Deterministas</div>
         </div>
     </div>
+    <div class="algo-content">
+        <p>Algoritmos para detectar manipulación humana en los datos contables.</p>
+        
+        <div class="tech-card amber">
+            <div class="tech-card-title">Ley de Benford (Divergencia Kullback-Leibler)</div>
+            <ul>
+                <li><strong>Uso:</strong> Escanea los importes de facturas en el Modelo 347 y bases imponibles en el Modelo 200.</li>
+                <li><strong>Lógica:</strong> Calcula la distancia matemática (Divergencia KL) entre la frecuencia real del primer dígito de las cifras de la empresa y la distribución logarítmica teórica de Benford. Detecta datos inventados manualmente.</li>
+            </ul>
+        </div>
+
+        <div class="tech-card amber">
+            <div class="tech-card-title">Distancia de Mahalanobis</div>
+            <ul>
+                <li><strong>Uso:</strong> Benchmarking Sectorial en la clase <code>SectoralBenchmarker</code>.</li>
+                <li><strong>Lógica:</strong> Mide la distancia de una empresa respecto al centroide de su sector (CNAE), considerando la correlación entre variables. A diferencia de la distancia Euclidiana, entiende que en ciertos sectores es normal tener alta correlación entre Deuda y Activos, evitando falsos positivos en modelos de negocio apalancados.</li>
+            </ul>
+        </div>
+    </div>
+</div>
     """, unsafe_allow_html=True)
     
     # 3. Inteligencia de Grafos
     st.markdown("""
-    <div class="algo-card">
-        <div class="algo-header">
-            <div class="algo-icon">🕸️</div>
-            <div>
-                <div class="algo-title">3. Inteligencia de Grafos (Topología de Red)</div>
-                <div class="algo-subtitle">Análisis Relacional (Spark GraphFrames)</div>
-            </div>
+<div class="algo-card animate-in fade-in duration-700" style="animation-delay: 200ms;">
+    <div class="algo-header">
+        <div class="algo-icon" style="background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.2);">🕸️</div>
+        <div>
+            <div class="algo-title">3. Inteligencia de Grafos (Topología de Red)</div>
+            <div class="algo-subtitle">Análisis Relacional (Spark GraphFrames)</div>
         </div>
-        <div class="algo-content">
-            <p>Análisis del Modelo 347 (relaciones Cliente-Proveedor) para detectar tramas.</p>
-            
-            <div class="highlight-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                <div class="argument-card" style="border-left: 3px solid #8b5cf6; background: rgba(139, 92, 246, 0.05); margin-bottom: 0;">
-                    <div class="argument-title" style="color: #8b5cf6;">PageRank</div>
-                    <div class="argument-desc"><strong>Uso:</strong> Identificación de nodos centrales o "Hubs" de riesgo. Detecta empresas pantalla que actúan como concentradores de facturación falsa.</div>
-                </div>
-                
-                <div class="argument-card" style="border-left: 3px solid #8b5cf6; background: rgba(139, 92, 246, 0.05); margin-bottom: 0;">
-                    <div class="argument-title" style="color: #8b5cf6;">Componentes Conectados</div>
-                    <div class="argument-desc"><strong>Uso:</strong> Detecta tramas o clústeres de empresas que operan aisladas del resto de la economía real (islas de facturación).</div>
-                </div>
+    </div>
+    <div class="algo-content">
+        <p>Análisis del Modelo 347 (relaciones Cliente-Proveedor) para detectar tramas.</p>
+        
+        <div class="highlight-grid">
+            <div class="tech-card purple" style="margin-top: 0;">
+                <div class="tech-card-title">PageRank</div>
+                <ul>
+                    <li><strong>Uso:</strong> Identificación de nodos centrales o "Hubs" de riesgo. Detecta empresas pantalla que actúan como concentradores de facturación falsa.</li>
+                </ul>
             </div>
-
-            <div class="argument-card" style="border-left: 3px solid #8b5cf6; background: rgba(139, 92, 246, 0.05); margin-top: 1rem;">
-                <div class="argument-title" style="color: #8b5cf6;">GraphSAGE (Graph Neural Networks - GNN)</div>
-                <ul style="margin: 0;">
-                    <li><strong>Uso:</strong> Aprendizaje inductivo sobre grafos.</li>
-                    <li><strong>Lógica:</strong> Genera embeddings (representaciones vectoriales) de cada empresa basándose no solo en sus datos, sino en los datos de sus vecinos. Permite la propagación del riesgo (<strong>"Culpa por Asociación"</strong>).</li>
+            
+            <div class="tech-card purple" style="margin-top: 0;">
+                <div class="tech-card-title">Componentes Conectados</div>
+                <ul>
+                    <li><strong>Uso:</strong> Detecta tramas o clústeres de empresas que operan aisladas del resto de la economía real (islas de facturación).</li>
                 </ul>
             </div>
         </div>
+
+        <div class="tech-card purple">
+            <div class="tech-card-title">GraphSAGE (Graph Neural Networks - GNN)</div>
+            <ul>
+                <li><strong>Uso:</strong> Aprendizaje inductivo sobre grafos.</li>
+                <li><strong>Lógica:</strong> Genera embeddings (representaciones vectoriales) de cada empresa basándose no solo en sus datos, sino en los datos de sus vecinos. Permite la propagación del riesgo (<strong>"Culpa por Asociación"</strong>).</li>
+            </ul>
+        </div>
     </div>
+</div>
     """, unsafe_allow_html=True)
 
     col_algo_1, col_algo_2 = st.columns(2)
@@ -2312,49 +2427,48 @@ if st.session_state.active_tab == 5:
     with col_algo_1:
          # 4. Calibración Supervisada
         st.markdown("""
-        <div class="algo-card" style="height: 100%;">
-            <div class="algo-header">
-                <div class="algo-icon">🤖</div>
-                <div>
-                    <div class="algo-title">4. Calibración Supervisada</div>
-                    <div class="algo-subtitle">Active Learning - HybridFraudReRanker</div>
-                </div>
-            </div>
-            <div class="algo-content">
-                <div class="argument-card" style="border-left: 3px solid #ec4899; background: rgba(236, 72, 153, 0.05);">
-                    <div class="argument-title" style="color: #ec4899;">XGBoost</div>
-                    <ul style="margin: 0;">
-                        <li><strong>Uso:</strong> Clasificación binaria (Fraude vs. Falso Positivo) basada en el histórico de decisiones humanas.</li>
-                        <li><strong>Lógica:</strong> Entrena un conjunto de árboles de decisión secuenciales donde cada árbol intenta corregir los errores del anterior. Se utiliza por su alta capacidad de manejar datos tabulares desbalanceados y su explicabilidad (Feature Importance).</li>
-                    </ul>
-                </div>
-            </div>
+<div class="algo-card animate-in fade-in duration-700" style="height: 100%; animation-delay: 300ms;">
+    <div class="algo-header">
+        <div class="algo-icon" style="background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.2);">🤖</div>
+        <div>
+            <div class="algo-title">4. Calibración Supervisada</div>
+            <div class="algo-subtitle">Active Learning - HybridFraudReRanker</div>
         </div>
+    </div>
+    <div class="algo-content">
+        <div class="tech-card pink" style="margin-top: 0;">
+            <div class="tech-card-title">XGBoost</div>
+            <ul>
+                <li><strong>Uso:</strong> Clasificación binaria (Fraude vs. Falso Positivo) basada en el histórico de decisiones humanas.</li>
+                <li><strong>Lógica:</strong> Entrena un conjunto de árboles de decisión secuenciales donde cada árbol intenta corregir los errores del anterior. Se utiliza por su alta capacidad de manejar datos tabulares desbalanceados.</li>
+            </ul>
+        </div>
+    </div>
+</div>
         """, unsafe_allow_html=True)
     
     with col_algo_2:
         # 5. Heurística Avanzada
         st.markdown("""
-        <div class="algo-card" style="height: 100%;">
-            <div class="algo-header">
-                <div class="algo-icon">🧠</div>
-                <div>
-                    <div class="algo-title">5. Heurística Avanzada</div>
-                    <div class="algo-subtitle">Reglas de Negocio Expertas</div>
-                </div>
-            </div>
-            <div class="algo-content">
-                <div class="argument-card" style="border-left: 3px solid #10b981; background: rgba(16, 185, 129, 0.05);">
-                    <div class="argument-title" style="color: #10b981;">Reglas Lógicas & Umbrales</div>
-                    <ul style="margin: 0;">
-                        <li><strong>Detección de Paradojas Físicas:</strong> Reglas lógicas cruzadas contundentes (ej: Exportaciones > 0 AND Transporte = 0).</li>
-                        <li><strong>Análisis de Umbrales Adaptativos:</strong> Algoritmo estadístico que ajusta dinámicamente los límites de las reglas basándose en la tasa de rechazo (Falso Positivo) histórica por sector CNAE.</li>
-                    </ul>
-                </div>
-            </div>
+<div class="algo-card animate-in fade-in duration-700" style="height: 100%; animation-delay: 400ms;">
+    <div class="algo-header">
+        <div class="algo-icon" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2);">🧠</div>
+        <div>
+            <div class="algo-title">5. Heurística Avanzada</div>
+            <div class="algo-subtitle">Reglas de Negocio Expertas</div>
         </div>
+    </div>
+    <div class="algo-content">
+        <div class="tech-card emerald" style="margin-top: 0;">
+            <div class="tech-card-title">Reglas Lógicas & Umbrales</div>
+            <ul>
+                <li><strong>Detección de Paradojas Físicas:</strong> Reglas lógicas cruzadas contundentes (ej: Exportaciones > 0 AND Transporte = 0).</li>
+                <li><strong>Análisis de Umbrales Adaptativos:</strong> Ajuste dinámico de límites basándose en la tasa de rechazo histórica por sector CNAE.</li>
+            </ul>
+        </div>
+    </div>
+</div>
         """, unsafe_allow_html=True)
-
     # Resumen Tabla
     st.markdown("### 📋 Resumen de la Arquitectura")
     
