@@ -2073,9 +2073,9 @@ if st.session_state.active_tab == 1:
                     else:
                         st.caption("📊 Sector no disponible para comparación")
                 
-                # TAB 2: FLAGS ACTIVOS (antes era TAB 3)
+                # TAB 2: FLAGS ACTIVOS
                 with tab2:
-                    st.markdown("### Alertas y Reglas Activadas")
+                    st.markdown("### 🚩 Alertas y Reglas Forenses")
                     
                     # Get active flags
                     flag_details = get_flag_details()
@@ -2088,79 +2088,97 @@ if st.session_state.active_tab == 1:
                     if active_flags:
                         for flag_key in active_flags:
                             flag_info = flag_details[flag_key]
-                            st.warning(f"{flag_info['icono']} **{flag_info['nombre']}**\n\n{flag_info['descripcion']}")
+                            
+                            # Premium Forensic Card for Alert
+                            st.markdown(f"""
+                            <div style="
+                                background: #0f172a; 
+                                border: 1px solid #1e293b; 
+                                border-left: 5px solid #ef4444; 
+                                border-radius: 12px; 
+                                padding: 1.2rem; 
+                                margin-bottom: 1rem;
+                                display: flex;
+                                align-items: flex-start;
+                                gap: 1rem;
+                                transition: transform 0.2s ease;
+                            ">
+                                <div style="font-size: 1.8rem;">{flag_info['icono']}</div>
+                                <div style="flex-grow: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <span style="color: #f8fafc; font-weight: 700; font-size: 1rem;">{flag_info['nombre']}</span>
+                                        <span style="background: rgba(239, 68, 68, 0.1); color: #f87171; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2);">ACTIVO</span>
+                                    </div>
+                                    <div style="color: #94a3b8; font-size: 0.85rem; line-height: 1.4; margin-bottom: 0.8rem;">{flag_info['descripcion']}</div>
+                                    <div style="display: flex; gap: 0.8rem;">
+                                        <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; padding: 4px 10px; border-radius: 6px;">
+                                            <span style="color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Umbral:</span>
+                                            <span style="color: #cbd5e1; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;"> {flag_info['umbral']}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
                     else:
-                        st.success("✅ No hay flags activos para esta empresa")
+                        st.markdown("""
+                        <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 2rem; text-align: center; color: #34d399;">
+                            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">✅</div>
+                            <div style="font-weight: 700;">Sin anomalías detectadas</div>
+                            <div style="font-size: 0.8rem; opacity: 0.8;">Esta entidad no activa ninguna regla forense actual</div>
+                        </div>
+                        """, unsafe_allow_html=True)
                 
                 # TAB 3: RED TRANSACCIONAL (Network Graph M347)
                 with tab3:
                     st.markdown("### 🕸️ Grafo de Relaciones M347")
-                    st.caption("Visualización interactiva de la red transaccional basada en el Modelo 347 (Cliente-Proveedor)")
                     
                     # Determine risk level for network pattern
                     fraud_score = company_data.get('fraud_score', 0)
-                    if fraud_score > 0.7:
-                        risk_level = "Alto"
-                    elif fraud_score > 0.4:
-                        risk_level = "Medio"
-                    else:
-                        risk_level = "Bajo"
+                    risk_level = "Alto" if fraud_score > 0.7 else "Medio" if fraud_score > 0.4 else "Bajo"
                     
-                    # Show risk badge
-                    risk_colors = {
-                        "Alto": "#f44336",    # Red
-                        "Medio": "#ff9800",   # Orange
-                        "Bajo": "#4caf50"     # Green
+                    # Pattern Badge Layout
+                    risk_styles = {
+                        "Alto": {"bg": "rgba(239, 68, 68, 0.1)", "text": "#f87171", "border": "#ef4444", "msg": "🚨 Posible Carrusel IVA"},
+                        "Medio": {"bg": "rgba(245, 158, 11, 0.1)", "text": "#fbbf24", "border": "#f59e0b", "msg": "⚠️ Hub Sospechoso"},
+                        "Bajo": {"bg": "rgba(16, 185, 129, 0.1)", "text": "#34d399", "border": "#10b981", "msg": "✅ Red Normal"}
                     }
+                    s = risk_styles.get(risk_level)
+                    
                     st.markdown(f"""
-                    <div style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
-                        <span style="
-                            background: {risk_colors.get(risk_level, '#78909c')};
-                            color: white;
-                            padding: 4px 12px;
-                            border-radius: 20px;
-                            font-size: 0.85rem;
-                            font-weight: 600;
-                        ">Patrón: {risk_level} Riesgo</span>
-                        <span style="color: #94a3b8; font-size: 0.85rem;">
-                            {'🚨 Posible Carrusel IVA' if risk_level == 'Alto' else '⚠️ Hub Sospechoso' if risk_level == 'Medio' else '✅ Red Normal'}
-                        </span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="background: {s['bg']}; color: {s['text']}; border: 1px solid {s['border']}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">{risk_level.upper()} RIESGO</div>
+                            <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">{s['msg']}</div>
+                        </div>
+                        <div style="color: #64748b; font-size: 0.75rem; font-style: italic;">Basado en Cruce Modelo 347</div>
                     </div>
                     """, unsafe_allow_html=True)
                     
                     try:
-                        # Generate the network graph HTML
-                        network_html = create_suspicious_network(
-                            center_nif=str(selected_nif),
-                            center_risk=risk_level,
-                            center_score=fraud_score
-                        )
-                        
-                        # Render the interactive graph
+                        # Render the interactive graph in a styled container
+                        st.markdown('<div class="graph-container" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden;">', unsafe_allow_html=True)
+                        network_html = create_suspicious_network(str(selected_nif), risk_level, fraud_score)
                         components.html(network_html, height=600, scrolling=False)
+                        st.markdown('</div>', unsafe_allow_html=True)
                         
-                        # Legend and instructions
-                        with st.expander("📖 Cómo interpretar el grafo", expanded=False):
+                        # Legend and instructions (Custom Forensic Panel)
+                        with st.container():
                             st.markdown("""
-                            **Nodos:**
-                            - 💎 **Diamante Rosa:** Empresa objetivo bajo análisis
-                            - 🔴 **Cuadrado Rojo:** Empresa pantalla (sin actividad real detectada)
-                            - 🔶 **Triángulo Naranja:** Proveedor sospechoso
-                            - 🟢 **Círculo Verde:** Cliente/Proveedor normal
-                            
-                            **Patrones de Riesgo:**
-                            - **Alto Riesgo (Carrusel):** Flujo circular de dinero entre empresas pantalla
-                            - **Medio Riesgo (Hub):** Empresa central con múltiples proveedores sospechosos
-                            - **Bajo Riesgo:** Red transaccional normal sin anomalías
-                            
-                            **Interacción:**
-                            - 🖱️ Arrastra los nodos para reorganizar
-                            - 🔍 Usa scroll para zoom
-                            - ✋ Click + arrastrar fondo para mover la vista
-                            """)
+                            <div style="margin-top: 1rem; background: rgba(30, 41, 59, 0.3); border-radius: 10px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="color: #64748b; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem;">GUÍA DE INTERPRETACIÓN FORENSE</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.8rem; color: #94a3b8;">
+                                    <div>💎 <b>Diamante:</b> Objetivo Analítico</div>
+                                    <div>🔴 <b>Cuadrado:</b> Pantalla (Shell)</div>
+                                    <div>🔶 <b>Triángulo:</b> Proveedor Atípico</div>
+                                    <div>🟢 <b>Círculo:</b> Contraparte Normal</div>
+                                </div>
+                                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); color: #64748b; font-size: 0.75rem;">
+                                    🖱️ Arrastra nodos para inspección | 🔍 Scroll para profundidad | 🔄 Dotted: Flujo sospechoso
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
                     except Exception as e:
-                        st.error(f"❌ Error al generar el grafo de red: {str(e)}")
-                        st.info("💡 Asegúrate de que las dependencias de red (pyvis, networkx) están instaladas.")
+                        st.error(f"❌ Error en motor de red: {str(e)}")
             
             # =====================================================================
             # COLUMNA DERECHA (35%): PANEL DE DECISIÓN - STICKY ACTION PANEL

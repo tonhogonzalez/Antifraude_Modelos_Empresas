@@ -32,7 +32,7 @@ def create_interactive_network_html(center_nif, center_risk, center_score):
     net = Network(
         height="550px",
         width="100%",
-        bgcolor="#0e1117",
+        bgcolor="#0f172a", # matched to slate-900
         font_color="white",
         directed=True,
         notebook=False,
@@ -98,7 +98,7 @@ def create_interactive_network_html(center_nif, center_risk, center_score):
             "zoomView": true,
             "hover": true,
             "tooltipDelay": 100,
-            "navigationButtons": true,
+            "navigationButtons": false,
             "keyboard": {
                 "enabled": true
             }
@@ -149,10 +149,11 @@ def create_interactive_network_html(center_nif, center_risk, center_score):
             net.add_edge(
                 cycle[i], 
                 cycle[i + 1],
-                title=f"€{amount:,.0f}",
+                title=f"🔄 CICLO SOSPECHOSO<br>Importe: €{amount:,.0f}",
                 label=f"€{amount/1000:.0f}k",
                 color=COLORS['shell'] if not is_closing else '#ff1744',
-                width=4 if not is_closing else 6
+                width=4 if not is_closing else 6,
+                dashes=True # Contextual indicator for suspicious flow
             )
         
         # Clientes normales
@@ -280,29 +281,34 @@ def create_interactive_network_html(center_nif, center_risk, center_score):
     
     # Añadir estilos adicionales y leyenda
     legend_html = """
-    <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; z-index: 1000;">
-        <div style="font-weight: bold; color: white; margin-bottom: 10px; font-size: 14px;">LEYENDA</div>
-        <div style="display: flex; align-items: center; margin: 5px 0;">
-            <div style="width: 15px; height: 15px; background: #e91e63; border-radius: 3px; margin-right: 8px;"></div>
-            <span style="color: white; font-size: 12px;">🎯 Empresa Objetivo</span>
+    <div style="position: absolute; top: 15px; left: 15px; background: rgba(15, 23, 42, 0.85); 
+                backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); 
+                padding: 18px; border-radius: 12px; z-index: 1000; font-family: 'Inter', sans-serif;">
+        <div style="font-weight: 800; color: #f8fafc; margin-bottom: 12px; font-size: 13px; 
+                    letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+            SISTEMA DE LEYENDA
         </div>
-        <div style="display: flex; align-items: center; margin: 5px 0;">
-            <div style="width: 15px; height: 15px; background: #f44336; border-radius: 3px; margin-right: 8px;"></div>
-            <span style="color: white; font-size: 12px;">🏭 Empresa Pantalla</span>
+        <div style="display: flex; align-items: center; margin: 8px 0;">
+            <div style="width: 14px; height: 14px; background: #e91e63; border: 2px solid white; border-radius: 3px; margin-right: 10px;"></div>
+            <span style="color: #f1f5f9; font-size: 12px; font-weight: 600;">🎯 Objetivo Analítico</span>
         </div>
-        <div style="display: flex; align-items: center; margin: 5px 0;">
-            <div style="width: 15px; height: 15px; background: #ff9800; border-radius: 3px; margin-right: 8px;"></div>
-            <span style="color: white; font-size: 12px;">⚠️ Sospechoso</span>
+        <div style="display: flex; align-items: center; margin: 8px 0;">
+            <div style="width: 14px; height: 14px; background: #f44336; border-radius: 2px; margin-right: 10px;"></div>
+            <span style="color: #f1f5f9; font-size: 12px;">🏭 Empresa Pantalla</span>
         </div>
-        <div style="display: flex; align-items: center; margin: 5px 0;">
-            <div style="width: 15px; height: 15px; background: #4caf50; border-radius: 3px; margin-right: 8px;"></div>
-            <span style="color: white; font-size: 12px;">✅ Normal</span>
+        <div style="display: flex; align-items: center; margin: 8px 0;">
+            <div style="width: 14px; height: 14px; border: 2px solid #ff9800; transform: rotate(45deg); margin-right: 10px;"></div>
+            <span style="color: #f1f5f9; font-size: 12px;">⚠️ Proveedor Inusual</span>
         </div>
-        <hr style="border-color: #444; margin: 10px 0;">
-        <div style="color: #aaa; font-size: 11px;">
-            🖱️ Arrastra nodos para moverlos<br>
-            🔍 Scroll para zoom<br>
-            ✋ Click + arrastrar fondo para mover
+        <div style="display: flex; align-items: center; margin: 8px 0;">
+            <div style="width: 14px; height: 14px; background: #4caf50; border-radius: 50%; margin-right: 10px;"></div>
+            <span style="color: #f1f5f9; font-size: 12px;">✅ Cliente Legítimo</span>
+        </div>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 12px 0;">
+        <div style="color: #94a3b8; font-size: 11px; line-height: 1.5;">
+            🖱️ <b>Arrastrar:</b> Mover nodos<br>
+            🔍 <b>Scroll:</b> Zoom dinámico<br>
+            ✋ <b>Click fondo:</b> Panorámica
         </div>
     </div>
     """
