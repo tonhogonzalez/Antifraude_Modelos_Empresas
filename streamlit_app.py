@@ -2292,16 +2292,29 @@ if st.session_state.active_tab == 1:
                                 st.error(validation_error)
                             else:
                                 try:
-                                    # Create FeedbackRecord with all data
+                                    # Build feature vector from company data
+                                    feature_vector = {
+                                        'fraud_score': float(company_data.get('fraud_score', 0)),
+                                        'ventas_netas': float(company_data.get('ventas_netas', company_data.get('cifra_negocios', 0))),
+                                        'gastos_personal': float(company_data.get('gastos_personal', 0)),
+                                    }
+                                    
+                                    # Convert confidence from 0-100 to 1-5 scale
+                                    confidence_1_5 = max(1, min(5, int(confidence / 20) + 1))
+                                    
+                                    # Create FeedbackRecord with correct parameter names
                                     feedback_record = FeedbackRecord(
                                         nif=str(selected_nif),
                                         analyst_verdict=verdict_choice,
-                                        analyst_confidence=confidence / 100.0,  # Convert to 0-1 range
-                                        fraud_typology=fraud_typology if verdict_choice == VERDICT_FRAUD else None,
-                                        rejection_reason=rejection_reason if verdict_choice == VERDICT_FALSE_POSITIVE else None,
-                                        original_score=float(company_data.get('fraud_score', 0)),
-                                        analyst_id="analyst_streamlit",  # Could be replaced with actual login
+                                        fraud_score_original=float(company_data.get('fraud_score', 0)),
+                                        feature_vector=feature_vector,
+                                        fraud_typology_code=fraud_typology if verdict_choice == VERDICT_FRAUD else None,
+                                        rejection_reason_code=rejection_reason if verdict_choice == VERDICT_FALSE_POSITIVE else None,
+                                        analyst_confidence=confidence_1_5,
+                                        analyst_id="analyst_streamlit",
                                         model_version=st.session_state.get('model_version', '1.0.0'),
+                                        cnae_sector=str(company_data.get('sector', '')),
+                                        ventas_netas=float(company_data.get('ventas_netas', company_data.get('cifra_negocios', 0))),
                                         flags_active=active_flags if 'active_flags' in dir() else []
                                     )
                                     
@@ -2318,6 +2331,7 @@ if st.session_state.active_tab == 1:
                                     
                                 except Exception as e:
                                     st.error(f"❌ Error al guardar: {str(e)}")
+
                 else:
                     st.warning("⚠️ Sistema de feedback no disponible")
         else:
