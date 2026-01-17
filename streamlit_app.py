@@ -1911,8 +1911,8 @@ if 'active_tab' not in st.session_state:
 if 'selected_company_nif' not in st.session_state:
     st.session_state.selected_company_nif = None
 
-# Crear navegación con botones - AHORA 5 BOTONES
-col_nav1, col_nav2, col_nav3, col_nav4, col_nav5 = st.columns(5)
+# Crear navegación con botones - AHORA 6 BOTONES
+col_nav1, col_nav2, col_nav3, col_nav4, col_nav5, col_nav6 = st.columns(6)
 
 with col_nav1:
     if st.button("📊 Dashboard", use_container_width=True, 
@@ -1942,6 +1942,12 @@ with col_nav5:
     if st.button("❓ Ayuda", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 4 else "secondary"):
         st.session_state.active_tab = 4
+        st.rerun()
+
+with col_nav6:
+    if st.button("🏗️ Arquitectura", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 5 else "secondary"):
+        st.session_state.active_tab = 5
         st.rerun()
 
 st.markdown("---")
@@ -2198,6 +2204,205 @@ if st.session_state.active_tab == 1:
     else:
         st.info("ℹ️ Selecciona una empresa desde la barra lateral para ver el análisis detallado.")
 
+
+
+# =============================================================================
+# TAB 6 (formerly TAB 5): ARQUITECTURA ALGORÍTMICA
+# =============================================================================
+if st.session_state.active_tab == 5:
+    st.markdown("## 🏗️ Arquitectura Algorítmica: El Core de FraudHunter")
+    st.markdown("---")
+    
+    st.info("Esta sección detalla el desglose técnico de los algoritmos utilizados, clasificados por su función dentro del pipeline.")
+
+    # 1. Detección de Anomalías
+    st.markdown("""
+    <div class="algo-card">
+        <div class="algo-header">
+            <div class="algo-icon">🔬</div>
+            <div>
+                <div class="algo-title">1. Detección de Anomalías (No Supervisado)</div>
+                <div class="algo-subtitle">Motor "Cisnes Negros"</div>
+            </div>
+        </div>
+        <div class="algo-content">
+            <p>Es el motor principal para descubrir fraudes desconocidos sin necesidad de un histórico previo.</p>
+            <div class="argument-card" style="border-left: 3px solid #667eea; background: rgba(102, 126, 234, 0.05);">
+                <div class="argument-title">Isolation Forest (Bosque de Aislamiento)</div>
+                <ul style="margin-bottom: 0;">
+                    <li><strong>Uso:</strong> Analiza el vector de características financieras (ratios de liquidez, solvencia, rentabilidad) del Modelo 200.</li>
+                    <li><strong>Lógica:</strong> No busca "fraude", busca "rareza". Asume que las anomalías son pocas y diferentes, por lo que son más fáciles de aislar (requieren menos cortes en un árbol de decisión aleatorio) que los datos normales.</li>
+                    <li><strong>Implementación:</strong> <code>sklearn.ensemble.IsolationForest</code> o su versión distribuida en Spark.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 2. Forense Estadístico
+    st.markdown("""
+    <div class="algo-card">
+        <div class="algo-header">
+            <div class="algo-icon">📊</div>
+            <div>
+                <div class="algo-title">2. Forense Estadístico (Integridad del Dato)</div>
+                <div class="algo-subtitle">Algoritmos Deterministas</div>
+            </div>
+        </div>
+        <div class="algo-content">
+            <p>Algoritmos para detectar manipulación humana en los datos contables.</p>
+            
+            <div class="argument-card" style="border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
+                <div class="argument-title" style="color: #f59e0b;">Ley de Benford (Divergencia Kullback-Leibler)</div>
+                <ul style="margin: 0;">
+                    <li><strong>Uso:</strong> Escanea los importes de facturas en el Modelo 347 y bases imponibles en el Modelo 200.</li>
+                    <li><strong>Lógica:</strong> Calcula la distancia matemática (Divergencia KL) entre la frecuencia real del primer dígito de las cifras de la empresa y la distribución logarítmica teórica de Benford. Detecta datos inventados manualmente.</li>
+                </ul>
+            </div>
+
+            <div class="argument-card" style="border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.05); margin-top: 1rem;">
+                <div class="argument-title" style="color: #f59e0b;">Distancia de Mahalanobis</div>
+                <ul style="margin: 0;">
+                    <li><strong>Uso:</strong> Benchmarking Sectorial en la clase <code>SectoralBenchmarker</code>.</li>
+                    <li><strong>Lógica:</strong> Mide la distancia de una empresa respecto al centroide de su sector (CNAE), considerando la correlación entre variables. A diferencia de la distancia Euclidiana, entiende que en ciertos sectores es normal tener alta correlación entre Deuda y Activos, evitando falsos positivos en modelos de negocio apalancados.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 3. Inteligencia de Grafos
+    st.markdown("""
+    <div class="algo-card">
+        <div class="algo-header">
+            <div class="algo-icon">🕸️</div>
+            <div>
+                <div class="algo-title">3. Inteligencia de Grafos (Topología de Red)</div>
+                <div class="algo-subtitle">Análisis Relacional (Spark GraphFrames)</div>
+            </div>
+        </div>
+        <div class="algo-content">
+            <p>Análisis del Modelo 347 (relaciones Cliente-Proveedor) para detectar tramas.</p>
+            
+            <div class="highlight-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div class="argument-card" style="border-left: 3px solid #8b5cf6; background: rgba(139, 92, 246, 0.05); margin-bottom: 0;">
+                    <div class="argument-title" style="color: #8b5cf6;">PageRank</div>
+                    <div class="argument-desc"><strong>Uso:</strong> Identificación de nodos centrales o "Hubs" de riesgo. Detecta empresas pantalla que actúan como concentradores de facturación falsa.</div>
+                </div>
+                
+                <div class="argument-card" style="border-left: 3px solid #8b5cf6; background: rgba(139, 92, 246, 0.05); margin-bottom: 0;">
+                    <div class="argument-title" style="color: #8b5cf6;">Componentes Conectados</div>
+                    <div class="argument-desc"><strong>Uso:</strong> Detecta tramas o clústeres de empresas que operan aisladas del resto de la economía real (islas de facturación).</div>
+                </div>
+            </div>
+
+            <div class="argument-card" style="border-left: 3px solid #8b5cf6; background: rgba(139, 92, 246, 0.05); margin-top: 1rem;">
+                <div class="argument-title" style="color: #8b5cf6;">GraphSAGE (Graph Neural Networks - GNN)</div>
+                <ul style="margin: 0;">
+                    <li><strong>Uso:</strong> Aprendizaje inductivo sobre grafos.</li>
+                    <li><strong>Lógica:</strong> Genera embeddings (representaciones vectoriales) de cada empresa basándose no solo en sus datos, sino en los datos de sus vecinos. Permite la propagación del riesgo (<strong>"Culpa por Asociación"</strong>).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_algo_1, col_algo_2 = st.columns(2)
+
+    with col_algo_1:
+         # 4. Calibración Supervisada
+        st.markdown("""
+        <div class="algo-card" style="height: 100%;">
+            <div class="algo-header">
+                <div class="algo-icon">🤖</div>
+                <div>
+                    <div class="algo-title">4. Calibración Supervisada</div>
+                    <div class="algo-subtitle">Active Learning - HybridFraudReRanker</div>
+                </div>
+            </div>
+            <div class="algo-content">
+                <div class="argument-card" style="border-left: 3px solid #ec4899; background: rgba(236, 72, 153, 0.05);">
+                    <div class="argument-title" style="color: #ec4899;">XGBoost</div>
+                    <ul style="margin: 0;">
+                        <li><strong>Uso:</strong> Clasificación binaria (Fraude vs. Falso Positivo) basada en el histórico de decisiones humanas.</li>
+                        <li><strong>Lógica:</strong> Entrena un conjunto de árboles de decisión secuenciales donde cada árbol intenta corregir los errores del anterior. Se utiliza por su alta capacidad de manejar datos tabulares desbalanceados y su explicabilidad (Feature Importance).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_algo_2:
+        # 5. Heurística Avanzada
+        st.markdown("""
+        <div class="algo-card" style="height: 100%;">
+            <div class="algo-header">
+                <div class="algo-icon">🧠</div>
+                <div>
+                    <div class="algo-title">5. Heurística Avanzada</div>
+                    <div class="algo-subtitle">Reglas de Negocio Expertas</div>
+                </div>
+            </div>
+            <div class="algo-content">
+                <div class="argument-card" style="border-left: 3px solid #10b981; background: rgba(16, 185, 129, 0.05);">
+                    <div class="argument-title" style="color: #10b981;">Reglas Lógicas & Umbrales</div>
+                    <ul style="margin: 0;">
+                        <li><strong>Detección de Paradojas Físicas:</strong> Reglas lógicas cruzadas contundentes (ej: Exportaciones > 0 AND Transporte = 0).</li>
+                        <li><strong>Análisis de Umbrales Adaptativos:</strong> Algoritmo estadístico que ajusta dinámicamente los límites de las reglas basándose en la tasa de rechazo (Falso Positivo) histórica por sector CNAE.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Resumen Tabla
+    st.markdown("### 📋 Resumen de la Arquitectura")
+    
+    st.markdown("""
+    <div class="data-table-container">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px; color: #e0e0e0;">
+            <thead>
+                <tr style="text-align: left; color: #667eea; font-size: 0.9rem;">
+                    <th style="padding: 10px;">Capa</th>
+                    <th style="padding: 10px;">Algoritmo Principal</th>
+                    <th style="padding: 10px;">Objetivo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: rgba(255,255,255,0.03);">
+                    <td style="padding: 12px; border-radius: 8px 0 0 8px;"><strong>Ingesta & Limpieza</strong></td>
+                    <td style="padding: 12px;">Regex & Filtrado Push-Down</td>
+                    <td style="padding: 12px; border-radius: 0 8px 8px 0; color: #a0a0a0;">Calidad del dato y optimización Spark.</td>
+                </tr>
+                <tr style="background: rgba(255,255,255,0.03);">
+                    <td style="padding: 12px; border-radius: 8px 0 0 8px;"><strong>Feature Engineering</strong></td>
+                    <td style="padding: 12px;">Benford (KL Divergence)</td>
+                    <td style="padding: 12px; border-radius: 0 8px 8px 0; color: #a0a0a0;">Detección de datos inventados.</td>
+                </tr>
+                <tr style="background: rgba(255,255,255,0.03);">
+                    <td style="padding: 12px; border-radius: 8px 0 0 8px;"><strong>Contextualización</strong></td>
+                    <td style="padding: 12px;">Mahalanobis Distance</td>
+                    <td style="padding: 12px; border-radius: 0 8px 8px 0; color: #a0a0a0;">Comparativa justa por sector.</td>
+                </tr>
+                 <tr style="background: rgba(255,255,255,0.03);">
+                    <td style="padding: 12px; border-radius: 8px 0 0 8px;"><strong>Detección Core</strong></td>
+                    <td style="padding: 12px;">Isolation Forest</td>
+                    <td style="padding: 12px; border-radius: 0 8px 8px 0; color: #a0a0a0;">Detección de anomalías desconocidas.</td>
+                </tr>
+                 <tr style="background: rgba(255,255,255,0.03);">
+                    <td style="padding: 12px; border-radius: 8px 0 0 8px;"><strong>Análisis de Red</strong></td>
+                    <td style="padding: 12px;">PageRank / GraphSAGE</td>
+                    <td style="padding: 12px; border-radius: 0 8px 8px 0; color: #a0a0a0;">Detección de tramas y carruseles.</td>
+                </tr>
+                 <tr style="background: rgba(255,255,255,0.03);">
+                    <td style="padding: 12px; border-radius: 8px 0 0 8px;"><strong>Refinamiento</strong></td>
+                    <td style="padding: 12px;">XGBoost</td>
+                    <td style="padding: 12px; border-radius: 0 8px 8px 0; color: #a0a0a0;">Reducción de falsos positivos (Supervisado).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # =============================================================================
