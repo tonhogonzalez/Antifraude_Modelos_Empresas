@@ -1911,10 +1911,9 @@ if 'active_tab' not in st.session_state:
 if 'selected_company_nif' not in st.session_state:
     st.session_state.selected_company_nif = None
 
-# Crear navegación con botones - AHORA 9 BOTONES (AI Governance)
-col_nav1, col_nav2, col_nav3 = st.columns(3)
-col_nav4, col_nav5, col_nav6 = st.columns(3)
-col_nav7, col_nav8, col_nav9 = st.columns(3)
+# Crear navegación con botones - 7 BOTONES (Consolidado)
+col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
+col_nav5, col_nav6, col_nav7 = st.columns(3)
 
 with col_nav1:
     if st.button("📊 Dashboard", use_container_width=True, 
@@ -1929,19 +1928,19 @@ with col_nav2:
         st.rerun()
 
 with col_nav3:
-    if st.button("📥 Exportar", use_container_width=True,
+    if st.button("🧠 IA Learning", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 2 else "secondary"):
         st.session_state.active_tab = 2
         st.rerun()
 
 with col_nav4:
-    if st.button("🧠 IA Learning", use_container_width=True,
+    if st.button("💚 Model Health", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 3 else "secondary"):
         st.session_state.active_tab = 3
         st.rerun()
 
 with col_nav5:
-    if st.button("❓ Ayuda", use_container_width=True,
+    if st.button("📥 Exportar", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 4 else "secondary"):
         st.session_state.active_tab = 4
         st.rerun()
@@ -1952,23 +1951,10 @@ with col_nav6:
         st.session_state.active_tab = 5
         st.rerun()
 
-# AI GOVERNANCE & OBSERVABILITY
 with col_nav7:
-    if st.button("🧬 Evolución", use_container_width=True,
+    if st.button("❓ Ayuda", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 6 else "secondary"):
         st.session_state.active_tab = 6
-        st.rerun()
-
-with col_nav8:
-    if st.button("📉 Rendimiento", use_container_width=True,
-                 type="primary" if st.session_state.active_tab == 7 else "secondary"):
-        st.session_state.active_tab = 7
-        st.rerun()
-
-with col_nav9:
-    if st.button("🧠 Explicabilidad", use_container_width=True,
-                 type="primary" if st.session_state.active_tab == 8 else "secondary"):
-        st.session_state.active_tab = 8
         st.rerun()
 
 st.markdown("---")
