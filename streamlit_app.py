@@ -5026,10 +5026,10 @@ if st.session_state.active_tab == 3:
 
 
 
-# =============================================================================
-# TAB 7: RENDIMIENTO - PERFORMANCE MONITORING & DRIFT
-# =============================================================================
-if st.session_state.active_tab == 7:
+
+
+
+
     from model_governance import PerformanceMonitor
     import plotly.graph_objects as go
     
