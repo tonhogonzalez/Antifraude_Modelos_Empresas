@@ -1911,8 +1911,10 @@ if 'active_tab' not in st.session_state:
 if 'selected_company_nif' not in st.session_state:
     st.session_state.selected_company_nif = None
 
-# Crear navegación con botones - AHORA 6 BOTONES
-col_nav1, col_nav2, col_nav3, col_nav4, col_nav5, col_nav6 = st.columns(6)
+# Crear navegación con botones - AHORA 9 BOTONES (AI Governance)
+col_nav1, col_nav2, col_nav3 = st.columns(3)
+col_nav4, col_nav5, col_nav6 = st.columns(3)
+col_nav7, col_nav8, col_nav9 = st.columns(3)
 
 with col_nav1:
     if st.button("📊 Dashboard", use_container_width=True, 
@@ -1948,6 +1950,25 @@ with col_nav6:
     if st.button("🏗️ Arquitectura", use_container_width=True,
                  type="primary" if st.session_state.active_tab == 5 else "secondary"):
         st.session_state.active_tab = 5
+        st.rerun()
+
+# AI GOVERNANCE & OBSERVABILITY
+with col_nav7:
+    if st.button("🧬 Evolución", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 6 else "secondary"):
+        st.session_state.active_tab = 6
+        st.rerun()
+
+with col_nav8:
+    if st.button("📉 Rendimiento", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 7 else "secondary"):
+        st.session_state.active_tab = 7
+        st.rerun()
+
+with col_nav9:
+    if st.button("🧠 Explicabilidad", use_container_width=True,
+                 type="primary" if st.session_state.active_tab == 8 else "secondary"):
+        st.session_state.active_tab = 8
         st.rerun()
 
 st.markdown("---")
@@ -4766,9 +4787,390 @@ if st.session_state.active_tab == 2:
         """, unsafe_allow_html=True)
 
 
+
+# =============================================================================
+# TAB 6: EVOLUCIÓN - MODEL VERSIONING & CHANGELOG
+# =============================================================================
+if st.session_state.active_tab == 6:
+    from model_governance import ModelVersionManager
+    
+    st.markdown("## 🧬 Evolución del Modelo: Versioning & Changelog")
+    st.markdown("---")
+    
+    st.info("Sistema de trazabilidad absoluta para el ciclo de vida del modelo de detección de fraude.")
+    
+    version_manager = ModelVersionManager()
+    history = version_manager.get_history()
+    
+    # Header KPIs
+    col_v1, col_v2, col_v3 = st.columns(3)
+    with col_v1:
+        st.metric("Versiones Totales", len(history))
+    with col_v2:
+        latest = history[0] if history else None
+        st.metric("Versión Actual", latest['version'] if latest else "N/A")
+    with col_v3:
+        auto_count = sum(1 for v in history if v.get('type') == 'automatic')
+        st.metric("Reentrenamientos Auto", auto_count)
+    
+    st.markdown("---")
+    
+    # Timeline visualization
+    st.markdown("### 📜 Historial de Versiones")
+    
+    for i, version in enumerate(history[:10]):  # Show latest 10
+        is_latest = (i == 0)
+        border_color = "#3b82f6" if is_latest else "#334155"
+        bg_color = "rgba(59, 130, 246, 0.05)" if is_latest else "rgba(15, 23, 42, 0.5)"
+        
+        # Version type badge
+        type_emoji = "🤖" if version['type'] == 'automatic' else "👤"
+        type_label = "Auto" if version['type'] == 'automatic' else "Manual"
+        type_color = "#8b5cf6" if version['type'] == 'automatic' else "#3b82f6"
+        
+        st.markdown(f"""
+<div style="background: {bg_color}; border-left: 4px solid {border_color}; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+<div style="display: flex; align-items: center; gap: 1rem;">
+<span style="font-size: 1.5rem; font-weight: 700; color: #f8fafc;">v{version['version']}</span>
+<span style="background: rgba({','.join(map(str, [int(type_color[i:i+2], 16) for i in (1, 3, 5)]))}, 0.2); 
+color: {type_color}; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+{type_emoji} {type_label}
+</span>
+{"<span style='background: rgba(34, 197, 94, 0.2); color: #22c55e; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;'>✓ ACTUAL</span>" if is_latest else ""}
+</div>
+<span style="color: #94a3b8; font-size: 0.875rem;">{version['timestamp'][:10]}</span>
+</div>
+<p style="color: #cbd5e1; margin-bottom: 0.75rem;">{version.get('description', 'Sin descripción')}</p>
+<div style="display: flex; gap: 1rem; font-size: 0.875rem;">
+<span style="color: #94a3b8;">👤 {version['author']}</span>
+<span style="color: #94a3b8;">📊 Precisión: {version['metrics'].get('precision', 0):.2%}</span>
+<span style="color: #94a3b8;">🎯 FPR: {version['metrics'].get('fpr', 0):.2%}</span>
+</div>
+</div>
+        """, unsafe_allow_html=True)
+    
+    # Champion vs Challenger comparison
+    st.markdown("---")
+    st.markdown("### 🏆 Champion vs Challenger")
+    
+    champion, challenger = version_manager.get_champion_challenger()
+    
+    if champion and challenger:
+        col_champ, col_challenger = st.columns(2)
+        
+        with col_champ:
+            st.markdown(f"""
+<div style="background: rgba(34, 197, 94, 0.1); border: 2px solid #22c55e; border-radius: 12px; padding: 1.5rem;">
+<div style="text-align: center; color: #22c55e; font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">
+🏆 CHAMPION (Producción)
+</div>
+<div style="text-align: center; font-size: 2rem; color: #f8fafc; margin-bottom: 1rem;">
+v{champion['version']}
+</div>
+<div style="color: #cbd5e1; font-size: 0.9rem;">
+<div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+<span>Precisión:</span><strong>{champion['metrics'].get('precision', 0):.2%}</strong>
+</div>
+<div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+<span>Recall:</span><strong>{champion['metrics'].get('recall', 0):.2%}</strong>
+</div>
+<div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+<span>FPR:</span><strong>{champion['metrics'].get('fpr', 0):.2%}</strong>
+</div>
+</div>
+</div>
+            """, unsafe_allow_html=True)
+        
+        with col_challenger:
+            # Calculate deltas
+            prec_delta = challenger['metrics'].get('precision', 0) - champion['metrics'].get('precision', 0)
+            fpr_delta = challenger['metrics'].get('fpr', 0) - champion['metrics'].get('fpr', 0)
+            
+            st.markdown(f"""
+<div style="background: rgba(59, 130, 246, 0.1); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem;">
+<div style="text-align: center; color: #3b82f6; font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">
+🚀 CHALLENGER (Candidato)
+</div>
+<div style="text-align: center; font-size: 2rem; color: #f8fafc; margin-bottom: 1rem;">
+v{challenger['version']}
+</div>
+<div style="color: #cbd5e1; font-size: 0.9rem;">
+<div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+<span>Precisión:</span><strong>{challenger['metrics'].get('precision', 0):.2%}</strong>
+<span style="color: {'#22c55e' if prec_delta > 0 else '#ef4444'}; font-size: 0.75rem;">
+{'+' if prec_delta > 0 else ''}{prec_delta:.2%}
+</span>
+</div>
+<div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+<span>Recall:</span><strong>{challenger['metrics'].get('recall', 0):.2%}</strong>
+</div>
+<div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+<span>FPR:</span><strong>{challenger['metrics'].get('fpr', 0):.2%}</strong>
+<span style="color: {'#22c55e' if fpr_delta < 0 else '#ef4444'}; font-size: 0.75rem;">
+{'+' if fpr_delta > 0 else ''}{fpr_delta:.2%}
+</span>
+</div>
+</div>
+</div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Se necesitan al menos 2 versiones para comparar Champion vs Challenger.")
+
+
+# =============================================================================
+# TAB 7: RENDIMIENTO - PERFORMANCE MONITORING & DRIFT
+# =============================================================================
+if st.session_state.active_tab == 7:
+    from model_governance import PerformanceMonitor
+    import plotly.graph_objects as go
+    
+    st.markdown("## 📉 Rendimiento del Modelo: Monitorización & Drift")
+    st.markdown("---")
+    
+    st.info("Dashboard de salud del modelo con detección de degradación y alertas automáticas.")
+    
+    monitor = PerformanceMonitor()
+    
+    # Dummy current metrics (in production this would come from real data)
+    dummy_metrics = {
+        "precision": 0.87,
+        "recall": 0.82,
+        "f1_score": 0.845,
+        "fpr": 0.13
+    }
+    
+    # KPI Cards
+    col_k1, col_k2, col_k3, col_k4 = st.columns(4)
+    
+    with col_k1:
+        st.markdown(f"""
+<div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1.5rem; text-align: center;">
+<div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">PRECISIÓN</div>
+<div style="color: #3b82f6; font-size: 2.5rem; font-weight: 700;">{dummy_metrics['precision']:.1%}</div>
+<div style="color: #22c55e; font-size: 0.75rem;">▲ +2.3% vs anterior</div>
+</div>
+        """, unsafe_allow_html=True)
+    
+    with col_k2:
+        st.markdown(f"""
+<div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1.5rem; text-align: center;">
+<div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">RECALL</div>
+<div style="color: #8b5cf6; font-size: 2.5rem; font-weight: 700;">{dummy_metrics['recall']:.1%}</div>
+<div style="color: #94a3b8; font-size: 0.75rem;">Estable</div>
+</div>
+        """, unsafe_allow_html=True)
+    
+    with col_k3:
+        st.markdown(f"""
+<div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1.5rem; text-align: center;">
+<div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">F1-SCORE</div>
+<div style="color: #10b981; font-size: 2.5rem; font-weight: 700;">{dummy_metrics['f1_score']:.3f}</div>
+<div style="color: #22c55e; font-size: 0.75rem;">▲ +1.1%</div>
+</div>
+        """, unsafe_allow_html=True)
+    
+    with col_k4:
+        st.markdown(f"""
+<div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1.5rem; text-align: center;">
+<div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">FPR (Falsos +)</div>
+<div style="color: #f59e0b; font-size: 2.5rem; font-weight: 700;">{dummy_metrics['fpr']:.1%}</div>
+<div style="color: #ef4444; font-size: 0.75rem;">▼ +0.8%</div>
+</div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Drift Detection Section
+    st.markdown("### 🔍 Detección de Drift (Cambio de Distribución)")
+    
+    # Simulate drift detection
+    np.random.seed(42)
+    reference_data = np.random.normal(0, 1, 1000)
+    current_data = np.random.normal(0.1, 1.1, 1000)  # Slight drift
+    
+    has_drift, kl_div, severity = monitor.detect_drift(reference_data, current_data, threshold=0.1)
+    
+    # Alerts
+    alerts = monitor.get_alerts()
+    
+    if has_drift or len(alerts) > 0:
+        severity_color = {"low": "#f59e0b", "medium": "#f97316", "high": "#ef4444"}
+        severity_emoji = {"low": "⚠️", "medium": "⚠️", "high": "🚨"}
+        
+        st.markdown(f"""
+<div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+<div style="color: #ef4444; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;">
+{severity_emoji.get(severity, '⚠️')} ALERTA: Drift Detectado
+</div>
+<p style="color: #cbd5e1; margin: 0;">
+KL Divergence: <strong>{kl_div:.4f}</strong> | Severidad: <strong style="color: {severity_color.get(severity, '#f59e0b')};">{severity.upper()}</strong>
+</p>
+<p style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.5rem;">
+La distribución de datos de entrada ha cambiado significativamente. Considere reentrenar el modelo.
+</p>
+</div>
+        """, unsafe_allow_html=True)
+    else:
+        st.success("✅ No se ha detectado drift significativo. Modelo estable.")
+    
+    # Historical performance chart
+    st.markdown("### 📊 Evolución de Métricas")
+    
+    # Create dummy historical data
+    dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq='D')
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=np.random.uniform(0.84, 0.89, 30),
+        name='Precisión',
+        line=dict(color='#3b82f6', width=3)
+    ))
+    
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=np.random.uniform(0.10, 0.15, 30),
+        name='FPR',
+        line=dict(color='#f59e0b', width=3)
+    ))
+    
+    fig.update_layout(
+        title="Últimos 30 días",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        xaxis=dict(gridcolor='rgba(255,255,255,0.1)'),
+        yaxis=dict(gridcolor='rgba(255,255,255,0.1)', tickformat='.0%'),
+        height=400
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+
+
+# =============================================================================
+# TAB 8: EXPLICABILIDAD - GLOBAL MODEL INTERPRETATION
+# =============================================================================
+if st.session_state.active_tab == 8:
+    from model_governance import GlobalExplainer
+    import plotly.express as px
+    
+    st.markdown("## 🧠 Explicabilidad Global: Feature Importance & Patterns")
+    st.markdown("---")
+    
+    st.info("Análisis de qué variables influyen más en las decisiones del modelo a nivel global.")
+    
+    # Initialize explainer (in production, pass actual model and data)
+    explainer = GlobalExplainer()
+    
+    # Feature names for fraud detection
+    feature_names = [
+        'ratio_liquidez', 'ratio_solvencia', 'margen_bruto', 'rentabilidad_activos',
+        'rotacion_activos', 'benford_divergencia', 'mahalanobis_distance', 'pagerank_score',
+        'ventas_vs_sector', 'gastos_transporte_ratio', 'exportaciones_ratio', 'deuda_total',
+        'resultado_neto', 'amortizaciones', 'gastos_personal'
+    ]
+    
+    # Generate dummy feature importance
+    np.random.seed(42)
+    dummy_data = pd.DataFrame(np.random.randn(100, len(feature_names)), columns=feature_names)
+    feature_importance = explainer.calculate_feature_importance(dummy_data, feature_names)
+    
+    top_features = explainer.get_top_features(n=15)
+    
+    # Feature Importance Chart
+    st.markdown("### 📊 Top 15 Variables Más Influyentes")
+    
+    feat_names = [f[0] for f in top_features]
+    feat_importance = [f[1] for f in top_features]
+    
+    fig = go.Figure(go.Bar(
+        y=feat_names[::-1],  # Reverse for top-down display
+        x=feat_importance[::-1],
+        orientation='h',
+        marker=dict(
+            color=feat_importance[::-1],
+            colorscale='Viridis',
+            showscale=True,
+            colorbar=dict(title="Importancia")
+        )
+    ))
+    
+    fig.update_layout(
+        title="Importancia de Variables en Decisiones de Fraude",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        xaxis=dict(title="Importancia Relativa", gridcolor='rgba(255,255,255,0.1)'),
+        yaxis=dict(gridcolor='rgba(255,255,255,0.1)'),
+        height=600
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Pattern Summary
+    st.markdown("### 🔍 Patrones Detectados Globalmente")
+    
+    if 'df_results' in st.session_state and st.session_state.df_results is not None:
+        df = st.session_state.df_results
+        pattern_summary = explainer.get_pattern_summary(df)
+        
+        col_p1, col_p2, col_p3 = st.columns(3)
+        
+        with col_p1:
+            st.markdown(f"""
+<div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; border-radius: 12px; padding: 1.5rem;">
+<div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">EMPRESAS ANALIZADAS</div>
+<div style="color: #3b82f6; font-size: 2rem; font-weight: 700;">{pattern_summary['total_companies']:,}</div>
+</div>
+            """, unsafe_allow_html=True)
+        
+        with col_p2:
+            st.markdown(f"""
+<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 1.5rem;">
+<div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">ANOMALÍAS DETECTADAS</div>
+<div style="color: #ef4444; font-size: 2rem; font-weight: 700;">{pattern_summary['anomalies_detected']:,}</div>
+<div style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.5rem;">Tasa: {pattern_summary['anomaly_rate']:.1%}</div>
+</div>
+            """, unsafe_allow_html=True)
+        
+        with col_p3:
+            st.markdown(f"""
+<div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 12px; padding: 1.5rem;">
+<div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">RIESGO ALTO</div>
+<div style="color: #f59e0b; font-size: 2rem; font-weight: 700;">{pattern_summary['high_risk_companies']:,}</div>
+<div style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.5rem;">Score > 0.7</div>
+</div>
+            """, unsafe_allow_html=True)
+        
+        # Sector analysis
+        st.markdown("### 📈 Análisis por Sector (CNAE)")
+        
+        sector_stats = explainer.sector_analysis(df)
+        
+        if sector_stats:
+            sector_df = pd.DataFrame(sector_stats).T
+            sector_df = sector_df.sort_values('avg_fraud_score', ascending=False).head(10)
+            
+            st.dataframe(
+                sector_df.style.format({
+                    'avg_fraud_score': '{:.2%}',
+                    'anomaly_rate': '{:.2%}',
+                    'avg_revenue': '€{:,.0f}'
+                }),
+                use_container_width=True,
+                height=400
+            )
+    else:
+        st.warning("Ejecuta un análisis desde el Dashboard principal para ver los patrones detallados.")
+
+
 # =============================================================================
 # FOOTER
 # =============================================================================
+
 
 st.markdown("---")
 st.markdown(f"""
