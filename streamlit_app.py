@@ -2174,41 +2174,46 @@ if st.session_state.active_tab == 1:
                     }
                     s = risk_styles.get(risk_level)
                     
+                    # Dynamic message based on active flags
+                    n_flags = len(active_flags)
+                    if n_flags > 0:
+                        flag_msg = f"🚨 {n_flags} alertas activas reflejadas en el grafo"
+                    else:
+                        flag_msg = "✅ Red transaccional sin anomalías"
+                    
                     st.markdown(f"""
                     <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="background: {s['bg']}; color: {s['text']}; border: 1px solid {s['border']}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">{risk_level.upper()} RIESGO</div>
-                            <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">{s['msg']}</div>
+                            <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">{flag_msg}</div>
                         </div>
                         <div style="color: #64748b; font-size: 0.75rem; font-style: italic;">Basado en Cruce Modelo 347</div>
                     </div>
                     """, unsafe_allow_html=True)
                     
                     try:
-                        # Render the interactive graph in a styled container
+                        # Render the interactive graph with FLAGS and COMPANY DATA
                         st.markdown('<div class="graph-container" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden;">', unsafe_allow_html=True)
-                        network_html = create_suspicious_network(str(selected_nif), risk_level, fraud_score)
+                        
+                        # Pass active flags and company data for contextual patterns
+                        network_html = create_suspicious_network(
+                            center_nif=str(selected_nif),
+                            center_risk=risk_level,
+                            center_score=fraud_score,
+                            active_flags=active_flags,  # List of active flag keys
+                            company_data=company_data.to_dict() if hasattr(company_data, 'to_dict') else company_data
+                        )
                         components.html(network_html, height=600, scrolling=False)
                         st.markdown('</div>', unsafe_allow_html=True)
                         
-                        # Legend and instructions (Custom Forensic Panel)
-                        with st.container():
-                            st.markdown("""
-                            <div style="margin-top: 1rem; background: rgba(30, 41, 59, 0.3); border-radius: 10px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
-                                <div style="color: #64748b; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem;">GUÍA DE INTERPRETACIÓN FORENSE</div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.8rem; color: #94a3b8;">
-                                    <div>💎 <b>Diamante:</b> Objetivo Analítico</div>
-                                    <div>🔴 <b>Cuadrado:</b> Pantalla (Shell)</div>
-                                    <div>🔶 <b>Triángulo:</b> Proveedor Atípico</div>
-                                    <div>🟢 <b>Círculo:</b> Contraparte Normal</div>
-                                </div>
-                                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); color: #64748b; font-size: 0.75rem;">
-                                    🖱️ Arrastra nodos para inspección | 🔍 Scroll para profundidad | 🔄 Dotted: Flujo sospechoso
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                        # Dynamic legend footer based on active flags
+                        if n_flags > 0:
+                            flag_names = [flag_details.get(f, {}).get('nombre', f) for f in active_flags]
+                            st.caption(f"📊 **Patrones visualizados:** {', '.join(flag_names)}")
+                        
                     except Exception as e:
                         st.error(f"❌ Error en motor de red: {str(e)}")
+
             
             # =====================================================================
             # COLUMNA DERECHA (35%): PANEL DE DECISIÓN - STICKY ACTION PANEL
