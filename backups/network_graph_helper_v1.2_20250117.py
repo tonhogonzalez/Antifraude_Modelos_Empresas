@@ -436,47 +436,57 @@ def create_interactive_network_html(center_nif, center_risk, center_score, activ
     
     center_script = """
     <script type="text/javascript">
-        // Robust graph centering with interaction preserved
-        var hasFitted = false;
+        // Robust graph centering with multiple fallbacks
+        var fitAttempts = 0;
+        var maxFitAttempts = 5;
         
         function forceFit() {
-            if (typeof network !== 'undefined' && network !== null && !hasFitted) {
+            if (typeof network !== 'undefined' && network !== null) {
                 try {
-                    // Fit to viewport with animation
+                    // First stop physics to stabilize
+                    network.stabilize(50);
+                    
+                    // Then fit with animation
                     network.fit({
                         animation: {
-                            duration: 600,
+                            duration: 800,
                             easingFunction: "easeOutQuad"
                         }
                     });
-                    hasFitted = true;
-                    console.log("Graph centered successfully");
-                    
-                    // Ensure physics is enabled for interaction after fit
-                    setTimeout(function() {
-                        network.setOptions({ physics: { enabled: true } });
-                    }, 700);
-                    
+                    console.log("Graph centered successfully, attempt: " + (fitAttempts + 1));
                 } catch(e) {
                     console.log("Fit error: " + e);
                 }
             }
+            fitAttempts++;
         }
         
-        // Wait for stabilization to complete before fitting
+        // Strategy 1: After stabilization is done
         if (typeof network !== 'undefined' && network !== null) {
-            network.once("stabilizationIterationsDone", function() {
+            network.on("stabilizationIterationsDone", function() {
                 console.log("Stabilization complete");
-                forceFit();
+                setTimeout(forceFit, 200);
+            });
+            
+            // Strategy 2: After physics stabilizes
+            network.on("stabilized", function() {
+                console.log("Physics stabilized");
+                setTimeout(forceFit, 100);
             });
         }
         
-        // Fallback timers
-        setTimeout(forceFit, 500);
+        // Strategy 3: Multiple timed attempts as fallback
+        setTimeout(forceFit, 300);
+        setTimeout(forceFit, 800);
         setTimeout(forceFit, 1500);
+        setTimeout(forceFit, 3000);
+        
+        // Strategy 4: On window load
+        window.addEventListener('load', function() {
+            setTimeout(forceFit, 500);
+        });
     </script>
     """
-
 
     
     html_content = html_content.replace('<body>', f'<body>{legend_html}')
