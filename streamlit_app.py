@@ -2028,7 +2028,7 @@ if st.session_state.active_tab == 1:
             # COLUMNA IZQUIERDA (65%): EL EXPEDIENTE - TABS PARA ORGANIZAR EVIDENCIA
             # =====================================================================
             with col_left:
-                tab1, tab2 = st.tabs(["📊 Comparativa Sectorial", "🚩 Flags Activos"])
+                tab1, tab2, tab3 = st.tabs(["📊 Comparativa Sectorial", "🚩 Flags Activos", "🕸️ Red Transaccional"])
                 
                 # TAB 1: COMPARATIVA SECTORIAL
                 with tab1:
@@ -2091,6 +2091,76 @@ if st.session_state.active_tab == 1:
                             st.warning(f"{flag_info['icono']} **{flag_info['nombre']}**\n\n{flag_info['descripcion']}")
                     else:
                         st.success("✅ No hay flags activos para esta empresa")
+                
+                # TAB 3: RED TRANSACCIONAL (Network Graph M347)
+                with tab3:
+                    st.markdown("### 🕸️ Grafo de Relaciones M347")
+                    st.caption("Visualización interactiva de la red transaccional basada en el Modelo 347 (Cliente-Proveedor)")
+                    
+                    # Determine risk level for network pattern
+                    fraud_score = company_data.get('fraud_score', 0)
+                    if fraud_score > 0.7:
+                        risk_level = "Alto"
+                    elif fraud_score > 0.4:
+                        risk_level = "Medio"
+                    else:
+                        risk_level = "Bajo"
+                    
+                    # Show risk badge
+                    risk_colors = {
+                        "Alto": "#f44336",    # Red
+                        "Medio": "#ff9800",   # Orange
+                        "Bajo": "#4caf50"     # Green
+                    }
+                    st.markdown(f"""
+                    <div style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
+                        <span style="
+                            background: {risk_colors.get(risk_level, '#78909c')};
+                            color: white;
+                            padding: 4px 12px;
+                            border-radius: 20px;
+                            font-size: 0.85rem;
+                            font-weight: 600;
+                        ">Patrón: {risk_level} Riesgo</span>
+                        <span style="color: #94a3b8; font-size: 0.85rem;">
+                            {'🚨 Posible Carrusel IVA' if risk_level == 'Alto' else '⚠️ Hub Sospechoso' if risk_level == 'Medio' else '✅ Red Normal'}
+                        </span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    try:
+                        # Generate the network graph HTML
+                        network_html = create_suspicious_network(
+                            center_nif=str(selected_nif),
+                            center_risk=risk_level,
+                            center_score=fraud_score
+                        )
+                        
+                        # Render the interactive graph
+                        components.html(network_html, height=600, scrolling=False)
+                        
+                        # Legend and instructions
+                        with st.expander("📖 Cómo interpretar el grafo", expanded=False):
+                            st.markdown("""
+                            **Nodos:**
+                            - 💎 **Diamante Rosa:** Empresa objetivo bajo análisis
+                            - 🔴 **Cuadrado Rojo:** Empresa pantalla (sin actividad real detectada)
+                            - 🔶 **Triángulo Naranja:** Proveedor sospechoso
+                            - 🟢 **Círculo Verde:** Cliente/Proveedor normal
+                            
+                            **Patrones de Riesgo:**
+                            - **Alto Riesgo (Carrusel):** Flujo circular de dinero entre empresas pantalla
+                            - **Medio Riesgo (Hub):** Empresa central con múltiples proveedores sospechosos
+                            - **Bajo Riesgo:** Red transaccional normal sin anomalías
+                            
+                            **Interacción:**
+                            - 🖱️ Arrastra los nodos para reorganizar
+                            - 🔍 Usa scroll para zoom
+                            - ✋ Click + arrastrar fondo para mover la vista
+                            """)
+                    except Exception as e:
+                        st.error(f"❌ Error al generar el grafo de red: {str(e)}")
+                        st.info("💡 Asegúrate de que las dependencias de red (pyvis, networkx) están instaladas.")
             
             # =====================================================================
             # COLUMNA DERECHA (35%): PANEL DE DECISIÓN - STICKY ACTION PANEL
