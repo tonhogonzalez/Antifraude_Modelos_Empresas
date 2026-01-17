@@ -2280,15 +2280,51 @@ if st.session_state.active_tab == 1:
                         
                         # Action button
                         if st.button("REGISTRAR DECISIÓN", type="primary", use_container_width=True, key=f"submit_{selected_nif}"):
-                            # Validation logic (already implemented in your core)
-                            st.success("✅ Decisión enviada al motor de aprendizaje")
-                            st.rerun()
+                            # Validation
+                            validation_error = None
+                            
+                            if verdict_choice == VERDICT_FRAUD and not fraud_typology:
+                                validation_error = "⚠️ Selecciona una tipología de fraude"
+                            elif verdict_choice == VERDICT_FALSE_POSITIVE and not rejection_reason:
+                                validation_error = "⚠️ Selecciona la causa raíz del falso positivo"
+                            
+                            if validation_error:
+                                st.error(validation_error)
+                            else:
+                                try:
+                                    # Create FeedbackRecord with all data
+                                    feedback_record = FeedbackRecord(
+                                        nif=str(selected_nif),
+                                        analyst_verdict=verdict_choice,
+                                        analyst_confidence=confidence / 100.0,  # Convert to 0-1 range
+                                        fraud_typology=fraud_typology if verdict_choice == VERDICT_FRAUD else None,
+                                        rejection_reason=rejection_reason if verdict_choice == VERDICT_FALSE_POSITIVE else None,
+                                        original_score=float(company_data.get('fraud_score', 0)),
+                                        analyst_id="analyst_streamlit",  # Could be replaced with actual login
+                                        model_version=st.session_state.get('model_version', '1.0.0'),
+                                        flags_active=active_flags if 'active_flags' in dir() else []
+                                    )
+                                    
+                                    # Save to feedback store
+                                    feedback_id = st.session_state.feedback_store.log_feedback(feedback_record)
+                                    
+                                    # Show success with details
+                                    verdict_names = {VERDICT_FRAUD: "🚨 Fraude", VERDICT_FALSE_POSITIVE: "✅ Falso Positivo", VERDICT_WATCHLIST: "⚠️ Watchlist"}
+                                    st.success(f"✅ Decisión registrada: {verdict_names.get(verdict_choice)}")
+                                    st.caption(f"ID: {feedback_id}")
+                                    
+                                    # Rerun to refresh UI
+                                    st.rerun()
+                                    
+                                except Exception as e:
+                                    st.error(f"❌ Error al guardar: {str(e)}")
                 else:
                     st.warning("⚠️ Sistema de feedback no disponible")
         else:
             st.info("ℹ️ Selecciona una empresa desde la barra lateral para ver el análisis detallado.")
     else:
         st.info("ℹ️ Selecciona una empresa desde la barra lateral para ver el análisis detallado.")
+
 
 
 
