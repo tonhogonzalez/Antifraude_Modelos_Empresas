@@ -328,8 +328,22 @@ def get_risk_badge(score):
 
 def cockpit_view(df_gold, nif_selected):
     """Vista de Cockpit de Alta Densidad para el analista."""
+    
+    # Validar si hay empresa seleccionada
+    if nif_selected is None:
+        st.markdown(f"""
+        <div style="padding: 4rem 2rem; text-align: center; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-sutil); margin: 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 2rem;">🕹️</div>
+            <h2 style="color: var(--text-primary);">Panel de Control OS de Fraude</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+                Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la barra lateral para iniciar el análisis forense.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+
     if df_gold is None or nif_selected not in df_gold['nif'].values:
-        st.error(f"Empresa {nif_selected} no encontrada.")
+        st.error(f"Empresa {nif_selected} no encontrada en los registros Gold.")
         return
 
     company = df_gold[df_gold['nif'] == nif_selected].iloc[0]
@@ -418,7 +432,7 @@ def load_gold_dataset():
 if 'view_mode' not in st.session_state:
     st.session_state.view_mode = "COCKPIT"
 
-def handle_navigation():
+def handle_navigation(df_gold=None):
     """Maneja la barra de navegación superior estilo Cockpit."""
     st.markdown("""
     <div style="display: flex; gap: 2rem; padding: 0 2rem; border-bottom: 1px solid var(--border-sutil); background: var(--bg-body); margin-bottom: 0;">
@@ -428,17 +442,53 @@ def handle_navigation():
     
     col1, col2, col3, _ = st.columns([0.15, 0.15, 0.15, 0.55])
     with col1:
-        if st.button("🕹️ COCKPIT", use_container_width=True, type="primary" if st.session_state.view_mode == "COCKPIT" else "secondary"):
+        if st.button("🕹️ COCKPIT", key="nav_cockpit", use_container_width=True, type="primary" if st.session_state.view_mode == "COCKPIT" else "secondary"):
             st.session_state.view_mode = "COCKPIT"
             st.rerun()
     with col2:
-        if st.button("🏛️ GOVERNANCE", use_container_width=True, type="primary" if st.session_state.view_mode == "GOVERNANCE" else "secondary"):
+        if st.button("🏛️ GOVERNANCE", key="nav_gov", use_container_width=True, type="primary" if st.session_state.view_mode == "GOVERNANCE" else "secondary"):
             st.session_state.view_mode = "GOVERNANCE"
             st.rerun()
     with col3:
-        if st.button("📦 RAW DATA", use_container_width=True, type="primary" if st.session_state.view_mode == "RAW" else "secondary"):
+        if st.button("📦 RAW DATA", key="nav_raw", use_container_width=True, type="primary" if st.session_state.view_mode == "RAW" else "secondary"):
             st.session_state.view_mode = "RAW"
             st.rerun()
+
+    # SIDEBAR SELECTOR
+    with st.sidebar:
+        st.title("🕹️ Control Center")
+        st.markdown("---")
+        
+        if df_gold is not None:
+            st.subheader("🏢 Selección de Empresa")
+            
+            # Sort by risk (final_score)
+            sorted_companies = df_gold.sort_values('final_score', ascending=False)
+            company_list = []
+            company_map = {}
+            
+            for _, row in sorted_companies.head(50).iterrows():
+                risk_emoji = "🔴" if row['final_score'] > 0.7 else "🟡" if row['final_score'] > 0.4 else "🟢"
+                label = f"{risk_emoji} {row['nif']} | Score: {row['final_score']:.2f}"
+                company_list.append(label)
+                company_map[label] = row['nif']
+            
+            selected_label = st.selectbox(
+                "Top 50 Riesgo Detectado", 
+                options=company_list,
+                index=0 if 'selected_company_nif' not in st.session_state else None
+            )
+            
+            if selected_label:
+                st.session_state.selected_company_nif = company_map[selected_label]
+        
+        st.markdown("---")
+        st.subheader("🔗 Legacy Version")
+        st.info("Accede a la versión anterior de la plataforma para comparativa.")
+        if st.button("📺 VERSIÓN LEGACY", use_container_width=True):
+            st.toast("Redirigiendo a Legacy Version...", icon="⏳")
+            # In a real scenario, this could be a different port or file
+            st.markdown(f'<a href="http://localhost:8501" target="_blank" style="text-decoration: none;"><button style="width: 100%; padding: 0.5rem; background: var(--brand); color: white; border: none; border-radius: 8px; cursor: pointer;">ABRIR LEGACY (PUERTO 8501)</button></a>', unsafe_allow_html=True)
     
 
 # =============================================================================
@@ -449,7 +499,7 @@ def handle_navigation():
 df_gold = load_gold_dataset()
 
 # Render Navigation
-handle_navigation()
+handle_navigation(df_gold)
 
 # Main View Switcher
 if st.session_state.view_mode == "COCKPIT":
