@@ -491,10 +491,63 @@ elif st.session_state.view_mode == "GOVERNANCE":
     governance_dashboard()
 
 elif st.session_state.view_mode == "RAW":
-    st.markdown('<div style="padding: 2rem;">', unsafe_allow_html=True)
-    st.title("📦 Raw Forensic Data")
+    st.markdown('<div class="animate-fade" style="padding: 2rem;">', unsafe_allow_html=True)
+    st.markdown("""
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div style="font-size: 2.5rem;">📦</div>
+            <div>
+                <h1 style="color: var(--text-primary); margin: 0;">Raw Forensic Data</h1>
+                <p style="color: var(--text-muted); margin: 0;">Exploración tabular de métricas, flags y scores brutos.</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
     if df_gold is not None:
-        st.dataframe(df_gold, use_container_width=True)
+        # Preparar dataframe para visualización (redondeos y limpieza)
+        display_df = df_gold.copy()
+        
+        # Column configuration para una tabla premium
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            height=600,
+            column_config={
+                "nif": st.column_config.TextColumn("NIF", width="medium", help="Identificador único"),
+                "razon_social": st.column_config.TextColumn("Empresa", width="large"),
+                "final_score": st.column_config.ProgressColumn(
+                    "Risk Score",
+                    help="Score final de fraude consolidado",
+                    format="%.2f",
+                    min_value=0,
+                    max_value=1,
+                ),
+                "tax_score": st.column_config.NumberColumn(
+                    "Tax Anomaly",
+                    format="%.2f",
+                ),
+                "benford_kl_divergence": st.column_config.NumberColumn(
+                    "Benford Dev",
+                    format="%.4f",
+                ),
+                "cifra_negocios": st.column_config.NumberColumn(
+                    "Ventas (€)",
+                    format="€%.0f",
+                ),
+                "efectivo_tesoreria": st.column_config.NumberColumn(
+                    "Efectivo (€)",
+                    format="€%.0f",
+                ),
+                "riesgo": st.column_config.SelectColumn(
+                    "Nivel Riesgo",
+                    options=["Bajo", "Medio", "Alto"],
+                ),
+                "stage": st.column_config.NumberColumn(
+                    "IFRS9 Stage",
+                    format="Stage %d",
+                )
+            },
+            hide_index=True
+        )
     else:
         st.warning("No data available.")
     st.markdown('</div>', unsafe_allow_html=True)
