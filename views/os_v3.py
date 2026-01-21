@@ -537,9 +537,10 @@ elif st.session_state.view_mode == "RAW":
                     "Efectivo (€)",
                     format="€%.0f",
                 ),
-                "riesgo": st.column_config.SelectColumn(
+                "riesgo": st.column_config.TextColumn(
                     "Nivel Riesgo",
-                    options=["Bajo", "Medio", "Alto"],
+                    help="Clasificación de riesgo de la empresa",
+                    width="small"
                 ),
                 "stage": st.column_config.NumberColumn(
                     "IFRS9 Stage",
