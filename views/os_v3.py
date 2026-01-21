@@ -309,6 +309,9 @@ Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la
 
     company = df_gold[df_gold['nif'] == nif_selected].iloc[0]
     
+    # Detectar score
+    final_score = company.get('final_score', company.get('fraud_score_normalized', 0))
+    
     # 1. FIXED HEADER
     st.markdown(f'''<div class="cockpit-header">
 <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -316,14 +319,14 @@ Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la
 <div style="color: var(--text-muted); font-family: 'Roboto Mono'; font-size: 1.1rem;">{nif_selected}</div>
 </div>
 <div class="analysis-controls">
-{get_risk_badge(company.get('final_score', 0))}
+{get_risk_badge(final_score)}
 {render_badge("CNAE: " + str(company.get('cnae', '---')), "purple")}
 </div>
 </div>''', unsafe_allow_html=True)
 
     # 2. KPI STRIP
     kpis_html = ""
-    kpis_html += render_kpi_strip_item("FINAL SCORE", f"{company.get('final_score', 0):.2f}")
+    kpis_html += render_kpi_strip_item("FINAL SCORE", f"{final_score:.2f}")
     kpis_html += render_kpi_strip_item("TAX COMPONENT", f"{company.get('tax_score', 0):.2f}")
     kpis_html += render_kpi_strip_item("NETWORK DENSITY", f"{company.get('network_score', 0):.2f}")
     kpis_html += render_kpi_strip_item("BENFORD KL", f"{company.get('benford_kl_divergence', 0):.4f}")
@@ -374,15 +377,27 @@ def governance_dashboard():
 @st.cache_data(ttl=600)
 def load_gold_dataset():
     """Carga el dataset Gold (resultados finales) desde Supabase o local."""
+    df = None
     try:
         from core.loaders import GoldDatasetLoader
         loader = GoldDatasetLoader()
-        return loader.load()
+        df = loader.load()
     except Exception:
-        # Fallback to current session state or random sample if loader fails
+        # Fallback to current session state
         if 'df_results' in st.session_state:
-            return st.session_state.df_results
-        return None
+            df = st.session_state.df_results
+    
+    # Estandarizar columnas si el datafame existe
+    if df is not None:
+        df = df.copy()
+        if 'final_score' not in df.columns and 'fraud_score_normalized' in df.columns:
+            df['final_score'] = df['fraud_score_normalized']
+        if 'tax_score' not in df.columns:
+            df['tax_score'] = df.get('tax_score', 0)
+        if 'network_score' not in df.columns:
+            df['network_score'] = df.get('network_score', 0)
+            
+    return df
 
 # =============================================================================
 # MAIN NAVIGATION LOGIC
@@ -421,22 +436,30 @@ def handle_navigation(df_gold=None):
         if df_gold is not None:
             st.subheader("🏢 Selección de Empresa")
             
-            # Sort by risk (final_score)
-            sorted_companies = df_gold.sort_values('final_score', ascending=False)
-            company_list = []
-            company_map = {}
+            # Detectar columna de score disponible (final_score vs fraud_score_normalized)
+            score_col = 'final_score' if 'final_score' in df_gold.columns else ('fraud_score_normalized' if 'fraud_score_normalized' in df_gold.columns else None)
             
-            for _, row in sorted_companies.head(50).iterrows():
-                risk_emoji = "🔴" if row['final_score'] > 0.7 else "🟡" if row['final_score'] > 0.4 else "🟢"
-                label = f"{risk_emoji} {row['nif']} | Score: {row['final_score']:.2f}"
-                company_list.append(label)
-                company_map[label] = row['nif']
-            
-            selected_label = st.selectbox(
-                "Top 50 Riesgo Detectado", 
-                options=company_list,
-                index=0 if 'selected_company_nif' not in st.session_state else None
-            )
+            if score_col:
+                # Sort by risk
+                sorted_companies = df_gold.sort_values(score_col, ascending=False)
+                company_list = []
+                company_map = {}
+                
+                for _, row in sorted_companies.head(50).iterrows():
+                    score_val = row[score_col]
+                    risk_emoji = "🔴" if score_val > 0.7 else "🟡" if score_val > 0.4 else "🟢"
+                    label = f"{risk_emoji} {row['nif']} | Score: {score_val:.2f}"
+                    company_list.append(label)
+                    company_map[label] = row['nif']
+                
+                selected_label = st.selectbox(
+                    "Top 50 Riesgo Detectado", 
+                    options=company_list,
+                    index=0 if 'selected_company_nif' not in st.session_state else None
+                )
+            else:
+                st.warning("⚠️ No se detectó columna de score ('final_score' o 'fraud_score_normalized')")
+                selected_label = None
             
             if selected_label:
                 st.session_state.selected_company_nif = company_map[selected_label]
