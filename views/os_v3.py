@@ -108,20 +108,20 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;700&display=swap');
 
     :root {
-        --bg-body: #020617;
-        --bg-card: rgba(15, 23, 42, 0.4);
-        --bg-card-hover: rgba(15, 23, 42, 0.7);
-        --border-sutil: rgba(51, 65, 85, 0.5);
-        --border-hover: rgba(59, 130, 246, 0.5);
-        --text-primary: #f8fafc;
-        --text-muted: #64748b;
+        --bg-body: #020617; /* Ultra Deep */
+        --bg-card: rgba(10, 15, 30, 0.75); /* More opaque for contrast */
+        --bg-card-hover: rgba(15, 20, 35, 0.9);
+        --border-sutil: rgba(255, 255, 255, 0.07);
+        --border-light: rgba(255, 255, 255, 0.15); /* Top lighting */
+        --border-hover: rgba(59, 130, 246, 0.6);
+        --text-primary: #ffffff;
+        --text-muted: #94a3b8;
         --brand: #3b82f6;
-        --brand-glow: rgba(59, 130, 246, 0.2);
-        --success: #22c55e;
-        --warning: #eab308;
+        --brand-glow: rgba(59, 130, 246, 0.25);
+        --success: #10b981;
+        --warning: #f59e0b;
         --danger: #ef4444;
-        --purple: #a855f7;
-        --glass: blur(16px) saturate(200%);
+        --glass: blur(24px) saturate(180%);
     }
 
     .stApp {
@@ -147,14 +147,15 @@ st.markdown("""
         position: sticky;
         top: 0;
         z-index: 999;
-        background: rgba(2, 6, 23, 0.7);
+        background: rgba(2, 6, 23, 0.9); /* Darker header */
         backdrop-filter: var(--glass);
         border-bottom: 1px solid var(--border-sutil);
-        padding: 1.5rem 3rem;
+        padding: 1.25rem 3rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
     }
 
     .kpi-strip {
@@ -166,54 +167,58 @@ st.markdown("""
         overflow-x: auto;
     }
 
-    /* 4. Tech Cards (Elite Edition) */
+    /* 4. Tech Cards (Phoenix Edition) */
     .tech-card {
         background: var(--bg-card);
         backdrop-filter: var(--glass);
         border: 1px solid var(--border-sutil);
-        border-radius: 20px;
-        padding: 2.25rem;
-        transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        border-top: 1px solid var(--border-light); /* Cinematic Lighting */
+        border-radius: 16px;
+        padding: 2rem;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         position: relative;
         overflow: hidden;
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
     }
 
     .tech-card::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     }
 
     .tech-card:hover {
-        border-color: var(--border-hover);
-        transform: translateY(-6px);
-        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 20px -5px var(--brand-glow);
+        border-color: var(--brand);
+        border-top-color: var(--brand); /* Highlight brand on hover */
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 30px -10px var(--brand-glow);
         background: var(--bg-card-hover);
     }
 
     .card-label {
         color: var(--text-muted);
-        font-size: 0.75rem;
-        font-weight: 700;
+        font-size: 0.7rem;
+        font-weight: 500;
         text-transform: uppercase;
-        letter-spacing: 0.15em;
-        margin-bottom: 1rem;
+        letter-spacing: 0.2em; /* Wider tracking */
+        margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .card-value {
         color: #ffffff;
-        font-size: 2.25rem;
-        font-weight: 800;
-        font-family: 'Roboto Mono', monospace;
-        letter-spacing: -0.04em;
+        font-size: 2.5rem; /* Larger Impact */
+        font-weight: 800; /* Extra Bold */
+        font-family: 'Inter', sans-serif; /* Cleaner than Mono for main numbers */
+        letter-spacing: -0.05em;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 
     /* 5. Semantic Badges Elite */
@@ -256,12 +261,13 @@ st.markdown("""
     .feedback-panel {
         position: sticky;
         top: 130px;
-        background: rgba(15, 23, 42, 0.5);
+        background: var(--bg-card);
         backdrop-filter: var(--glass);
         border: 1px solid var(--border-sutil);
-        border-radius: 24px;
-        padding: 2.5rem;
-        box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+        border-top: 1px solid var(--border-light);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
     .feedback-panel h3 {
