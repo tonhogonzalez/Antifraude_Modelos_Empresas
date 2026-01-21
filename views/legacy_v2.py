@@ -1885,44 +1885,7 @@ if CONTINUOUS_LEARNING_AVAILABLE:
         except Exception as e:
             st.caption(f"⚠️ Sin datos de feedback: {str(e)}")
 
-st.sidebar.markdown("### 📽️ Presentación")
 
-# Inicializar estado de presentación
-if 'show_presentation' not in st.session_state:
-    st.session_state.show_presentation = False
-
-try:
-    from pathlib import Path
-    import streamlit.components.v1 as components
-    
-    html_path = Path(__file__).parent / "Presentación_solucion.html"
-    if html_path.exists():
-        # Botón toggle para mostrar/ocultar presentación
-        if st.sidebar.button("📺 Ver Presentación" if not st.session_state.show_presentation else "❌ Cerrar Presentación", 
-                             use_container_width=True):
-            st.session_state.show_presentation = not st.session_state.show_presentation
-            st.rerun()
-        
-        if st.session_state.show_presentation:
-            st.markdown("## 📽️ Presentación de la Solución")
-            st.markdown("---")
-            
-            # Leer y mostrar HTML
-            html_content = html_path.read_text(encoding='utf-8')
-            components.html(html_content, height=800, scrolling=True)
-            
-            st.markdown("---")
-            col1, col2 = st.columns([1, 3])
-            with col1:
-                if st.button("⬅️ Volver", use_container_width=True):
-                    st.session_state.show_presentation = False
-                    st.rerun()
-            
-            st.stop()
-    else:
-        st.sidebar.warning("⚠️ HTML no encontrado")
-except Exception as e:
-    st.sidebar.error(f"Error: {e}")
 
 # Ejecutar análisis
 if st.session_state.get('run_analysis', False) or 'df_results' not in st.session_state:
