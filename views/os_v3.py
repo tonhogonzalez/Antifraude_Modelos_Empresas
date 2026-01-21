@@ -98,27 +98,29 @@ st.markdown("""
     }
 
     /* 1. Global Reset & Theme (Slate 950) */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;700&display=swap');
 
     :root {
         --bg-body: #020617;
-        --bg-card: rgba(15, 23, 42, 0.6);
-        --bg-card-solid: #0f172a;
-        --border-sutil: rgba(30, 41, 59, 0.7);
-        --border-hover: rgba(59, 130, 246, 0.4);
+        --bg-card: rgba(15, 23, 42, 0.4);
+        --bg-card-hover: rgba(15, 23, 42, 0.7);
+        --border-sutil: rgba(51, 65, 85, 0.5);
+        --border-hover: rgba(59, 130, 246, 0.5);
         --text-primary: #f8fafc;
-        --text-muted: #94a3b8;
+        --text-muted: #64748b;
         --brand: #3b82f6;
-        --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        --brand-glow: rgba(59, 130, 246, 0.2);
         --success: #22c55e;
         --warning: #eab308;
         --danger: #ef4444;
         --purple: #a855f7;
-        --glass: blur(12px) saturate(180%);
+        --glass: blur(16px) saturate(200%);
     }
 
     .stApp {
-        background-color: var(--bg-body) !important;
+        background: radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+                    var(--bg-body) !important;
         font-family: 'Inter', sans-serif !important;
         color: var(--text-primary) !important;
     }
@@ -138,10 +140,10 @@ st.markdown("""
         position: sticky;
         top: 0;
         z-index: 999;
-        background: rgba(2, 6, 23, 0.8);
+        background: rgba(2, 6, 23, 0.7);
         backdrop-filter: var(--glass);
         border-bottom: 1px solid var(--border-sutil);
-        padding: 1.25rem 2.5rem;
+        padding: 1.5rem 3rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -150,164 +152,185 @@ st.markdown("""
 
     .kpi-strip {
         display: flex;
-        gap: 1.5rem;
-        padding: 1.25rem 2.5rem;
-        background: rgba(2, 6, 23, 0.4);
+        gap: 2rem;
+        padding: 1.5rem 3rem;
+        background: rgba(2, 6, 23, 0.3);
         border-bottom: 1px solid var(--border-sutil);
         overflow-x: auto;
     }
 
-    /* 4. Tech Cards (Enterprise OS) */
+    /* 4. Tech Cards (Elite Edition) */
     .tech-card {
         background: var(--bg-card);
         backdrop-filter: var(--glass);
         border: 1px solid var(--border-sutil);
-        border-radius: 16px;
-        padding: 1.75rem;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 20px;
+        padding: 2.25rem;
+        transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        position: relative;
+        overflow: hidden;
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
     }
 
+    .tech-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
     .tech-card:hover {
-        border-color: var(--brand);
-        transform: translateY(-4px) scale(1.01);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(59, 130, 246, 0.3);
-        background: rgba(15, 23, 42, 0.8);
+        border-color: var(--border-hover);
+        transform: translateY(-6px);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 20px -5px var(--brand-glow);
+        background: var(--bg-card-hover);
     }
 
     .card-label {
         color: var(--text-muted);
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 0.75rem;
+        letter-spacing: 0.15em;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .card-value {
-        color: var(--text-primary);
-        font-size: 2rem;
-        font-weight: 700;
+        color: #ffffff;
+        font-size: 2.25rem;
+        font-weight: 800;
         font-family: 'Roboto Mono', monospace;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.04em;
     }
 
-    /* 5. Semantic Badges */
+    /* 5. Semantic Badges Elite */
     .badge {
         display: inline-flex;
         align-items: center;
-        padding: 0.35rem 1rem;
-        border-radius: 8px;
-        font-size: 0.7rem;
-        font-weight: 700;
+        padding: 0.4rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.1em;
         border: 1px solid transparent;
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
 
-    .badge-success { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.3); }
-    .badge-warning { background: rgba(234, 179, 8, 0.15); color: #fbbf24; border-color: rgba(234, 179, 8, 0.3); }
-    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
-    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); }
+    .badge-success { background: rgba(34, 197, 94, 0.1); color: #4ade80; border-color: rgba(34, 197, 94, 0.2); }
+    .badge-warning { background: rgba(234, 179, 8, 0.1); color: #fbbf24; border-color: rgba(234, 179, 8, 0.2); }
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+    .badge-purple { background: rgba(168, 85, 247, 0.1); color: #c084fc; border-color: rgba(168, 85, 247, 0.2); }
 
-    /* 6. Dashboard Tabs Custom Styling */
+    /* 6. Dashboard Navigation Premium */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: transparent !important;
-        gap: 1.5rem;
-        padding: 0 2.5rem;
-        margin-top: 1rem;
+        padding: 0 3rem;
+        gap: 2rem;
+        background: transparent !important;
     }
 
-    /* 7. Animations */
+    /* 7. Animations Elite */
     .animate-fade {
-        animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
+    @keyframes reveal {
+        from { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+        to { opacity: 1; transform: translateY(0); filter: blur(0); }
     }
 
-    /* 8. Sticky Feedback Panel Refined */
+    /* 8. Sticky Feedback Panel Masterpiece */
     .feedback-panel {
         position: sticky;
-        top: 120px;
-        background: rgba(15, 23, 42, 0.8);
+        top: 130px;
+        background: rgba(15, 23, 42, 0.5);
         backdrop-filter: var(--glass);
         border: 1px solid var(--border-sutil);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
     }
 
     .feedback-panel h3 {
         margin-top: 0;
-        font-size: 1.25rem;
-        font-weight: 700;
+        font-size: 1.5rem;
+        font-weight: 800;
         color: var(--text-primary);
-        letter-spacing: -0.01em;
-        margin-bottom: 1.5rem;
+        letter-spacing: -0.02em;
+        margin-bottom: 2rem;
     }
 
-    /* 9. Grid Systems */
+    /* 9. Grid Systems Elite */
     .cockpit-grid {
         display: grid;
-        grid-template-columns: 1fr 400px;
-        gap: 2.5rem;
-        padding: 2.5rem;
+        grid-template-columns: 1fr 420px;
+        gap: 3rem;
+        padding: 3rem;
         align-items: start;
     }
 
-    /* 10. KPI Strip Item Refined */
+    /* 10. KPI Strip Item Elite */
     .kpi-item {
-        background: rgba(30, 41, 59, 0.3);
+        background: rgba(30, 41, 59, 0.2);
         border: 1px solid var(--border-sutil);
-        border-radius: 12px;
-        padding: 0.85rem 1.5rem;
-        min-width: 200px;
+        border-radius: 14px;
+        padding: 1rem 1.75rem;
+        min-width: 220px;
         transition: all 0.3s ease;
     }
     
     .kpi-item:hover {
-        background: rgba(30, 41, 59, 0.5);
-        border-color: var(--border-hover);
+        background: rgba(30, 41, 59, 0.4);
+        border-color: var(--brand);
+        box-shadow: 0 0 15px -5px var(--brand-glow);
     }
 
     .kpi-item-label {
         font-size: 0.65rem;
         color: var(--text-muted);
         text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        margin-bottom: 0.25rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.4rem;
     }
 
     .kpi-item-value {
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #ffffff;
         font-family: 'Roboto Mono', monospace;
     }
 
-    /* Custom Streamlit Button Styling */
+    /* Custom Streamlit Button Styling Elite */
     div.stButton > button {
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        border: 1px solid var(--border-sutil) !important;
+        background: rgba(15, 23, 42, 0.8) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        font-size: 0.8rem !important;
+        padding: 0.75rem 1.5rem !important;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-body); }
-    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    div.stButton > button:hover {
+        border-color: var(--brand) !important;
+        box-shadow: 0 0 20px -5px var(--brand-glow) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Scrollbar Elite */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--brand); }
 
 </style>
 """, unsafe_allow_html=True)
@@ -364,17 +387,29 @@ Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la
     # Detectar score
     final_score = company.get('final_score', company.get('fraud_score_normalized', 0))
     
-    # 1. FIXED HEADER
-    st.markdown(f'''<div class="cockpit-header">
-<div style="display: flex; align-items: center; gap: 1.5rem;">
-<div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">{company.get('razon_social', 'Empresa Desconocida')}</div>
-<div style="color: var(--text-muted); font-family: 'Roboto Mono'; font-size: 1.1rem;">{nif_selected}</div>
+    # 1. FIXED HEADER ELITE
+    st.markdown(f'''<div class="cockpit-header animate-fade">
+<div style="display: flex; align-items: center; gap: 2rem;">
+    <div style="width: 12px; height: 12px; background: {"#ef4444" if final_score > 0.7 else "#eab308" if final_score > 0.4 else "#22c55e"}; border-radius: 50%; box-shadow: 0 0 15px {"#ef4444" if final_score > 0.7 else "#eab308" if final_score > 0.4 else "#22c55e"}; animation: pulse 2s infinite;"></div>
+    <div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.2em; font-weight: 800; margin-bottom: 0.25rem;">Corporate Entity Analysis</div>
+        <div style="font-size: 2rem; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; line-height: 1;">{company.get('razon_social', 'Empresa Desconocida')}</div>
+        <div style="color: var(--brand); font-family: 'Roboto Mono'; font-size: 0.9rem; margin-top: 0.4rem; font-weight: 700;">ID: {nif_selected}</div>
+    </div>
 </div>
-<div class="analysis-controls">
-{get_risk_badge(final_score)}
-{render_badge("CNAE: " + str(company.get('cnae', '---')), "purple")}
+<div style="display: flex; gap: 1rem; align-items: center;">
+    {get_risk_badge(final_score)}
+    {render_badge("Sector: " + str(company.get('cnae', '---')), "purple")}
 </div>
-</div>''', unsafe_allow_html=True)
+</div>
+<style>
+@keyframes pulse {{
+    0% {{ transform: scale(0.95); opacity: 0.5; }}
+    50% {{ transform: scale(1.1); opacity: 1; }}
+    100% {{ transform: scale(0.95); opacity: 0.5; }}
+}}
+</style>
+''', unsafe_allow_html=True)
 
     # 2. KPI STRIP
     kpis_html = ""
