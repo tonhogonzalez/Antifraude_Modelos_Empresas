@@ -1670,25 +1670,27 @@ with st.sidebar:
     except Exception as e:
         st.error(f"Error loading logo: {e}")
     
-                <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
-                    <p style="color: #888; font-size: 0.7rem; line-height: 1.4; font-style: italic; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-                        Metodología: Isolation Forest + Análisis Sectorial Mahalanobis + Cruces Tributarios (M200/M347/M349)
-                    </p>
-                </div>
-                
-                <div style="margin-top: 2rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px;">
-                    <div style="font-size: 0.8rem; font-weight: 700; color: #3b82f6; text-transform: uppercase; margin-bottom: 0.8rem; text-align: center; letter-spacing: 0.1em;">
-                        PRUEBA EL SIGUIENTE NIVEL
-                    </div>
-                    <a href="http://localhost:8503" target="_blank" style="text-decoration: none;">
-                        <button style="width: 100%; padding: 0.8rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease;">
-                            🕹️ FRAUDHUNTER OS v3.0
-                        </button>
-                    </a>
-                    <div style="font-size: 0.65rem; color: #64748b; margin-top: 0.5rem; text-align: center;">
-                        Nueva interfaz, Analítica Benford y Gobernanza.
-                    </div>
-                </div>
+    st.markdown("""
+        <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
+            <p style="color: #888; font-size: 0.7rem; line-height: 1.4; font-style: italic; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                Metodología: Isolation Forest + Análisis Sectorial Mahalanobis + Cruces Tributarios (M200/M347/M349)
+            </p>
+        </div>
+        
+        <div style="margin-top: 2rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #3b82f6; text-transform: uppercase; margin-bottom: 0.8rem; text-align: center; letter-spacing: 0.1em;">
+                PRUEBA EL SIGUIENTE NIVEL
+            </div>
+            <a href="http://localhost:8503" target="_blank" style="text-decoration: none;">
+                <button style="width: 100%; padding: 0.8rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease;">
+                    🕹️ FRAUDHUNTER OS v3.0
+                </button>
+            </a>
+            <div style="font-size: 0.65rem; color: #64748b; margin-top: 0.5rem; text-align: center;">
+                Nueva interfaz, Analítica Benford y Gobernanza.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
 # Main Content Area
 # Header con tecnologías y modelos
