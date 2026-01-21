@@ -21,6 +21,13 @@ from network_graph_helper import create_suspicious_network
 from datetime import datetime
 from pathlib import Path
 
+# Governance & Monitoring
+try:
+    from model_governance.performance_monitor import PerformanceMonitor
+    GOVERNANCE_MONITOR_AVAILABLE = True
+except ImportError:
+    GOVERNANCE_MONITOR_AVAILABLE = False
+
 # Enterprise OS Core Modules
 try:
     from core.loaders import M200WideLoader, M347Loader, M349Loader
@@ -454,20 +461,122 @@ Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la
         st.markdown('</div>', unsafe_allow_html=True)
 
 def governance_dashboard():
-    """Dashboard de Gobierno."""
+    """Dashboard de Gobierno de Élite con monitoreo en tiempo real."""
     st.markdown('<div style="padding: 2.5rem;" class="animate-fade">', unsafe_allow_html=True)
-    st.markdown('<h1 style="color: var(--text-primary); margin-bottom: 2rem;">🏛️ Model Governance & Monitoring</h1>', unsafe_allow_html=True)
     
-    m1, m2, m3 = st.columns(3)
-    with m1: render_tech_card("AUC-ROC", "0.94", "📈")
-    with m2: render_tech_card("PSI", "0.04", "⚖️")
-    with m3: render_tech_card("Savings", "1.2M €", "💶")
+    # 1. HEADER & ACTIVE ALERTS
+    col_title, col_status = st.columns([0.7, 0.3])
+    with col_title:
+        st.markdown('<h1 style="color: var(--text-primary); margin-bottom: 0.5rem;">🏛️ Model Governance & Monitoring</h1>', unsafe_allow_html=True)
+        st.markdown('<p style="color: var(--text-muted); font-size: 1.1rem;">Supervisión continua de la salud de los modelos y estabilidad de la población.</p>', unsafe_allow_html=True)
     
-    st.markdown("""
-        <div style="margin-top: 2.5rem; padding: 1.5rem; background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.1); border-radius: 12px; border-left: 4px solid var(--success);">
-            <p style="color: var(--text-muted); margin: 0;">Performance estable. No se detecta drift significativo en los últimos 30 días.</p>
-        </div>
-    """, unsafe_allow_html=True)
+    # Initialize Monitor
+    monitor = PerformanceMonitor() if GOVERNANCE_MONITOR_AVAILABLE else None
+    history = monitor.get_metrics_history() if monitor else []
+    
+    if not history:
+        st.warning("No hay datos históricos de monitoreo disponibles.")
+        return
+
+    df_metrics = pd.DataFrame([
+        {
+            "Date": datetime.fromisoformat(h['timestamp']).strftime('%d %b'),
+            "AUC": h['metrics'].get('auc_roc', 0),
+            "F1": h['metrics'].get('f1_score', 0),
+            "PSI": h['metrics'].get('psi', 0),
+            "Drift": h['metrics'].get('drift_score', 0)
+        } for h in history
+    ])
+
+    latest = history[-1]['metrics']
+    
+    # 2. KPI STRIP ELITE
+    m1, m2, m3, m4 = st.columns(4)
+    with m1: render_tech_card("Current AUC", f"{latest.get('auc_roc', 0):.3f}", "📈")
+    with m2: render_tech_card("Population PSI", f"{latest.get('psi', 0):.4f}", "⚖️")
+    with m3: render_tech_card("Precision @K", f"{latest.get('precision', 0):.2%}", "🎯")
+    with m4: render_tech_card("Est. Savings", "1.24M €", "💶")
+
+    st.markdown('<div style="margin-top: 2.5rem;"></div>', unsafe_allow_html=True)
+
+    # 3. ANALYTICS GRID
+    col_left, col_right = st.columns([0.65, 0.35])
+    
+    with col_left:
+        st.markdown('<div class="tech-card" style="padding: 2rem;">', unsafe_allow_html=True)
+        st.markdown('<h3 style="color: var(--text-primary); margin-bottom: 1.5rem;">Performance Stability (30 Days)</h3>', unsafe_allow_html=True)
+        
+        fig_perf = go.Figure()
+        fig_perf.add_trace(go.Scatter(x=df_metrics['Date'], y=df_metrics['AUC'], name='AUC-ROC', line=dict(color='#3b82f6', width=3, shape='spline')))
+        fig_perf.add_trace(go.Scatter(x=df_metrics['Date'], y=df_metrics['F1'], name='F1-Score', line=dict(color='#8b5cf6', width=2, dash='dot')))
+        
+        fig_perf.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=0, r=0, t=0, b=0), height=300,
+            xaxis=dict(showgrid=False, color='#64748b'),
+            yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)', color='#64748b'),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_perf, use_container_width=True, config={'displayModeBar': False})
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div style="margin-top: 2rem;"></div>', unsafe_allow_html=True)
+        
+        st.markdown('<div class="tech-card" style="padding: 2rem;">', unsafe_allow_html=True)
+        st.markdown('<h3 style="color: var(--text-primary); margin-bottom: 1.5rem;">Population Stability Index (PSI)</h3>', unsafe_allow_html=True)
+        
+        fig_psi = px.bar(df_metrics, x='Date', y='PSI', color='PSI', 
+                         color_continuous_scale=['#22c55e', '#eab308', '#ef4444'],
+                         range_color=[0, 0.15])
+        fig_psi.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=0, r=0, t=0, b=0), height=250,
+            coloraxis_showscale=False,
+            xaxis=dict(showgrid=False, color='#64748b'),
+            yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)', color='#64748b')
+        )
+        st.plotly_chart(fig_psi, use_container_width=True, config={'displayModeBar': False})
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col_right:
+        # Alert Center
+        st.markdown('<div class="feedback-panel">', unsafe_allow_html=True)
+        st.markdown('<h3>Alert Center</h3>', unsafe_allow_html=True)
+        
+        alerts = monitor.get_alerts() if monitor else []
+        if not alerts:
+            st.markdown("""
+                <div style="padding: 1rem; background: rgba(34, 197, 94, 0.1); border-radius: 12px; border: 1px solid rgba(34, 197, 94, 0.2);">
+                    <p style="color: #4ade80; margin: 0; font-size: 0.85rem;">✅ All systems operational. No drift detected.</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            for alert in alerts:
+                color = "#f87171" if alert['severity'] == "critical" else "#fbbf24"
+                bg = "rgba(239, 68, 68, 0.1)" if alert['severity'] == "critical" else "rgba(234, 179, 8, 0.1)"
+                st.markdown(f"""
+                    <div style="padding: 1rem; background: {bg}; border-radius: 12px; border: 1px solid {color}44; margin-bottom: 1rem;">
+                        <p style="color: {color}; font-weight: 700; margin: 0; font-size: 0.8rem;">{alert['type'].upper()}</p>
+                        <p style="color: var(--text-primary); margin: 0.25rem 0; font-size: 0.85rem;">{alert['message']}</p>
+                        <p style="color: var(--text-muted); margin: 0; font-size: 0.7rem;">{alert['timestamp'][:16]}</p>
+                    </div>
+                """, unsafe_allow_html=True)
+        
+        st.markdown('<h3 style="margin-top: 2rem;">Model Versions</h3>', unsafe_allow_html=True)
+        st.markdown("""
+            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-sutil);">
+                    <span>v2.1.0 (Active)</span>
+                    <span style="color: var(--brand);">Current</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-sutil);">
+                    <span>v2.0.4</span>
+                    <span>12/01/26</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown('</div>', unsafe_allow_html=True)
     
 
