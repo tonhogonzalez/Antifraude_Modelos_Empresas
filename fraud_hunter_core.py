@@ -95,10 +95,10 @@ class FraudHunterConfig:
                     var: codes for var, codes in TAX_MAPPING_CONFIG["M200"].items()
                     if isinstance(codes, list)  # Solo mapeos de casillas
                 },
-                "M349": {
-                    var: codes for var, codes in TAX_MAPPING_CONFIG["M349"].items()
-                    if isinstance(codes, list)
-                }
+                # M349: extraer solo source_to_canonical si existe
+                "M349": TAX_MAPPING_CONFIG.get("M349", {}).get("source_to_canonical", {}),
+                # M347: extraer solo source_to_canonical si existe
+                "M347": TAX_MAPPING_CONFIG.get("M347", {}).get("source_to_canonical", {}),
             }
 
 

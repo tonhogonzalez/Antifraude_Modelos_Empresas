@@ -35,6 +35,19 @@ try:
 except ImportError:
     CONTINUOUS_LEARNING_AVAILABLE = False
 
+# Supabase Connector
+try:
+    from supabase_connector import (
+        load_all_data_from_supabase,
+        is_supabase_available,
+        get_data_source_stats
+    )
+    SUPABASE_CONNECTOR_AVAILABLE = True
+except ImportError:
+    SUPABASE_CONNECTOR_AVAILABLE = False
+    def is_supabase_available(): return False
+    def get_data_source_stats(): return {"source": "local", "m200": 0, "m347": 0, "m349": 0}
+
 # =============================================================================
 # CONFIGURACIÓN DE PÁGINA
 # =============================================================================
@@ -1018,6 +1031,62 @@ def safe_division(numerator, denominator, default=0):
 # DATA LOADING FUNCTIONS
 # =============================================================================
 
+def get_available_data_sources():
+    """Retorna las fuentes de datos disponibles."""
+    sources = []
+    
+    # Verificar Supabase
+    if SUPABASE_CONNECTOR_AVAILABLE and is_supabase_available():
+        sources.append("☁️ Supabase (Cloud)")
+    
+    # Verificar archivos locales
+    base_path = Path(__file__).parent if '__file__' in dir() else Path('.')
+    if (base_path / 'data_empresas.csv').exists() or (base_path / 'data_empresas.parquet').exists():
+        sources.append("📁 CSV/Parquet Local")
+    
+    # Siempre disponible
+    sources.append("🎲 Datos Sintéticos")
+    
+    return sources
+
+
+@st.cache_data(ttl=3600, show_spinner="🔄 Cargando datos...")
+def load_data_unified(source: str = "auto"):
+    """
+    Función unificada de carga de datos.
+    
+    Args:
+        source: "auto", "supabase", "csv", o "synthetic"
+    
+    Returns:
+        DataFrame con datos consolidados
+    """
+    # Auto-detectar mejor fuente
+    if source == "auto" or source == "☁️ Supabase (Cloud)":
+        if SUPABASE_CONNECTOR_AVAILABLE and is_supabase_available():
+            df = load_all_data_from_supabase()
+            if df is not None and len(df) > 0:
+                # Añadir columnas faltantes para compatibilidad
+                if 'tipo' not in df.columns:
+                    df['tipo'] = 'UNKNOWN'
+                if 'sector_cnae' not in df.columns:
+                    df['sector_cnae'] = df.get('sector', 'Otros')
+                return df
+        
+        # Fallback a CSV si Supabase falla
+        if source == "☁️ Supabase (Cloud)":
+            st.warning("⚠️ Supabase no disponible, usando datos locales...")
+    
+    if source in ["auto", "📁 CSV/Parquet Local", "csv"]:
+        df = load_real_data()
+        if df is not None:
+            return df
+    
+    # Fallback final: datos sintéticos
+    st.info("🎲 Usando datos sintéticos para demostración")
+    return generate_dummy_data()
+
+
 @st.cache_data(ttl=3600, show_spinner="📂 Cargando datos reales...")
 def load_real_data():
     """Carga datos reales, priorizando Parquet (más rápido) sobre CSV."""
@@ -1638,16 +1707,27 @@ if 'feedback_store' not in st.session_state and CONTINUOUS_LEARNING_AVAILABLE:
 
 st.sidebar.markdown("---")
 
-# Selector de fuente de datos
+# Selector de fuente de datos - Actualizado con Supabase
+available_sources = get_available_data_sources()
+
+# Mostrar estadísticas de Supabase si está disponible
+if SUPABASE_CONNECTOR_AVAILABLE and is_supabase_available():
+    stats = get_data_source_stats()
+    st.sidebar.success(f"☁️ Supabase conectado: {stats['m200']:,} empresas")
+
 data_source = st.sidebar.radio(
-    "📁 Fuente de Datos",
-    options=["Datos Reales (CSV)", "Datos Sintéticos"],
-    help="Selecciona si usar los archivos CSV reales o generar datos sintéticos"
+    "🗄️ Fuente de Datos",
+    options=available_sources,
+    index=0,  # Priorizar Supabase si está disponible
+    help="Selecciona la fuente de datos para el análisis"
 )
 
-use_real_data = data_source == "Datos Reales (CSV)"
+# Determinar modo de operación
+use_supabase = "Supabase" in data_source
+use_real_data = "CSV" in data_source or "Local" in data_source
+use_synthetic = "Sintéticos" in data_source
 
-if not use_real_data:
+if use_synthetic:
     st.sidebar.markdown("---")
     n_empresas = st.sidebar.slider(
         "Número de empresas",
@@ -1683,6 +1763,8 @@ st.sidebar.markdown("---")
 if st.sidebar.button("🚀 Ejecutar Análisis", type="primary", use_container_width=True):
     st.session_state.run_analysis = True
     st.session_state.use_real_data = use_real_data
+    st.session_state.use_supabase = use_supabase
+    st.session_state.data_source = data_source
 
 st.sidebar.markdown("---")
 
@@ -1859,8 +1941,15 @@ except Exception as e:
 if st.session_state.get('run_analysis', False) or 'df_results' not in st.session_state:
     try:
         with st.spinner("🔄 Procesando datos con algoritmos forenses..."):
-            # Intentar cargar datos reales si está seleccionado
-            if use_real_data:
+            # Usar función unificada de carga de datos
+            if use_supabase:
+                df = load_data_unified("☁️ Supabase (Cloud)")
+                if df is not None and len(df) > 0:
+                    st.sidebar.success(f"☁️ {len(df)} empresas cargadas desde Supabase")
+                else:
+                    st.warning("⚠️ No se pudieron cargar datos de Supabase. Usando sintéticos.")
+                    df = generate_dummy_data(n_empresas, tasa_fraude)
+            elif use_real_data:
                 df = load_real_data()
                 if df is None:
                     st.warning("⚠️ Archivos CSV no encontrados. Usando datos sintéticos.")
@@ -1869,6 +1958,7 @@ if st.session_state.get('run_analysis', False) or 'df_results' not in st.session
                     st.sidebar.success(f"✅ {len(df)} empresas cargadas desde archivos")
             else:
                 df = generate_dummy_data(n_empresas, tasa_fraude)
+                st.sidebar.info(f"🎲 {len(df)} empresas sintéticas generadas")
             
             # Feature Engineering
             with st.spinner("📊 Calculando features forenses..."):

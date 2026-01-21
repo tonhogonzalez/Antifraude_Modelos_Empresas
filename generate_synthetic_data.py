@@ -8,7 +8,8 @@ import uuid
 from tax_mapping_config import (
     TAX_MAPPING_CONFIG, 
     LEGACY_CASILLAS_MAP,
-    get_prefixed_casilla
+    get_prefixed_casilla,
+    get_source_to_canonical
 )
 
 # Configuración

@@ -26,7 +26,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Importar configuración centralizada de casillas AEAT (para referencia)
-from tax_mapping_config import TAX_MAPPING_CONFIG, LEGACY_CASILLAS_MAP
+from tax_mapping_config import TAX_MAPPING_CONFIG, LEGACY_CASILLAS_MAP, get_source_to_canonical
 
 # Importar DeepFraudHunter (módulos Deep Learning opcionales)
 try:

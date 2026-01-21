@@ -16,8 +16,8 @@ from datetime import datetime
 # Importar configuración centralizada de casillas AEAT
 from tax_mapping_config import (
     TAX_MAPPING_CONFIG,
-    build_pivot_rename_map,
-    get_prefixed_casilla,
+    build_m200_column_rename_map,
+    get_source_to_canonical,
     LEGACY_CASILLAS_MAP
 )
 
