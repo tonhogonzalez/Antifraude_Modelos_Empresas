@@ -57,37 +57,7 @@ except ImportError:
     def is_supabase_available(): return False
     def get_data_source_stats(): return {"source": "local", "m200": 0, "m347": 0, "m349": 0}
 
-# =============================================================================
-# CONFIGURACIÓN DE PÁGINA
-# =============================================================================
-
-st.set_page_config(
-    page_title="FraudHunter Pro 🔍",
-    page_icon="favicon.ico",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Fix browser translation prompt - Set language to Spanish and disable translation
-components.html(
-    """
-    <script>
-        // Set the document language to Spanish
-        window.parent.document.documentElement.lang = 'es';
-        // Disable browser translation prompts
-        window.parent.document.documentElement.setAttribute('translate', 'no');
-        // Add meta tag for Google Chrome
-        var meta = window.parent.document.createElement('meta');
-        meta.name = 'google';
-        meta.content = 'notranslate';
-        if (!window.parent.document.querySelector('meta[name="google"]')) {
-            window.parent.document.head.appendChild(meta);
-        }
-    </script>
-    """,
-    height=0,
-    width=0
-)
+# Nota: st.set_page_config y el script de traducción se han movido al punto de entrada global (streamlit_app.py)
 
 # =============================================================================
 # DESIGN SYSTEM TIER-1 (SLATE THEME)
@@ -475,9 +445,7 @@ def handle_navigation(df_gold=None):
         st.subheader("🔗 Legacy Version")
         st.info("Accede a la versión anterior de la plataforma para comparativa.")
         if st.button("📺 VERSIÓN LEGACY", use_container_width=True):
-            st.toast("Redirigiendo a Legacy Version...", icon="⏳")
-            # Public URL provided by user
-            st.markdown(f'<a href="https://antifraudemodelosempresas.streamlit.app/" target="_blank" style="text-decoration: none;"><button style="width: 100%; padding: 0.5rem; background: var(--brand); color: white; border: none; border-radius: 8px; cursor: pointer;">ABRIR LEGACY (PUBLIC URL)</button></a>', unsafe_allow_html=True)
+            st.switch_page("views/legacy_v2.py")
     
 
 # =============================================================================
