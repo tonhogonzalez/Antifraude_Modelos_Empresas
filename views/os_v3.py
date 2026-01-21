@@ -97,15 +97,51 @@ st.markdown("""
         margin: 0 !important;
     }
 
+    /* 1. Global Reset & Theme (Slate 950) */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap');
+
+    :root {
+        --bg-body: #020617;
+        --bg-card: rgba(15, 23, 42, 0.6);
+        --bg-card-solid: #0f172a;
+        --border-sutil: rgba(30, 41, 59, 0.7);
+        --border-hover: rgba(59, 130, 246, 0.4);
+        --text-primary: #f8fafc;
+        --text-muted: #94a3b8;
+        --brand: #3b82f6;
+        --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        --success: #22c55e;
+        --warning: #eab308;
+        --danger: #ef4444;
+        --purple: #a855f7;
+        --glass: blur(12px) saturate(180%);
+    }
+
+    .stApp {
+        background-color: var(--bg-body) !important;
+        font-family: 'Inter', sans-serif !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* 2. Hide Streamlit Elements */
+    #MainMenu, footer, header {visibility: hidden !important;}
+    .stDeployButton {display: none !important;}
+    
+    .main .block-container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
     /* 3. Layout Components */
     .cockpit-header {
         position: sticky;
         top: 0;
         z-index: 999;
-        background: rgba(2, 6, 23, 0.85);
-        backdrop-filter: blur(12px);
+        background: rgba(2, 6, 23, 0.8);
+        backdrop-filter: var(--glass);
         border-bottom: 1px solid var(--border-sutil);
-        padding: 1rem 2rem;
+        padding: 1.25rem 2.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -115,147 +151,163 @@ st.markdown("""
     .kpi-strip {
         display: flex;
         gap: 1.5rem;
-        padding: 1rem 2rem;
-        background: var(--bg-body);
+        padding: 1.25rem 2.5rem;
+        background: rgba(2, 6, 23, 0.4);
         border-bottom: 1px solid var(--border-sutil);
         overflow-x: auto;
     }
 
     /* 4. Tech Cards (Enterprise OS) */
     .tech-card {
-        background-color: var(--bg-card);
+        background: var(--bg-card);
+        backdrop-filter: var(--glass);
         border: 1px solid var(--border-sutil);
-        border-radius: 12px;
-        padding: 1.5rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 16px;
+        padding: 1.75rem;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .tech-card:hover {
-        border-color: rgba(59, 130, 246, 0.5);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        border-color: var(--brand);
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(59, 130, 246, 0.3);
+        background: rgba(15, 23, 42, 0.8);
     }
 
     .card-label {
         color: var(--text-muted);
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .card-value {
         color: var(--text-primary);
-        font-size: 1.75rem;
+        font-size: 2rem;
         font-weight: 700;
         font-family: 'Roboto Mono', monospace;
+        letter-spacing: -0.02em;
     }
 
     /* 5. Semantic Badges */
     .badge {
         display: inline-flex;
         align-items: center;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        padding: 0.35rem 1rem;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         border: 1px solid transparent;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
 
-    .badge-success { background: rgba(34, 197, 94, 0.1); color: var(--success); border-color: rgba(34, 197, 94, 0.2); }
-    .badge-warning { background: rgba(234, 179, 8, 0.1); color: var(--warning); border-color: rgba(234, 179, 8, 0.2); }
-    .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
-    .badge-purple { background: rgba(168, 85, 247, 0.1); color: var(--purple); border-color: rgba(168, 85, 247, 0.2); }
+    .badge-success { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.3); }
+    .badge-warning { background: rgba(234, 179, 8, 0.15); color: #fbbf24; border-color: rgba(234, 179, 8, 0.3); }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); }
 
-    /* 6. Dashboard Tabs */
+    /* 6. Dashboard Tabs Custom Styling */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: var(--bg-body) !important;
-        gap: 2rem;
-        padding: 0 2rem;
-        border-bottom: 1px solid var(--border-sutil);
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
         background-color: transparent !important;
-        border: none !important;
-        color: var(--text-muted) !important;
-        font-weight: 600 !important;
-    }
-
-    .stTabs [aria-selected="true"] {
-        color: var(--brand) !important;
-        border-bottom: 2px solid var(--brand) !important;
+        gap: 1.5rem;
+        padding: 0 2.5rem;
+        margin-top: 1rem;
     }
 
     /* 7. Animations */
     .animate-fade {
-        animation: fadeIn 0.6s ease-out;
+        animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 8. Sticky Feedback Panel */
+    /* 8. Sticky Feedback Panel Refined */
     .feedback-panel {
         position: sticky;
-        top: 100px;
-        background: var(--bg-card);
+        top: 120px;
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: var(--glass);
         border: 1px solid var(--border-sutil);
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .feedback-panel h3 {
+        margin-top: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+        margin-bottom: 1.5rem;
     }
 
     /* 9. Grid Systems */
     .cockpit-grid {
         display: grid;
-        grid-template-columns: 1fr 380px;
-        gap: 2rem;
-        padding: 2rem;
+        grid-template-columns: 1fr 400px;
+        gap: 2.5rem;
+        padding: 2.5rem;
         align-items: start;
     }
 
-    .analysis-container {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-    }
-
-    /* 10. KPI Strip Item */
+    /* 10. KPI Strip Item Refined */
     .kpi-item {
-        background: var(--bg-card);
+        background: rgba(30, 41, 59, 0.3);
         border: 1px solid var(--border-sutil);
-        border-radius: 8px;
-        padding: 0.75rem 1.25rem;
-        min-width: 180px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        border-radius: 12px;
+        padding: 0.85rem 1.5rem;
+        min-width: 200px;
+        transition: all 0.3s ease;
+    }
+    
+    .kpi-item:hover {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: var(--border-hover);
     }
 
     .kpi-item-label {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.25rem;
     }
 
     .kpi-item-value {
-        font-size: 1.1rem;
+        font-size: 1.35rem;
         font-weight: 700;
         color: var(--text-primary);
         font-family: 'Roboto Mono', monospace;
     }
 
+    /* Custom Streamlit Button Styling */
+    div.stButton > button {
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+
     /* Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
-    ::-webkit-scrollbar-thumb { background: var(--border-sutil); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
 
 </style>
 """, unsafe_allow_html=True)
@@ -337,8 +389,8 @@ Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la
     col_main, col_side = st.columns([0.65, 0.35])
 
     with col_main:
-        st.markdown('<div class="analysis-container">', unsafe_allow_html=True)
-        st.subheader("Evidencias y Análisis Detallado")
+        st.markdown('<div class="analysis-container animate-fade">', unsafe_allow_html=True)
+        st.markdown('<h3 style="color: var(--text-primary); margin-bottom: 1.5rem;">Evidencias y Análisis Detallado</h3>', unsafe_allow_html=True)
         
         # Tech Cards Row
         c1, c2, c3 = st.columns(3)
@@ -346,28 +398,42 @@ Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la
         with c2: render_tech_card("Efectivo", f"{company.get('efectivo_tesoreria', 0):,.0f} €", "🏦")
         with c3: render_tech_card("Deterioro IFRS9", f"Stage {int(company.get('stage', 1))}", "⚠️")
 
-        st.info("Utiliza los módulos de análisis para profundizar en los datos.")
+        st.markdown("""
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 1px border-sutil; border-radius: 12px; border-left: 4px solid var(--brand);">
+                <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">
+                    <strong>Analista:</strong> Utiliza los módulos de análisis para profundizar en las anomalías detectadas. Cada indicador ha sido validado mediante modelos de IA y reglas de negocio Tier-1.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_side:
-        st.markdown('<div class="feedback-panel">', unsafe_allow_html=True)
-        st.markdown('### Registrar Feedback')
+        st.markdown('<div class="feedback-panel animate-fade">', unsafe_allow_html=True)
+        st.markdown('<h3>Registrar Feedback</h3>', unsafe_allow_html=True)
         st.selectbox("Veredicto", ["PARA_REVISAR", "FRAUDE_CONFIRMADO", "FALSO_POSITIVO", "WATCHLIST"])
         st.text_area("Notas del Analista")
+        st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
         if st.button("ENVIAR DECISIÓN", type="primary", use_container_width=True):
             st.success("Decisión registrada.")
+        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 def governance_dashboard():
     """Dashboard de Gobierno."""
-    st.title("🏛️ Model Governance & Monitoring")
+    st.markdown('<div style="padding: 2.5rem;" class="animate-fade">', unsafe_allow_html=True)
+    st.markdown('<h1 style="color: var(--text-primary); margin-bottom: 2rem;">🏛️ Model Governance & Monitoring</h1>', unsafe_allow_html=True)
     
     m1, m2, m3 = st.columns(3)
     with m1: render_tech_card("AUC-ROC", "0.94", "📈")
     with m2: render_tech_card("PSI", "0.04", "⚖️")
     with m3: render_tech_card("Savings", "1.2M €", "💶")
     
-    st.info("Performance estable. No se detecta drift significativo.")
+    st.markdown("""
+        <div style="margin-top: 2.5rem; padding: 1.5rem; background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.1); border-radius: 12px; border-left: 4px solid var(--success);">
+            <p style="color: var(--text-muted); margin: 0;">Performance estable. No se detecta drift significativo en los últimos 30 días.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
 
 # =============================================================================
@@ -414,7 +480,20 @@ def handle_navigation(df_gold=None):
     </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3, _ = st.columns([0.15, 0.15, 0.15, 0.55])
+    col1, col2, col3, _ = st.columns([0.16, 0.16, 0.16, 0.52])
+    
+    # CSS dinámico para botones de navegación según estado
+    button_style = """
+    <style>
+        div.stButton > button {
+            border: 1px solid var(--border-sutil) !important;
+            background: rgba(30, 41, 59, 0.2) !important;
+            color: var(--text-muted) !important;
+        }
+    </style>
+    """
+    st.markdown(button_style, unsafe_allow_html=True)
+
     with col1:
         if st.button("🕹️ COCKPIT", key="nav_cockpit", use_container_width=True, type="primary" if st.session_state.view_mode == "COCKPIT" else "secondary"):
             st.session_state.view_mode = "COCKPIT"
@@ -430,7 +509,14 @@ def handle_navigation(df_gold=None):
 
     # SIDEBAR SELECTOR
     with st.sidebar:
-        st.title("🕹️ Control Center")
+        # Logo Logic (Optimized for Design System)
+        st.markdown(f"""
+            <div style="padding: 1rem 0; text-align: center;">
+                <h2 style="color: var(--brand); letter-spacing: -0.02em; font-weight: 800; margin: 0;">FRAUDHUNTER <span style="font-weight: 300; opacity: 0.7;">OS</span></h2>
+                <p style="color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; margin-top: 0.25rem;">Enterprise Edition v3.0</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("---")
         
         if df_gold is not None:
