@@ -296,21 +296,14 @@ st.markdown("""
 
 def render_tech_card(label, value, icon=""):
     """Renderiza una Tech Card estilo Enterprise OS."""
-    st.markdown(f"""
-    <div class="tech-card animate-fade">
-        <div class="card-label">{icon} {label}</div>
-        <div class="card-value">{value}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="tech-card animate-fade">
+<div class="card-label">{icon} {label}</div>
+<div class="card-value">{value}</div>
+</div>""", unsafe_allow_html=True)
 
 def render_kpi_strip_item(label, value):
     """Renderiza un item para el KPI Strip superior."""
-    return f"""
-    <div class="kpi-item">
-        <div class="kpi-item-label">{label}</div>
-        <div class="kpi-item-value">{value}</div>
-    </div>
-    """
+    return f'<div class="kpi-item"><div class="kpi-item-label">{label}</div><div class="kpi-item-value">{value}</div></div>'
 
 def render_badge(text, badge_type="info"):
     """Renderiza un badge semántico."""
@@ -331,15 +324,13 @@ def cockpit_view(df_gold, nif_selected):
     
     # Validar si hay empresa seleccionada
     if nif_selected is None:
-        st.markdown(f"""
-        <div style="padding: 4rem 2rem; text-align: center; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-sutil); margin: 2rem;">
-            <div style="font-size: 4rem; margin-bottom: 2rem;">🕹️</div>
-            <h2 style="color: var(--text-primary);">Panel de Control OS de Fraude</h2>
-            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la barra lateral para iniciar el análisis forense.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"""<div style="padding: 4rem 2rem; text-align: center; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-sutil); margin: 2rem;">
+<div style="font-size: 4rem; margin-bottom: 2rem;">🕹️</div>
+<h2 style="color: var(--text-primary);">Panel de Control OS de Fraude</h2>
+<p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+Por favor, selecciona una empresa desde el <strong>Control Center</strong> en la barra lateral para iniciar el análisis forense profundo.
+</p>
+</div>""", unsafe_allow_html=True)
         return
 
     if df_gold is None or nif_selected not in df_gold['nif'].values:
@@ -349,18 +340,16 @@ def cockpit_view(df_gold, nif_selected):
     company = df_gold[df_gold['nif'] == nif_selected].iloc[0]
     
     # 1. FIXED HEADER
-    st.markdown(f'''
-    <div class="cockpit-header">
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">{company.get('razon_social', 'Empresa Desconocida')}</div>
-            <div style="color: var(--text-muted); font-family: 'Roboto Mono'; font-size: 1.1rem;">{nif_selected}</div>
-        </div>
-        <div class="analysis-controls">
-            {get_risk_badge(company.get('final_score', 0))}
-            {render_badge("CNAE: " + str(company.get('cnae', '---')), "purple")}
-        </div>
-    </div>
-    ''', unsafe_allow_html=True)
+    st.markdown(f'''<div class="cockpit-header">
+<div style="display: flex; align-items: center; gap: 1.5rem;">
+<div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">{company.get('razon_social', 'Empresa Desconocida')}</div>
+<div style="color: var(--text-muted); font-family: 'Roboto Mono'; font-size: 1.1rem;">{nif_selected}</div>
+</div>
+<div class="analysis-controls">
+{get_risk_badge(company.get('final_score', 0))}
+{render_badge("CNAE: " + str(company.get('cnae', '---')), "purple")}
+</div>
+</div>''', unsafe_allow_html=True)
 
     # 2. KPI STRIP
     kpis_html = ""
