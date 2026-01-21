@@ -476,8 +476,8 @@ def handle_navigation(df_gold=None):
         st.info("Accede a la versión anterior de la plataforma para comparativa.")
         if st.button("📺 VERSIÓN LEGACY", use_container_width=True):
             st.toast("Redirigiendo a Legacy Version...", icon="⏳")
-            # In a real scenario, this could be a different port or file
-            st.markdown(f'<a href="http://localhost:8501" target="_blank" style="text-decoration: none;"><button style="width: 100%; padding: 0.5rem; background: var(--brand); color: white; border: none; border-radius: 8px; cursor: pointer;">ABRIR LEGACY (PUERTO 8501)</button></a>', unsafe_allow_html=True)
+            # Public URL provided by user
+            st.markdown(f'<a href="https://antifraudemodelosempresas.streamlit.app/" target="_blank" style="text-decoration: none;"><button style="width: 100%; padding: 0.5rem; background: var(--brand); color: white; border: none; border-radius: 8px; cursor: pointer;">ABRIR LEGACY (PUBLIC URL)</button></a>', unsafe_allow_html=True)
     
 
 # =============================================================================
